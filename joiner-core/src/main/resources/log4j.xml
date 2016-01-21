@@ -1,0 +1,19 @@
+<configuration debug="true">
+
+    <appender name="APP" class="org.apache.log4j.ConsoleAppender">
+        <encoder>
+            <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <logger name="cz.encircled" level="debug"/>
+
+    <logger name="org.springframework" level="debug"/>
+
+    <logger name="org.hibernate" level="debug"/>
+
+    <root level="debug">
+        <appender-ref ref="APP" />
+    </root>
+
+</configuration>
