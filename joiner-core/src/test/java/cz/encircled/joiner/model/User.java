@@ -16,7 +16,7 @@ import javax.persistence.Table;
  */
 @Entity
 @Table(name = "test_user")
-public class User extends TestEntity {
+public class User extends AbstractEntity {
 
     @Column
     private String name;
@@ -25,7 +25,7 @@ public class User extends TestEntity {
     @JoinTable(name = "user_to_group",
             joinColumns = @JoinColumn(name = "user_id"),
             inverseJoinColumns = @JoinColumn(name = "group_id"))
-    private List<Group> group = new ArrayList<Group>();
+    private List<Group> groups = new ArrayList<Group>();
 
     public String getName() {
         return name;
@@ -35,11 +35,12 @@ public class User extends TestEntity {
         this.name = name;
     }
 
-    public List<Group> getGroup() {
-        return group;
+    public List<Group> getGroups() {
+        return groups;
     }
 
-    public void setGroup(final List<Group> group) {
-        this.group = group;
+    public void setGroups(final List<Group> groups) {
+        this.groups = groups;
     }
+
 }

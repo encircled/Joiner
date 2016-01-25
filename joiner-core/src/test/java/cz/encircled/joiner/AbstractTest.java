@@ -8,9 +8,7 @@ import javax.persistence.PersistenceContext;
 import cz.encircled.joiner.config.TestConfig;
 import cz.encircled.joiner.model.Group;
 import cz.encircled.joiner.model.User;
-import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.springframework.test.annotation.Commit;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,29 +19,28 @@ import org.springframework.transaction.annotation.Transactional;
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = { TestConfig.class })
 @Transactional
-@Commit
-public class AbstractTest {
+public abstract class AbstractTest {
 
     @PersistenceContext
-    private EntityManager entityManager;
+    protected EntityManager entityManager;
 
-    @Test
-    public void test() {
+    public void prepareData() {
         System.out.println("Hey!");
 
         Group group = new Group();
         group.setName("testGroup");
-        group.setId(1L);
         entityManager.persist(group);
 
         User user = new User();
-        user.setId(1L);
         user.setName("test");
         entityManager.persist(user);
         System.out.println("Done!");
 
-        user.setGroup(Collections.singletonList(group));
+        user.setGroups(Collections.singletonList(group));
         entityManager.persist(user);
+
+        entityManager.flush();
+        entityManager.clear();
     }
 
 }

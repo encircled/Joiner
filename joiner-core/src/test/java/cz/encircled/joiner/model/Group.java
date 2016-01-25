@@ -14,12 +14,12 @@ import javax.persistence.Table;
  */
 @Entity
 @Table(name = "test_group")
-public class Group extends TestEntity {
+public class Group extends AbstractEntity {
 
     @Column
     private String name;
 
-    @ManyToMany(fetch = FetchType.LAZY, mappedBy = "group")
+    @ManyToMany(fetch = FetchType.LAZY, mappedBy = "groups")
     private List<User> users = new ArrayList<User>();
 
     public String getName() {
