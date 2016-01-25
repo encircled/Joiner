@@ -8,6 +8,8 @@ import javax.persistence.EntityManager;
 import com.mysema.query.jpa.impl.JPAQuery;
 import com.mysema.query.types.EntityPath;
 import com.mysema.query.types.Expression;
+import cz.encircled.joiner.query.JoinDescription;
+import cz.encircled.joiner.query.Q;
 import org.springframework.util.Assert;
 
 /**

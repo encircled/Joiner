@@ -9,6 +9,8 @@ import javax.persistence.FetchType;
 import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
+import javax.persistence.OneToMany;
+import javax.persistence.OrderColumn;
 import javax.persistence.Table;
 
 /**
@@ -21,11 +23,23 @@ public class User extends AbstractEntity {
     @Column
     private String name;
 
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "user")
+    @OrderColumn(name = "id")
+    private List<Address> addresses;
+
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(name = "user_to_group",
             joinColumns = @JoinColumn(name = "user_id"),
             inverseJoinColumns = @JoinColumn(name = "group_id"))
     private List<Group> groups = new ArrayList<Group>();
+
+    public List<Address> getAddresses() {
+        return addresses;
+    }
+
+    public void setAddresses(final List<Address> addresses) {
+        this.addresses = addresses;
+    }
 
     public String getName() {
         return name;

@@ -1,4 +1,4 @@
-package cz.encircled.joiner;
+package cz.encircled.joiner.exception;
 
 /**
  * @author Kisel on 25.01.2016.

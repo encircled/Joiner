@@ -1,4 +1,4 @@
-package cz.encircled.joiner;
+package cz.encircled.joiner.query;
 
 import javax.persistence.criteria.JoinType;
 

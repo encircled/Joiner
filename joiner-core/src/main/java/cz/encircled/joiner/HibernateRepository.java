@@ -6,6 +6,8 @@ import com.mysema.query.jpa.HQLTemplates;
 import com.mysema.query.jpa.impl.JPAQuery;
 import com.mysema.query.types.Path;
 import com.mysema.query.types.path.ListPath;
+import cz.encircled.joiner.exception.JoinerException;
+import cz.encircled.joiner.query.JoinDescription;
 
 /**
  * @author Kisel on 21.01.2016.

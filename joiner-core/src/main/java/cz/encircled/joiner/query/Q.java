@@ -1,4 +1,4 @@
-package cz.encircled.joiner;
+package cz.encircled.joiner.query;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -41,6 +41,15 @@ public class Q<T> {
 
     public List<JoinDescription> getJoins() {
         return joins;
+    }
+
+    public Q<T> addJoin(JoinDescription join) {
+        if (joins == null) {
+            joins = new ArrayList<JoinDescription>();
+        }
+
+        joins.add(join);
+        return this;
     }
 
     public Q<T> joins(List<JoinDescription> joins) {

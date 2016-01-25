@@ -3,6 +3,7 @@ package cz.encircled.joiner;
 import javax.persistence.EntityManager;
 
 import com.mysema.query.jpa.impl.JPAQuery;
+import cz.encircled.joiner.query.JoinDescription;
 
 /**
  * @author Kisel on 21.01.2016.

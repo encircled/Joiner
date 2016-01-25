@@ -3,6 +3,7 @@ package cz.encircled.joiner;
 import java.util.List;
 
 import com.mysema.query.types.Expression;
+import cz.encircled.joiner.query.Q;
 
 /**
  * @author Kisel on 11.01.2016.
