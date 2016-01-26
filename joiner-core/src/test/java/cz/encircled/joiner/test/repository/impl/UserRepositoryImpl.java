@@ -1,12 +1,9 @@
 package cz.encircled.joiner.test.repository.impl;
 
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-
 import com.mysema.query.types.EntityPath;
 import cz.encircled.joiner.test.model.QUser;
 import cz.encircled.joiner.test.model.User;
-import cz.encircled.joiner.test.repository.RepositoryParent;
+import cz.encircled.joiner.test.repository.SpringJoinerRepository;
 import cz.encircled.joiner.test.repository.UserRepository;
 import org.springframework.stereotype.Repository;
 
@@ -14,15 +11,7 @@ import org.springframework.stereotype.Repository;
  * @author Kisel on 21.01.2016.
  */
 @Repository
-public class UserRepositoryImpl extends RepositoryParent<User> implements UserRepository {
-
-    @PersistenceContext
-    private EntityManager entityManager;
-
-    @Override
-    protected EntityManager getEntityManager() {
-        return entityManager;
-    }
+public class UserRepositoryImpl extends SpringJoinerRepository<User> implements UserRepository {
 
     @Override
     protected EntityPath<User> getRootEntityPath() {

@@ -1,6 +1,5 @@
-package cz.encircled.joiner.test;
+package cz.encircled.joiner.test.core;
 
-import cz.encircled.joiner.test.config.TestData;
 import org.springframework.test.context.TestContext;
 import org.springframework.test.context.TestExecutionListener;
 

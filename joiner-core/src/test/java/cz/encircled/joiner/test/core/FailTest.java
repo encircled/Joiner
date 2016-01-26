@@ -1,7 +1,9 @@
-package cz.encircled.joiner.test;
+package cz.encircled.joiner.test.core;
 
+import cz.encircled.joiner.exception.AliasAlreadyUsedException;
 import cz.encircled.joiner.exception.AliasMissingException;
 import cz.encircled.joiner.exception.InsufficientSinglePathException;
+import cz.encircled.joiner.query.J;
 import cz.encircled.joiner.query.JoinDescription;
 import cz.encircled.joiner.query.Q;
 import cz.encircled.joiner.test.model.QAddress;
@@ -49,6 +51,14 @@ public class FailTest extends AbstractTest {
     @Test(expected = AliasMissingException.class)
     public void predicateNoAliasTest() {
         userRepository.find(Q.from(QUser.user).where(QAddress.address.name.eq("user1street1")));
+    }
+
+    @Test(expected = AliasAlreadyUsedException.class)
+    public void nonCollisionAliasCollectionJoinTest() {
+        groupRepository.find(Q.from(QGroup.group)
+                .addJoin(J.join(QGroup.group.statuses))
+                .addJoin(J.join(QGroup.group.users))
+                .addJoin(J.join(QUser.user.statuses)));
     }
 
 }

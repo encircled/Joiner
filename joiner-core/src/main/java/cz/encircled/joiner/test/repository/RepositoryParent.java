@@ -1,12 +1,14 @@
 package cz.encircled.joiner.test.repository;
 
 import java.util.List;
+import java.util.Set;
 
 import javax.annotation.PostConstruct;
 import javax.persistence.EntityManager;
 
 import com.mysema.query.types.EntityPath;
 import com.mysema.query.types.Expression;
+import cz.encircled.joiner.alias.JoinerAliasResolver;
 import cz.encircled.joiner.query.Q;
 
 /**
@@ -34,10 +36,14 @@ public abstract class RepositoryParent<T> implements QRepository<T> {
 
     @PostConstruct
     private void init() {
-        delegate = new Joiner<T>(getEntityManager(), getRootEntityPath());
+        Joiner<T> joiner = new Joiner<T>(getEntityManager(), getRootEntityPath());
+        joiner.setAliasResolvers(getAliasResolvers());
+        delegate = joiner;
     }
 
     protected abstract EntityManager getEntityManager();
+
+    protected abstract Set<JoinerAliasResolver> getAliasResolvers();
 
     protected abstract EntityPath<T> getRootEntityPath();
 

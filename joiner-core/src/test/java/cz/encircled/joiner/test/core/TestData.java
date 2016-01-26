@@ -1,4 +1,4 @@
-package cz.encircled.joiner.test.config;
+package cz.encircled.joiner.test.core;
 
 import java.util.Collections;
 
@@ -33,29 +33,31 @@ public class TestData {
         group.setName("group1");
         entityManager.persist(group);
 
-        baseUserCreate(group, 1);
-        baseUserCreate(group, 2);
+        baseUserCreate(group, 1, true);
+        baseUserCreate(group, 2, true);
+        baseUserCreate(group, 2, false);
 
         entityManager.flush();
         entityManager.clear();
     }
 
-    private void baseUserCreate(Group group, int index) {
+    private void baseUserCreate(Group group, int index, boolean withAddresses) {
         User user = new User();
         user.setName("user" + index);
         user.setGroups(Collections.singletonList(group));
-
-        Address address = new Address();
-        address.setName("user" + index + "street1");
-        address.setUser(user);
-
-        Address address2 = new Address();
-        address2.setName("user" + index + "street2");
-        address2.setUser(user);
-
         entityManager.persist(user);
-        entityManager.persist(address);
-        entityManager.persist(address2);
+
+        if (withAddresses) {
+            Address address = new Address();
+            address.setName("user" + index + "street1");
+            address.setUser(user);
+
+            Address address2 = new Address();
+            address2.setName("user" + index + "street2");
+            address2.setUser(user);
+            entityManager.persist(address);
+            entityManager.persist(address2);
+        }
     }
 
 

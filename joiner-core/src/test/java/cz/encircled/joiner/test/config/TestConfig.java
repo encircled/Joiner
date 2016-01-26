@@ -22,7 +22,7 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
  */
 @Configuration
 @EnableTransactionManagement
-@ComponentScan("cz.encircled.joiner.test")
+@ComponentScan(basePackages = { "cz.encircled.joiner.test.core", "cz.encircled.joiner.test.repository" })
 public class TestConfig {
 
     @Bean

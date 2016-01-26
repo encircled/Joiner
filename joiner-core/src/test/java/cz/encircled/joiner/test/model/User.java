@@ -20,8 +20,10 @@ import javax.persistence.Table;
 public class User extends AbstractEntity {
 
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "user")
-//    @OrderColumn(name = "id")
     private Set<Address> addresses;
+
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "user")
+    private Set<Status> statuses;
 
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(name = "user_to_group",
@@ -45,4 +47,11 @@ public class User extends AbstractEntity {
         this.groups = groups;
     }
 
+    public Set<Status> getStatuses() {
+        return statuses;
+    }
+
+    public void setStatuses(final Set<Status> statuses) {
+        this.statuses = statuses;
+    }
 }

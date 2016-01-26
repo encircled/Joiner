@@ -1,4 +1,4 @@
-package cz.encircled.joiner.test;
+package cz.encircled.joiner.test.core;
 
 import java.util.Collection;
 

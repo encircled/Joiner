@@ -1,9 +1,12 @@
 package cz.encircled.joiner.test.model;
 
+import java.util.Set;
+
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
 /**
@@ -17,6 +20,9 @@ public class Address extends AbstractEntity {
     @JoinColumn(name = "user_id", unique = false)
     private User user;
 
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "address")
+    private Set<Status> statuses;
+
     public User getUser() {
         return user;
     }
@@ -25,4 +31,11 @@ public class Address extends AbstractEntity {
         this.user = user;
     }
 
+    public Set<Status> getStatuses() {
+        return statuses;
+    }
+
+    public void setStatuses(final Set<Status> statuses) {
+        this.statuses = statuses;
+    }
 }
