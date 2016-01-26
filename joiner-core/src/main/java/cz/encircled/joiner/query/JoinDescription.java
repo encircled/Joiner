@@ -2,15 +2,19 @@ package cz.encircled.joiner.query;
 
 import javax.persistence.criteria.JoinType;
 
+import com.mysema.query.types.EntityPath;
 import com.mysema.query.types.Path;
-import com.mysema.query.types.path.ListPath;
+import com.mysema.query.types.path.CollectionPathBase;
+import org.springframework.util.Assert;
 
 /**
  * @author Kisel on 21.01.2016.
  */
 public class JoinDescription {
 
-    private ListPath<?, ?> listPath;
+    private CollectionPathBase<?, ?, ?> collectionPath;
+
+    private EntityPath<?> singlePath;
 
     private Path<?> alias;
 
@@ -18,8 +22,16 @@ public class JoinDescription {
 
     private boolean fetch = true;
 
-    public JoinDescription(ListPath<?, ?> listPath) {
-        this.listPath = listPath;
+    public JoinDescription(CollectionPathBase<?, ?, ?> collectionPath) {
+        Assert.notNull(collectionPath);
+
+        this.collectionPath = collectionPath;
+    }
+
+    public JoinDescription(EntityPath<?> singlePath) {
+        Assert.notNull(singlePath);
+
+        this.singlePath = singlePath;
     }
 
     public boolean isFetch() {
@@ -49,13 +61,16 @@ public class JoinDescription {
         return this;
     }
 
-    public ListPath<?, ?> getListPath() {
-        return listPath;
+    public CollectionPathBase<?, ?, ?> getCollectionPath() {
+        return collectionPath;
     }
 
-    public JoinDescription listPath(ListPath<?, ?> listPath) {
-        this.listPath = listPath;
-        return this;
+    public EntityPath<?> getSinglePath() {
+        return singlePath;
+    }
+
+    public boolean isCollectionPath() {
+        return collectionPath != null;
     }
 
 }

@@ -1,4 +1,4 @@
-package cz.encircled.joiner.repository.vendor;
+package cz.encircled.joiner.test.repository.vendor;
 
 import javax.persistence.EntityManager;
 
@@ -16,6 +16,6 @@ public interface JoinerVendorRepository {
 
     void addJoin(JPAQuery query, JoinDescription joinDescription);
 
-    void addFetch(JPAQuery query);
+    void addFetch(JPAQuery query, JoinDescription joinDescription);
 
 }

@@ -17,6 +17,8 @@ public class Q<T> {
 
     private List<JoinDescription> joins = new ArrayList<JoinDescription>();
 
+    private boolean distinct = true;
+
     public static <T> Q<T> from(EntityPath<T> from) {
         return new Q<T>().rootEntityPath(from);
     }
@@ -25,7 +27,16 @@ public class Q<T> {
         return predicate;
     }
 
-    public Q<T> predicate(Predicate predicate) {
+    public Q<T> distinct(boolean isDistinct) {
+        distinct = isDistinct;
+        return this;
+    }
+
+    public boolean isDistinct() {
+        return distinct;
+    }
+
+    public Q<T> where(Predicate predicate) {
         this.predicate = predicate;
         return this;
     }

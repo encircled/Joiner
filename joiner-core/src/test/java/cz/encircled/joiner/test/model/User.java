@@ -1,16 +1,15 @@
-package cz.encircled.joiner.model;
+package cz.encircled.joiner.test.model;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
-import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
 import javax.persistence.OneToMany;
-import javax.persistence.OrderColumn;
 import javax.persistence.Table;
 
 /**
@@ -20,12 +19,9 @@ import javax.persistence.Table;
 @Table(name = "test_user")
 public class User extends AbstractEntity {
 
-    @Column
-    private String name;
-
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "user")
-    @OrderColumn(name = "id")
-    private List<Address> addresses;
+//    @OrderColumn(name = "id")
+    private Set<Address> addresses;
 
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(name = "user_to_group",
@@ -33,20 +29,12 @@ public class User extends AbstractEntity {
             inverseJoinColumns = @JoinColumn(name = "group_id"))
     private List<Group> groups = new ArrayList<Group>();
 
-    public List<Address> getAddresses() {
+    public Set<Address> getAddresses() {
         return addresses;
     }
 
-    public void setAddresses(final List<Address> addresses) {
+    public void setAddresses(Set<Address> addresses) {
         this.addresses = addresses;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(final String name) {
-        this.name = name;
     }
 
     public List<Group> getGroups() {

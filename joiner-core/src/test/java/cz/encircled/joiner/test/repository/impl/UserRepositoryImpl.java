@@ -1,13 +1,13 @@
-package cz.encircled.joiner.repository.impl;
+package cz.encircled.joiner.test.repository.impl;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 
 import com.mysema.query.types.EntityPath;
-import cz.encircled.joiner.model.QUser;
-import cz.encircled.joiner.model.User;
-import cz.encircled.joiner.repository.RepositoryParent;
-import cz.encircled.joiner.repository.UserRepository;
+import cz.encircled.joiner.test.model.QUser;
+import cz.encircled.joiner.test.model.User;
+import cz.encircled.joiner.test.repository.RepositoryParent;
+import cz.encircled.joiner.test.repository.UserRepository;
 import org.springframework.stereotype.Repository;
 
 /**

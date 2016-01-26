@@ -1,4 +1,4 @@
-package cz.encircled.joiner.model;
+package cz.encircled.joiner.test.model;
 
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
@@ -13,18 +13,16 @@ import javax.persistence.Table;
 @Table(name = "test_address")
 public class Address extends AbstractEntity {
 
-    private String street;
-
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id")
+    @JoinColumn(name = "user_id", unique = false)
     private User user;
 
-    public String getStreet() {
-        return street;
+    public User getUser() {
+        return user;
     }
 
-    public void setStreet(final String street) {
-        this.street = street;
+    public void setUser(final User user) {
+        this.user = user;
     }
 
 }

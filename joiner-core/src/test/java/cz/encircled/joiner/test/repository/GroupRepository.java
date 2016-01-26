@@ -1,6 +1,6 @@
-package cz.encircled.joiner.repository;
+package cz.encircled.joiner.test.repository;
 
-import cz.encircled.joiner.model.Group;
+import cz.encircled.joiner.test.model.Group;
 
 /**
  * @author Kisel on 25.01.2016.

@@ -1,37 +1,28 @@
-package cz.encircled.joiner;
+package cz.encircled.joiner.test;
 
 import java.util.Collections;
 import java.util.List;
 
 import javax.persistence.Persistence;
 
-import cz.encircled.joiner.model.Group;
-import cz.encircled.joiner.model.QGroup;
-import cz.encircled.joiner.model.QUser;
-import cz.encircled.joiner.model.User;
 import cz.encircled.joiner.query.JoinDescription;
 import cz.encircled.joiner.query.Q;
-import cz.encircled.joiner.repository.GroupRepository;
-import cz.encircled.joiner.repository.UserRepository;
+import cz.encircled.joiner.test.model.Address;
+import cz.encircled.joiner.test.model.Group;
+import cz.encircled.joiner.test.model.QAddress;
+import cz.encircled.joiner.test.model.QGroup;
+import cz.encircled.joiner.test.model.QUser;
+import cz.encircled.joiner.test.model.User;
 import org.junit.Assert;
 import org.junit.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * @author Kisel on 21.01.2016.
  */
 public class JoinTest extends AbstractTest {
 
-    @Autowired
-    private UserRepository userRepository;
-
-    @Autowired
-    private GroupRepository groupRepository;
-
     @Test
-    public void listJoinTest() {
-        prepareData();
-
+    public void noFetchJoinTest() {
         List<User> users = userRepository.find(Q.from(QUser.user));
         Assert.assertFalse(Persistence.getPersistenceUtil().isLoaded(users.get(0), "groups"));
 
@@ -46,9 +37,23 @@ public class JoinTest extends AbstractTest {
     }
 
     @Test
-    public void testNestedJoin() {
-        prepareData();
+    public void testNestedCollectionAndSingleJoin() {
+        List<Address> addresses = addressRepository.find(Q.from(QAddress.address));
 
+        Assert.assertFalse(Persistence.getPersistenceUtil().isLoaded(addresses.get(0), "user"));
+        Assert.assertFalse(Persistence.getPersistenceUtil().isLoaded(addresses.get(0).getUser(), "groups"));
+
+        addresses = addressRepository.find(Q.from(QAddress.address)
+                .addJoin(new JoinDescription(QAddress.address.user))
+                .addJoin(new JoinDescription(QUser.user.groups)));
+
+        Assert.assertTrue(Persistence.getPersistenceUtil().isLoaded(addresses.get(0), "user"));
+        Assert.assertTrue(Persistence.getPersistenceUtil().isLoaded(addresses.get(0).getUser(), "groups"));
+    }
+
+
+    @Test
+    public void testNestedCollectionJoin() {
         List<Group> groups = groupRepository.find(Q.from(QGroup.group));
 
         Assert.assertFalse(Persistence.getPersistenceUtil().isLoaded(groups.get(0), "users"));

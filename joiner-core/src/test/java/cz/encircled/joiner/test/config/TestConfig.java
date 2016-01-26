@@ -1,4 +1,4 @@
-package cz.encircled.joiner.config;
+package cz.encircled.joiner.test.config;
 
 import java.util.Properties;
 
@@ -22,7 +22,7 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
  */
 @Configuration
 @EnableTransactionManagement
-@ComponentScan("cz.encircled")
+@ComponentScan("cz.encircled.joiner.test")
 public class TestConfig {
 
     @Bean
@@ -50,7 +50,7 @@ public class TestConfig {
         return emf.createEntityManager();
     }
 
-    @Bean
+    @Bean(name = "transactionManager")
     public PlatformTransactionManager transactionManager(EntityManagerFactory emf) {
         JpaTransactionManager transactionManager = new JpaTransactionManager();
         transactionManager.setEntityManagerFactory(emf);
@@ -66,6 +66,7 @@ public class TestConfig {
     Properties additionalProperties() {
         Properties properties = new Properties();
         properties.setProperty("hibernate.hbm2ddl.auto", "create");
+//        properties.setProperty("hibernate.hbm2ddl.auto", "update");
         properties.setProperty("hibernate.show_sql", "true");
         properties.setProperty("hibernate.dialect", "org.hibernate.dialect.PostgreSQL9Dialect");
         return properties;
