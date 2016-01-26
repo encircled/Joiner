@@ -1,4 +1,4 @@
-package cz.encircled.joiner;
+package cz.encircled.joiner.util;
 
 import java.lang.reflect.Field;
 

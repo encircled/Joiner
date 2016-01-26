@@ -1,4 +1,4 @@
-package cz.encircled.joiner;
+package cz.encircled.joiner.repository.vendor;
 
 import javax.persistence.EntityManager;
 
@@ -12,7 +12,7 @@ import cz.encircled.joiner.query.JoinDescription;
 /**
  * @author Kisel on 21.01.2016.
  */
-public class HibernateRepository implements JoinerRepository {
+public class HibernateRepository implements JoinerVendorRepository {
 
     public JPAQuery createQuery(EntityManager entityManager) {
         return new JPAQuery(entityManager, HQLTemplates.DEFAULT);

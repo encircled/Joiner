@@ -1,6 +1,5 @@
 package cz.encircled.joiner.repository;
 
-import cz.encircled.joiner.QRepository;
 import cz.encircled.joiner.model.Group;
 
 /**

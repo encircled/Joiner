@@ -4,10 +4,10 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 
 import com.mysema.query.types.EntityPath;
-import cz.encircled.joiner.RepositoryParent;
 import cz.encircled.joiner.model.Group;
 import cz.encircled.joiner.model.QGroup;
 import cz.encircled.joiner.repository.GroupRepository;
+import cz.encircled.joiner.repository.RepositoryParent;
 import org.springframework.stereotype.Repository;
 
 /**

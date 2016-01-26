@@ -4,9 +4,9 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 
 import com.mysema.query.types.EntityPath;
-import cz.encircled.joiner.RepositoryParent;
 import cz.encircled.joiner.model.QUser;
 import cz.encircled.joiner.model.User;
+import cz.encircled.joiner.repository.RepositoryParent;
 import cz.encircled.joiner.repository.UserRepository;
 import org.springframework.stereotype.Repository;
 
