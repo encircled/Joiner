@@ -1,5 +1,6 @@
 package cz.encircled.joiner.test.repository;
 
+import cz.encircled.joiner.repository.QRepository;
 import cz.encircled.joiner.test.model.Group;
 
 /**

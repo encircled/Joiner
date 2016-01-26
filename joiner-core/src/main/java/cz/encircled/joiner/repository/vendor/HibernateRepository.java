@@ -1,4 +1,4 @@
-package cz.encircled.joiner.test.repository.vendor;
+package cz.encircled.joiner.repository.vendor;
 
 import javax.persistence.EntityManager;
 

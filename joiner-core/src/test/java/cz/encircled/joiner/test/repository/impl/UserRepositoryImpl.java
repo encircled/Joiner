@@ -1,9 +1,9 @@
 package cz.encircled.joiner.test.repository.impl;
 
 import com.mysema.query.types.EntityPath;
+import cz.encircled.joiner.repository.SpringJoinerRepository;
 import cz.encircled.joiner.test.model.QUser;
 import cz.encircled.joiner.test.model.User;
-import cz.encircled.joiner.test.repository.SpringJoinerRepository;
 import cz.encircled.joiner.test.repository.UserRepository;
 import org.springframework.stereotype.Repository;
 

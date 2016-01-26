@@ -1,4 +1,4 @@
-package cz.encircled.joiner.test.repository;
+package cz.encircled.joiner.repository;
 
 import java.util.HashSet;
 import java.util.List;
@@ -18,8 +18,8 @@ import cz.encircled.joiner.exception.AliasMissingException;
 import cz.encircled.joiner.exception.InsufficientSinglePathException;
 import cz.encircled.joiner.query.JoinDescription;
 import cz.encircled.joiner.query.Q;
-import cz.encircled.joiner.test.repository.vendor.HibernateRepository;
-import cz.encircled.joiner.test.repository.vendor.JoinerVendorRepository;
+import cz.encircled.joiner.repository.vendor.HibernateRepository;
+import cz.encircled.joiner.repository.vendor.JoinerVendorRepository;
 import cz.encircled.joiner.util.JoinerUtil;
 import org.springframework.util.Assert;
 

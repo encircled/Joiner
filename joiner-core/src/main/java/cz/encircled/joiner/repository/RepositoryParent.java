@@ -1,4 +1,4 @@
-package cz.encircled.joiner.test.repository;
+package cz.encircled.joiner.repository;
 
 import java.util.List;
 import java.util.Set;
