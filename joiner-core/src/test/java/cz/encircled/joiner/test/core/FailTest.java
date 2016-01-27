@@ -35,7 +35,7 @@ public class FailTest extends AbstractTest {
     @Test(expected = InsufficientSinglePathException.class)
     public void testInsufficientSinglePath() {
         addressRepository.find(Q.from(QAddress.address)
-                .addJoin(new JoinDescription(QUser.user1)));
+                .addJoin(J.join(QUser.user1)));
     }
 
     @Test(expected = AliasMissingException.class)

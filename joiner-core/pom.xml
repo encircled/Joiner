@@ -7,6 +7,27 @@
     <groupId>cz.encircled</groupId>
     <artifactId>joiner-core</artifactId>
     <version>1.0-SNAPSHOT</version>
+
+    <name>Joiner</name>
+    <description>
+        The main goal of Joiner is to make QueryDSL even more useful. Joiner provides:
+            - a simple way to add joins to querydsl queries at build or runtime
+            - helps to resolve alias uniqueness in a query for complex domain models
+    </description>
+    <url>https://github.com/encircled/Joiner</url>
+
+    <scm>
+        <url>https://github.com/encircled/Joiner.git</url>
+    </scm>
+
+    <licenses>
+        <license>
+            <name>Apache License, Version 2.0</name>
+            <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
+
     <properties>
         <querydsl.version>3.7.0</querydsl.version>
         <spring.version>4.2.4.RELEASE</spring.version>
