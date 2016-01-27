@@ -25,16 +25,16 @@ public class BasicJoinTest extends AbstractTest {
 
     @Test
     public void noFetchJoinTest() {
-        List<User> users = userRepository.find(Q.from(QUser.user));
+        List<User> users = userRepository.find(Q.from(QUser.user1));
         Assert.assertFalse(Persistence.getPersistenceUtil().isLoaded(users.get(0), "groups"));
 
-        JoinDescription e = J.join(QUser.user.groups).fetch(false);
+        JoinDescription e = J.join(QUser.user1.groups).fetch(false);
 
-        users = userRepository.find(Q.from(QUser.user).joins(Collections.singletonList(e)));
+        users = userRepository.find(Q.from(QUser.user1).addJoins(Collections.singletonList(e)));
         Assert.assertFalse(Persistence.getPersistenceUtil().isLoaded(users.get(0), "groups"));
 
         e.fetch(true);
-        users = userRepository.find(Q.from(QUser.user).joins(Collections.singletonList(e)));
+        users = userRepository.find(Q.from(QUser.user1).addJoins(Collections.singletonList(e)));
         Assert.assertTrue(Persistence.getPersistenceUtil().isLoaded(users.get(0), "groups"));
     }
 
@@ -47,7 +47,7 @@ public class BasicJoinTest extends AbstractTest {
 
         addresses = addressRepository.find(Q.from(QAddress.address)
                 .addJoin(J.join(QAddress.address.user))
-                .addJoin(J.join(QUser.user.groups)));
+                .addJoin(J.join(QUser.user1.groups)));
 
         Assert.assertTrue(Persistence.getPersistenceUtil().isLoaded(addresses.get(0), "user"));
         Assert.assertTrue(Persistence.getPersistenceUtil().isLoaded(addresses.get(0).getUser(), "groups"));
@@ -63,7 +63,7 @@ public class BasicJoinTest extends AbstractTest {
 
         groups = groupRepository.find(Q.from(QGroup.group)
                 .addJoin(J.join(QGroup.group.users))
-                .addJoin(J.join(QUser.user.addresses)));
+                .addJoin(J.join(QUser.user1.addresses)));
 
         Assert.assertTrue(Persistence.getPersistenceUtil().isLoaded(groups.get(0), "users"));
         Assert.assertTrue(Persistence.getPersistenceUtil().isLoaded(groups.get(0).getUsers().get(0), "addresses"));
@@ -71,12 +71,12 @@ public class BasicJoinTest extends AbstractTest {
 
     @Test
     public void testInnerJoin() {
-        Q<User> q = Q.from(QUser.user)
-                .addJoin(J.join(QUser.user.addresses, JoinType.INNER));
+        Q<User> q = Q.from(QUser.user1)
+                .addJoin(J.join(QUser.user1.addresses, JoinType.INNER));
 
         Assert.assertFalse(userRepository.find(q).isEmpty());
 
-        q.where(QUser.user.name.eq("user3"));
+        q.where(QUser.user1.name.eq("user3"));
         Assert.assertTrue(userRepository.find(q).isEmpty());
     }
 

@@ -2,6 +2,7 @@ package cz.encircled.joiner.test.core;
 
 import cz.encircled.joiner.query.J;
 import cz.encircled.joiner.query.Q;
+import cz.encircled.joiner.test.config.TestAliasResolver;
 import cz.encircled.joiner.test.config.TestConfig;
 import cz.encircled.joiner.test.config.TestConfigWithResolver;
 import cz.encircled.joiner.test.model.QGroup;
@@ -16,11 +17,20 @@ import org.springframework.test.context.ContextConfiguration;
 public class CollisionAliasJoinTest extends AbstractTest {
 
     @Test
-    public void nonCollisionAliasCollectionJoinTest() {
+    public void collisionAliasCollectionJoinTest() {
         groupRepository.find(Q.from(QGroup.group)
-                .addJoin(J.join(QGroup.group.statuses))
-                .addJoin(J.join(QGroup.group.users))
-                .addJoin(J.join(QUser.user.statuses)));
+                .addJoins(J.joins(QGroup.group.statuses, QGroup.group.users, QUser.user1.statuses)));
+    }
+
+    @Test
+    public void nestedCollisionAliasCollectionAndSingleJoinTest() {
+        groupRepository.find(Q.from(QGroup.group)
+                .addJoins(J.joins(QGroup.group.statuses,
+                        TestAliasResolver.STATUS_ON_GROUP.statusType,
+                        QGroup.group.users,
+                        QUser.user1.statuses,
+                        TestAliasResolver.STATUS_ON_USER.statusType))
+        );
     }
 
 }

@@ -33,21 +33,38 @@ public class JoinerUtil {
         } else {
             targetClass = (Class<?>) ReflectionUtils.getField(setQueryTypeField, path);
         }
-        String simpleName = targetClass.getSimpleName();
-        String instanceName = StringUtils.uncapitalize(simpleName.substring(1, simpleName.length()));
 
-        Field instanceField = ReflectionUtils.findField(targetClass, instanceName);
+        Field instanceField = getQInstanceField(targetClass, getSimpleNameOfQ(targetClass));
         return (Path) ReflectionUtils.getField(instanceField, null);
     }
 
+
+    // TODO add caching
     @SuppressWarnings("unchecked")
     public static Path<Object> getDefaultAlias(EntityPath<?> path) {
         Class<?> targetClass = path.getClass();
-        String simpleName = targetClass.getSimpleName();
-        String instanceName = StringUtils.uncapitalize(simpleName.substring(1, simpleName.length()));
+        Field instanceField = getQInstanceField(targetClass, getSimpleNameOfQ(targetClass));
 
-        Field instanceField = ReflectionUtils.findField(targetClass, instanceName);
         return (Path) ReflectionUtils.getField(instanceField, null);
+    }
+
+    private static Field getQInstanceField(Class<?> targetClass, String instanceName) {
+        Field instanceField = ReflectionUtils.findField(targetClass, instanceName);
+        // If a field has the same name as it's class - a number (starting from 1) is appended to Q instance field and alias so
+        for (int i = 1; i < 50; i++) {
+            Field candidate = ReflectionUtils.findField(targetClass, instanceName + i);
+            if (candidate != null) {
+                instanceField = candidate;
+            } else {
+                break;
+            }
+        }
+        return instanceField;
+    }
+
+    private static String getSimpleNameOfQ(Class<?> targetClass) {
+        String simpleName = targetClass.getSimpleName();
+        return StringUtils.uncapitalize(simpleName.substring(1, simpleName.length()));
     }
 
 }

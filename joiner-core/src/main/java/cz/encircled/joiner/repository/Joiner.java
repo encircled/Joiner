@@ -123,19 +123,16 @@ public class Joiner<T> implements QRepository<T> {
 
     private void setAliasFromResolver(JoinDescription join) {
         if (join.isCollectionPath()) {
-            EntityPath<?> resolved = resolveCollectionAlias(join);
-            if (resolved != null) {
-                join.alias(resolved);
-            }
+            join.alias(resolveAlias(join.getCollectionPath()));
         } else {
-
+            join.alias(resolveAlias(join.getSinglePath()));
         }
     }
 
-    private EntityPath<?> resolveCollectionAlias(JoinDescription join) {
+    private EntityPath<?> resolveAlias(Path<?> path) {
         if (aliasResolvers != null) {
             for (JoinerAliasResolver aliasResolver : aliasResolvers) {
-                EntityPath<?> resolved = aliasResolver.resolveAlias(join.getCollectionPath());
+                EntityPath<?> resolved = aliasResolver.resolveAlias(path);
                 if (resolved != null) {
                     return resolved;
                 }

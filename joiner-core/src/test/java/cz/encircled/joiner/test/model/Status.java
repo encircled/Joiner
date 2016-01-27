@@ -25,6 +25,18 @@ public class Status extends AbstractEntity {
     @JoinColumn(name = "group_id")
     private Group group;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "status_type_id")
+    private StatusType statusType;
+
+    public StatusType getStatusType() {
+        return statusType;
+    }
+
+    public void setStatusType(final StatusType statusType) {
+        this.statusType = statusType;
+    }
+
     public User getUser() {
         return user;
     }

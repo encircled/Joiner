@@ -15,7 +15,7 @@ public class UserRepositoryImpl extends SpringJoinerRepository<User> implements 
 
     @Override
     protected EntityPath<User> getRootEntityPath() {
-        return QUser.user;
+        return QUser.user1;
     }
 
 }

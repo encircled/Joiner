@@ -5,6 +5,7 @@ import java.util.List;
 
 import com.mysema.query.types.EntityPath;
 import com.mysema.query.types.Predicate;
+import org.springframework.util.Assert;
 
 /**
  * @author Kisel on 11.01.2016.
@@ -54,6 +55,11 @@ public class Q<T> {
         return joins;
     }
 
+    public Q<T> setJoins(List<JoinDescription> joins) {
+        this.joins = joins;
+        return this;
+    }
+
     public Q<T> addJoin(JoinDescription join) {
         if (joins == null) {
             joins = new ArrayList<JoinDescription>();
@@ -63,8 +69,14 @@ public class Q<T> {
         return this;
     }
 
-    public Q<T> joins(List<JoinDescription> joins) {
-        this.joins = joins;
+    public Q<T> addJoins(List<JoinDescription> joins) {
+        Assert.notNull(joins);
+
+        if (this.joins == null) {
+            this.joins = new ArrayList<JoinDescription>();
+        }
+
+        this.joins.addAll(joins);
         return this;
     }
 

@@ -18,15 +18,15 @@ public class PredicateTest extends AbstractTest {
     @Test
     public void basicPredicateTest() {
         String name = "user1";
-        List<User> result = userRepository.find(Q.from(QUser.user).where(QUser.user.name.eq(name)));
+        List<User> result = userRepository.find(Q.from(QUser.user1).where(QUser.user1.name.eq(name)));
         assertHasName(result, name);
     }
 
     @Test
     public void predicateInCollectionTest() {
         String name = "user1street1";
-        List<User> result = userRepository.find(Q.from(QUser.user)
-                .addJoin(new JoinDescription(QUser.user.addresses))
+        List<User> result = userRepository.find(Q.from(QUser.user1)
+                .addJoin(new JoinDescription(QUser.user1.addresses))
                 .where(QAddress.address.name.eq(name)));
         assertHasName(result, "user1");
         assertHasName(result.get(0).getAddresses(), name);

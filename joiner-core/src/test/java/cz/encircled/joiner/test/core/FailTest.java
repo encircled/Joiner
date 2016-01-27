@@ -29,18 +29,18 @@ public class FailTest extends AbstractTest {
 
     @Test(expected = InvalidDataAccessApiUsageException.class)
     public void testNullQ() {
-        addressRepository.find(null, QUser.user);
+        addressRepository.find(null, QUser.user1);
     }
 
     @Test(expected = InsufficientSinglePathException.class)
     public void testInsufficientSinglePath() {
         addressRepository.find(Q.from(QAddress.address)
-                .addJoin(new JoinDescription(QUser.user)));
+                .addJoin(new JoinDescription(QUser.user1)));
     }
 
     @Test(expected = AliasMissingException.class)
     public void testCollectionAliasIsMissing() {
-        groupRepository.find(Q.from(QGroup.group).addJoin(new JoinDescription(QUser.user.addresses)));
+        groupRepository.find(Q.from(QGroup.group).addJoin(new JoinDescription(QUser.user1.addresses)));
     }
 
     @Test(expected = AliasMissingException.class)
@@ -50,15 +50,13 @@ public class FailTest extends AbstractTest {
 
     @Test(expected = AliasMissingException.class)
     public void predicateNoAliasTest() {
-        userRepository.find(Q.from(QUser.user).where(QAddress.address.name.eq("user1street1")));
+        userRepository.find(Q.from(QUser.user1).where(QAddress.address.name.eq("user1street1")));
     }
 
     @Test(expected = AliasAlreadyUsedException.class)
     public void nonCollisionAliasCollectionJoinTest() {
         groupRepository.find(Q.from(QGroup.group)
-                .addJoin(J.join(QGroup.group.statuses))
-                .addJoin(J.join(QGroup.group.users))
-                .addJoin(J.join(QUser.user.statuses)));
+                .addJoins(J.joins(QGroup.group.statuses, QGroup.group.users, QUser.user1.statuses)));
     }
 
 }
