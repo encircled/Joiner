@@ -1,7 +1,6 @@
 package cz.encircled.joiner.query;
 
-import javax.persistence.criteria.JoinType;
-
+import com.mysema.query.JoinType;
 import com.mysema.query.types.EntityPath;
 import com.mysema.query.types.Path;
 import com.mysema.query.types.Predicate;
@@ -19,7 +18,7 @@ public class JoinDescription {
 
     private Path<?> alias;
 
-    private JoinType joinType = JoinType.LEFT;
+    private JoinType joinType = JoinType.LEFTJOIN;
 
     private boolean fetch = true;
 
@@ -59,7 +58,7 @@ public class JoinDescription {
         return joinType;
     }
 
-    public JoinDescription joinType(final JoinType joinType) {
+    private JoinDescription joinType(final JoinType joinType) {
         this.joinType = joinType;
         return this;
     }
@@ -86,15 +85,15 @@ public class JoinDescription {
     }
 
     public JoinDescription inner() {
-        return joinType(JoinType.INNER);
+        return joinType(JoinType.INNERJOIN);
     }
 
     public JoinDescription left() {
-        return joinType(JoinType.LEFT);
+        return joinType(JoinType.LEFTJOIN);
     }
 
     public JoinDescription right() {
-        return joinType(JoinType.RIGHT);
+        return joinType(JoinType.RIGHTJOIN);
     }
 
 }

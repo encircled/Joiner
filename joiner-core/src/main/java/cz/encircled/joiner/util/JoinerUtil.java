@@ -2,12 +2,12 @@ package cz.encircled.joiner.util;
 
 import java.lang.reflect.Field;
 
-import com.mysema.codegen.StringUtils;
 import com.mysema.query.types.CollectionExpression;
 import com.mysema.query.types.EntityPath;
 import com.mysema.query.types.Path;
 import com.mysema.query.types.path.ListPath;
 import com.mysema.query.types.path.SetPath;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.util.ReflectionUtils;
 
 /**

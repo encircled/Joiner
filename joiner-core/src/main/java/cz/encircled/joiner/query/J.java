@@ -3,8 +3,6 @@ package cz.encircled.joiner.query;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.persistence.criteria.JoinType;
-
 import com.mysema.query.types.EntityPath;
 import com.mysema.query.types.Path;
 import com.mysema.query.types.path.CollectionPathBase;
@@ -25,17 +23,12 @@ public class J {
     }
 
     public static JoinDescription join(Path<?> path) {
-        return join(path, JoinType.LEFT);
-    }
-
-    public static JoinDescription join(Path<?> path, JoinType joinType) {
         Assert.notNull(path);
-        Assert.notNull(joinType);
 
         if (path instanceof EntityPath) {
-            return new JoinDescription((EntityPath<?>) path).joinType(joinType);
+            return new JoinDescription((EntityPath<?>) path);
         } else if (path instanceof CollectionPathBase<?, ?, ?>) {
-            return new JoinDescription((CollectionPathBase<?, ?, ?>) path).joinType(joinType);
+            return new JoinDescription((CollectionPathBase<?, ?, ?>) path);
         } else {
             throw new JoinerException("Unsupported path type: " + path);
         }

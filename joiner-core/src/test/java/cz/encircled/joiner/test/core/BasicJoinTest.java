@@ -4,7 +4,6 @@ import java.util.Collections;
 import java.util.List;
 
 import javax.persistence.Persistence;
-import javax.persistence.criteria.JoinType;
 
 import cz.encircled.joiner.query.J;
 import cz.encircled.joiner.query.JoinDescription;
@@ -72,7 +71,7 @@ public class BasicJoinTest extends AbstractTest {
     @Test
     public void testInnerJoin() {
         Q<User> q = Q.from(QUser.user1)
-                .addJoin(J.join(QUser.user1.addresses, JoinType.INNER));
+                .addJoin(J.join(QUser.user1.addresses).inner());
 
         Assert.assertFalse(userRepository.find(q).isEmpty());
 

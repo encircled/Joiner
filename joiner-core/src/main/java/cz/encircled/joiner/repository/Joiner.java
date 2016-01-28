@@ -5,8 +5,8 @@ import java.util.List;
 import java.util.Set;
 
 import javax.persistence.EntityManager;
-import javax.persistence.criteria.JoinType;
 
+import com.mysema.query.JoinType;
 import com.mysema.query.jpa.impl.JPAQuery;
 import com.mysema.query.types.EntityPath;
 import com.mysema.query.types.Expression;
@@ -95,7 +95,7 @@ public class Joiner<T> implements QRepository<T> {
 
             joinerVendorRepository.addJoin(query, join);
             if (join.isFetch()) {
-                if (join.getJoinType().equals(JoinType.RIGHT)) {
+                if (join.getJoinType().equals(JoinType.RIGHTJOIN)) {
                     throw new JoinerException("Fetch is not supported for right join!");
                 }
                 joinerVendorRepository.addFetch(query, join);

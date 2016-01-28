@@ -7,6 +7,7 @@ import com.mysema.query.jpa.impl.JPAQuery;
 import com.mysema.query.types.CollectionExpression;
 import com.mysema.query.types.EntityPath;
 import com.mysema.query.types.Path;
+import cz.encircled.joiner.exception.JoinerException;
 import cz.encircled.joiner.query.JoinDescription;
 
 /**
@@ -23,7 +24,7 @@ public class HibernateRepository implements JoinerVendorRepository {
         Path<Object> alias = (Path<Object>) joinDescription.getAlias();
 
         switch (joinDescription.getJoinType()) {
-            case LEFT:
+            case LEFTJOIN:
                 if (joinDescription.isCollectionPath()) {
                     CollectionExpression<?, Object> collectionPath = (CollectionExpression<?, Object>) joinDescription.getCollectionPath();
                     query.leftJoin(collectionPath, alias);
@@ -32,7 +33,7 @@ public class HibernateRepository implements JoinerVendorRepository {
                     query.leftJoin(singlePath, alias);
                 }
                 break;
-            case INNER:
+            case INNERJOIN:
                 if (joinDescription.isCollectionPath()) {
                     CollectionExpression<?, Object> collectionPath = (CollectionExpression<?, Object>) joinDescription.getCollectionPath();
                     query.innerJoin(collectionPath, alias);
@@ -41,7 +42,7 @@ public class HibernateRepository implements JoinerVendorRepository {
                     query.innerJoin(singlePath, alias);
                 }
                 break;
-            case RIGHT:
+            case RIGHTJOIN:
                 if (joinDescription.isCollectionPath()) {
                     CollectionExpression<?, Object> collectionPath = (CollectionExpression<?, Object>) joinDescription.getCollectionPath();
                     query.rightJoin(collectionPath, alias);
@@ -50,6 +51,8 @@ public class HibernateRepository implements JoinerVendorRepository {
                     query.rightJoin(singlePath, alias);
                 }
                 break;
+            default:
+                throw new JoinerException("Join type " + joinDescription.getJoinType() + " is not supported!");
         }
 
         if (joinDescription.getOn() != null) {
