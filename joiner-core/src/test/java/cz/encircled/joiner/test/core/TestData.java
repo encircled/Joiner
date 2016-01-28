@@ -53,7 +53,7 @@ public class TestData {
         Address address = new Address();
         address.setName("normalUser1street1");
         address.setUser(user);
-        entityManager.persist(user);
+        entityManager.persist(address);
     }
 
     private void superUser(Group group) {

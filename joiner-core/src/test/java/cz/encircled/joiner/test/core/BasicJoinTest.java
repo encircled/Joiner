@@ -3,9 +3,7 @@ package cz.encircled.joiner.test.core;
 import cz.encircled.joiner.query.J;
 import cz.encircled.joiner.query.JoinDescription;
 import cz.encircled.joiner.query.Q;
-import cz.encircled.joiner.test.model.Address;
-import cz.encircled.joiner.test.model.Group;
-import cz.encircled.joiner.test.model.User;
+import cz.encircled.joiner.test.model.*;
 import org.junit.Assert;
 import org.junit.Test;
 
