@@ -6,13 +6,13 @@
 
     <groupId>cz.encircled</groupId>
     <artifactId>joiner-core</artifactId>
-    <version>0.1</version>
+    <version>0.1-SNAPSHOT</version>
 
     <name>Joiner</name>
     <description>
         The main goal of Joiner is to make QueryDSL even more useful. Joiner provides:
-            - a simple way to add joins to querydsl queries at build or runtime
-            - helps to resolve alias uniqueness in a query for complex domain models
+        - a simple way to add joins to querydsl queries at build or runtime
+        - helps to resolve alias uniqueness in a query for complex domain models
     </description>
     <url>https://github.com/encircled/Joiner</url>
 
@@ -41,6 +41,7 @@
         <hibernate.version>5.0.7.Final</hibernate.version>
         <eclipselink.version>2.6.2</eclipselink.version>
         <vendor.name>hibernate</vendor.name>
+        <vendor.generate>no-fresh</vendor.generate>
     </properties>
 
     <dependencies>
@@ -98,9 +99,9 @@
         </dependency>
 
         <dependency>
-          <groupId>com.mysema.querydsl</groupId>
-          <artifactId>querydsl-jpa</artifactId>
-          <version>${querydsl.version}</version>
+            <groupId>com.mysema.querydsl</groupId>
+            <artifactId>querydsl-jpa</artifactId>
+            <version>${querydsl.version}</version>
             <scope>provided</scope>
         </dependency>
 
@@ -195,6 +196,13 @@
                 <vendor.name>eclipse</vendor.name>
             </properties>
         </profile>
+
+        <profile>
+            <id>fresh</id>
+            <properties>
+                <vendor.generate>fresh</vendor.generate>
+            </properties>
+        </profile>
     </profiles>
 
     <distributionManagement>
@@ -211,40 +219,40 @@
     <build>
         <plugins>
             <plugin>
-                    <groupId>com.mysema.maven</groupId>
-                    <artifactId>apt-maven-plugin</artifactId>
-                    <version>1.1.3</version>
-                    <executions>
-                        <execution>
-                            <id>gs</id>
-                            <phase>generate-sources</phase>
-                            <goals>
-                                <goal>process</goal>
-                            </goals>
-                            <configuration>
-                                <!-- Specifies the directory in which the query types are generated -->
-                                <outputDirectory>target/generated-sources</outputDirectory>
-                                <!-- States that the APT code generator should look for JPA annotations -->
-                                <processor>com.mysema.query.apt.jpa.JPAAnnotationProcessor</processor>
-                                <logOnlyOnError>true</logOnlyOnError>
-                            </configuration>
-                        </execution>
-                        <execution>
-                            <id>tgs</id>
-                            <phase>generate-sources</phase>
-                            <goals>
-                                <goal>test-process</goal>
-                            </goals>
-                            <configuration>
-                                <!-- Specifies the directory in which the query types are generated -->
-                                <outputDirectory>target/generated-test-sources</outputDirectory>
-                                <!-- States that the APT code generator should look for JPA annotations -->
-                                <processor>com.mysema.query.apt.jpa.JPAAnnotationProcessor</processor>
-                                <logOnlyOnError>true</logOnlyOnError>
-                            </configuration>
-                        </execution>
-                    </executions>
-                </plugin>
+                <groupId>com.mysema.maven</groupId>
+                <artifactId>apt-maven-plugin</artifactId>
+                <version>1.1.3</version>
+                <executions>
+                    <execution>
+                        <id>gs</id>
+                        <phase>generate-sources</phase>
+                        <goals>
+                            <goal>process</goal>
+                        </goals>
+                        <configuration>
+                            <!-- Specifies the directory in which the query types are generated -->
+                            <outputDirectory>target/generated-sources</outputDirectory>
+                            <!-- States that the APT code generator should look for JPA annotations -->
+                            <processor>com.mysema.query.apt.jpa.JPAAnnotationProcessor</processor>
+                            <logOnlyOnError>true</logOnlyOnError>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>tgs</id>
+                        <phase>generate-sources</phase>
+                        <goals>
+                            <goal>test-process</goal>
+                        </goals>
+                        <configuration>
+                            <!-- Specifies the directory in which the query types are generated -->
+                            <outputDirectory>target/generated-test-sources</outputDirectory>
+                            <!-- States that the APT code generator should look for JPA annotations -->
+                            <processor>com.mysema.query.apt.jpa.JPAAnnotationProcessor</processor>
+                            <logOnlyOnError>true</logOnlyOnError>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
 
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
@@ -275,7 +283,7 @@
                 <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>
                     <systemPropertyVariables>
-                        <spring.profiles.active>${vendor.name}</spring.profiles.active>
+                        <spring.profiles.active>${vendor.name},${vendor.generate}</spring.profiles.active>
                     </systemPropertyVariables>
                 </configuration>
             </plugin>

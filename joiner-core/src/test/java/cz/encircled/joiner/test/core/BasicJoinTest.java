@@ -1,21 +1,17 @@
 package cz.encircled.joiner.test.core;
 
-import java.util.Collections;
-import java.util.List;
-
-import javax.persistence.Persistence;
-
 import cz.encircled.joiner.query.J;
 import cz.encircled.joiner.query.JoinDescription;
 import cz.encircled.joiner.query.Q;
 import cz.encircled.joiner.test.model.Address;
 import cz.encircled.joiner.test.model.Group;
-import cz.encircled.joiner.test.model.QAddress;
-import cz.encircled.joiner.test.model.QGroup;
-import cz.encircled.joiner.test.model.QUser;
 import cz.encircled.joiner.test.model.User;
 import org.junit.Assert;
 import org.junit.Test;
+
+import javax.persistence.Persistence;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * @author Kisel on 21.01.2016.
@@ -61,7 +57,7 @@ public class BasicJoinTest extends AbstractTest {
         List<Group> groups = groupRepository.find(Q.from(QGroup.group));
 
         Assert.assertFalse(Persistence.getPersistenceUtil().isLoaded(groups.get(0), "users"));
-        Assert.assertFalse(Persistence.getPersistenceUtil().isLoaded(groups.get(0).getUsers().get(0), "addresses"));
+        Assert.assertFalse(Persistence.getPersistenceUtil().isLoaded(groups.get(0).getUsers().iterator().next(), "addresses"));
 
         entityManager.clear();
 
@@ -70,7 +66,7 @@ public class BasicJoinTest extends AbstractTest {
                 .addJoin(J.join(QUser.user1.addresses)));
 
         Assert.assertTrue(Persistence.getPersistenceUtil().isLoaded(groups.get(0), "users"));
-        Assert.assertTrue(Persistence.getPersistenceUtil().isLoaded(groups.get(0).getUsers().get(0), "addresses"));
+        Assert.assertTrue(Persistence.getPersistenceUtil().isLoaded(groups.get(0).getUsers().iterator().next(), "addresses"));
     }
 
     @Test

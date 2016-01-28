@@ -1,13 +1,7 @@
 package cz.encircled.joiner.test.model;
 
+import javax.persistence.*;
 import java.util.Set;
-
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.OneToMany;
-import javax.persistence.Table;
 
 /**
  * @author Kisel on 25.01.2016.
@@ -27,7 +21,7 @@ public class Address extends AbstractEntity {
         return user;
     }
 
-    public void setUser(final User user) {
+    public void setUser(User user) {
         this.user = user;
     }
 
@@ -35,7 +29,7 @@ public class Address extends AbstractEntity {
         return statuses;
     }
 
-    public void setStatuses(final Set<Status> statuses) {
+    public void setStatuses(Set<Status> statuses) {
         this.statuses = statuses;
     }
 }
