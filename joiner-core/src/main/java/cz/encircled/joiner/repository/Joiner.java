@@ -1,12 +1,15 @@
 package cz.encircled.joiner.repository;
 
+import java.lang.reflect.Field;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
 import javax.persistence.EntityManager;
 
+import com.google.common.collect.ArrayListMultimap;
 import com.mysema.query.JoinType;
+import com.mysema.query.jpa.impl.AbstractJPAQuery;
 import com.mysema.query.jpa.impl.JPAQuery;
 import com.mysema.query.types.EntityPath;
 import com.mysema.query.types.Expression;
@@ -19,10 +22,12 @@ import cz.encircled.joiner.exception.InsufficientSinglePathException;
 import cz.encircled.joiner.exception.JoinerException;
 import cz.encircled.joiner.query.JoinDescription;
 import cz.encircled.joiner.query.Q;
+import cz.encircled.joiner.repository.vendor.EclipselinkRepository;
 import cz.encircled.joiner.repository.vendor.HibernateRepository;
 import cz.encircled.joiner.repository.vendor.JoinerVendorRepository;
 import cz.encircled.joiner.util.JoinerUtil;
 import org.springframework.util.Assert;
+import org.springframework.util.ReflectionUtils;
 
 /**
  * @author Kisel on 26.01.2016.
@@ -43,7 +48,13 @@ public class Joiner<T> implements QRepository<T> {
 
         this.entityManager = entityManager;
         this.rootPath = rootPath;
-        this.joinerVendorRepository = new HibernateRepository(); // TODO
+
+        String implName = entityManager.getDelegate().getClass().getName();
+        if (implName.startsWith("org.hibernate")) {
+            this.joinerVendorRepository = new HibernateRepository();
+        } else if (implName.startsWith("org.eclipse")) {
+            this.joinerVendorRepository = new EclipselinkRepository();
+        }
     }
 
     public void setAliasResolvers(Set<JoinerAliasResolver> aliasResolvers) {
@@ -59,6 +70,8 @@ public class Joiner<T> implements QRepository<T> {
         Assert.notNull(projection);
 
         JPAQuery query = joinerVendorRepository.createQuery(entityManager);
+        makeInsertionOrderHints(query);
+
         if (request.getRootEntityPath() == null) {
             request.rootEntityPath(rootPath);
         }
@@ -69,6 +82,10 @@ public class Joiner<T> implements QRepository<T> {
 
         Set<Path<?>> usedAliases = new HashSet<Path<?>>();
         usedAliases.add(request.getRootEntityPath());
+
+        for (JoinDescription join : request.getJoins()) {
+            resolveJoinAlias(usedAliases, join);
+        }
 
         addJoins(request, query, usedAliases);
 
@@ -84,21 +101,24 @@ public class Joiner<T> implements QRepository<T> {
         return query.list(projection);
     }
 
+    private void makeInsertionOrderHints(AbstractJPAQuery<JPAQuery> sourceQuery) {
+        Field f = ReflectionUtils.findField(AbstractJPAQuery.class, "hints");
+        ReflectionUtils.makeAccessible(f);
+        ReflectionUtils.setField(f, sourceQuery, ArrayListMultimap.create());
+    }
+
     private void addJoins(Q<T> request, JPAQuery query, Set<Path<?>> usedAliases) {
         for (JoinDescription join : request.getJoins()) {
-            resolveJoinAlias(usedAliases, join);
 
             checkSinglePathCompletion(join);
             checkRootIsPresent(usedAliases, join);
-
-            usedAliases.add(join.getAlias());
 
             joinerVendorRepository.addJoin(query, join);
             if (join.isFetch()) {
                 if (join.getJoinType().equals(JoinType.RIGHTJOIN)) {
                     throw new JoinerException("Fetch is not supported for right join!");
                 }
-                joinerVendorRepository.addFetch(query, join);
+                joinerVendorRepository.addFetch(query, join, request.getJoins(), request.getRootEntityPath());
             }
         }
     }
@@ -115,6 +135,7 @@ public class Joiner<T> implements QRepository<T> {
         if (usedAliases.contains(join.getAlias())) {
             throw new AliasAlreadyUsedException("Alias " + join.getAlias() + " is already used!");
         }
+        usedAliases.add(join.getAlias());
     }
 
     private void checkAliasesArePresent(Q<T> request, Set<Path<?>> usedAliases) {

@@ -33,6 +33,7 @@ public class BasicJoinTest extends AbstractTest {
         Assert.assertFalse(Persistence.getPersistenceUtil().isLoaded(users.get(0), "groups"));
 
         e.fetch(true);
+        entityManager.clear();
         users = userRepository.find(Q.from(QUser.user1).addJoins(Collections.singletonList(e)));
         Assert.assertTrue(Persistence.getPersistenceUtil().isLoaded(users.get(0), "groups"));
     }
@@ -43,6 +44,8 @@ public class BasicJoinTest extends AbstractTest {
 
         Assert.assertFalse(Persistence.getPersistenceUtil().isLoaded(addresses.get(0), "user"));
         Assert.assertFalse(Persistence.getPersistenceUtil().isLoaded(addresses.get(0).getUser(), "groups"));
+
+        entityManager.clear();
 
         addresses = addressRepository.find(Q.from(QAddress.address)
                 .addJoin(J.join(QAddress.address.user))
@@ -59,6 +62,8 @@ public class BasicJoinTest extends AbstractTest {
 
         Assert.assertFalse(Persistence.getPersistenceUtil().isLoaded(groups.get(0), "users"));
         Assert.assertFalse(Persistence.getPersistenceUtil().isLoaded(groups.get(0).getUsers().get(0), "addresses"));
+
+        entityManager.clear();
 
         groups = groupRepository.find(Q.from(QGroup.group)
                 .addJoin(J.join(QGroup.group.users))
@@ -96,6 +101,7 @@ public class BasicJoinTest extends AbstractTest {
     @Test
     public void testNonDistinct() {
         int nonDistinct = userRepository.find(Q.from(QUser.user1).addJoin(J.join(QUser.user1.addresses)).distinct(false)).size();
+        entityManager.clear();
         int distinct = userRepository.find(Q.from(QUser.user1).addJoin(J.join(QUser.user1.addresses))).size();
 
         Assert.assertTrue(distinct < nonDistinct);

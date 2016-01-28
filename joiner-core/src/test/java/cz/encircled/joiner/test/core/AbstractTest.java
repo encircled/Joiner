@@ -11,6 +11,7 @@ import cz.encircled.joiner.test.repository.AddressRepository;
 import cz.encircled.joiner.test.repository.GroupRepository;
 import cz.encircled.joiner.test.repository.UserRepository;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
@@ -40,6 +41,11 @@ public abstract class AbstractTest extends AbstractTransactionalJUnit4SpringCont
     @PersistenceContext
     protected EntityManager entityManager;
 
+    @Before
+    public void before() {
+        entityManager.clear();
+    }
+
     protected void assertHasName(Collection<? extends AbstractEntity> entities, String name) {
         Assert.assertFalse("Found collection must be not empty!", entities.isEmpty());
         for (AbstractEntity entity : entities) {
@@ -51,6 +57,5 @@ public abstract class AbstractTest extends AbstractTransactionalJUnit4SpringCont
         Assert.assertNotNull(entity);
         Assert.assertEquals(name, entity.getName());
     }
-
 
 }

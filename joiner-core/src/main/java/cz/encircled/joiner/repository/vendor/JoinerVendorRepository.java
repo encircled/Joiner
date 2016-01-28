@@ -1,8 +1,11 @@
 package cz.encircled.joiner.repository.vendor;
 
+import java.util.Collection;
+
 import javax.persistence.EntityManager;
 
 import com.mysema.query.jpa.impl.JPAQuery;
+import com.mysema.query.types.EntityPath;
 import cz.encircled.joiner.query.JoinDescription;
 
 /**
@@ -16,6 +19,6 @@ public interface JoinerVendorRepository {
 
     void addJoin(JPAQuery query, JoinDescription joinDescription);
 
-    void addFetch(JPAQuery query, JoinDescription joinDescription);
+    void addFetch(JPAQuery query, JoinDescription joinDescription, Collection<JoinDescription> joins, EntityPath<?> rootPath);
 
 }
