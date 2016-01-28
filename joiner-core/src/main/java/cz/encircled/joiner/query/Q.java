@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.mysema.query.types.EntityPath;
+import com.mysema.query.types.Expression;
 import com.mysema.query.types.Predicate;
 import org.springframework.util.Assert;
 
@@ -12,7 +13,7 @@ import org.springframework.util.Assert;
  */
 public class Q<T> {
 
-    private Predicate predicate;
+    private Predicate where;
 
     private EntityPath<T> rootEntityPath;
 
@@ -20,12 +21,16 @@ public class Q<T> {
 
     private boolean distinct = true;
 
+    private Expression<?> groupBy;
+
+    private Predicate having;
+
     public static <T> Q<T> from(EntityPath<T> from) {
         return new Q<T>().rootEntityPath(from);
     }
 
-    public Predicate getPredicate() {
-        return predicate;
+    public Predicate getWhere() {
+        return where;
     }
 
     public Q<T> distinct(boolean isDistinct) {
@@ -33,13 +38,31 @@ public class Q<T> {
         return this;
     }
 
+    public Q<T> groupBy(Expression<?> groupBy) {
+        this.groupBy = groupBy;
+        return this;
+    }
+
+    public Expression<?> getGroupBy() {
+        return groupBy;
+    }
+
     public boolean isDistinct() {
         return distinct;
     }
 
-    public Q<T> where(Predicate predicate) {
-        this.predicate = predicate;
+    public Q<T> where(Predicate where) {
+        this.where = where;
         return this;
+    }
+
+    public Q<T> having(Predicate having) {
+        this.having = having;
+        return this;
+    }
+
+    public Predicate getHaving() {
+        return having;
     }
 
     public EntityPath<T> getRootEntityPath() {

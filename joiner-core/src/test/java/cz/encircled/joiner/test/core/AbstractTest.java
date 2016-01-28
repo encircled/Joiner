@@ -49,7 +49,7 @@ public abstract class AbstractTest extends AbstractTransactionalJUnit4SpringCont
 
     protected void assertHasName(AbstractEntity entity, String name) {
         Assert.assertNotNull(entity);
-        Assert.assertEquals(entity.getName(), name);
+        Assert.assertEquals(name, entity.getName());
     }
 
 

@@ -86,4 +86,30 @@ public class BasicJoinTest extends AbstractTest {
                 .addJoin(J.join(QGroup.group.statuses)));
     }
 
+    @Test
+    public void testRightJoinNoFetch() {
+        List<Group> groups = groupRepository.find(Q.from(QGroup.group)
+                .addJoin(J.join(QGroup.group.users).right().fetch(false))
+                .where(QUser.user1.name.eq("user1")));
+        Assert.assertFalse(groups.isEmpty());
+    }
+
+    @Test
+    public void testNonDistinct() {
+        int nonDistinct = userRepository.find(Q.from(QUser.user1).addJoin(J.join(QUser.user1.addresses)).distinct(false)).size();
+        int distinct = userRepository.find(Q.from(QUser.user1).addJoin(J.join(QUser.user1.addresses))).size();
+
+        Assert.assertTrue(distinct < nonDistinct);
+    }
+
+    @Test
+    public void testJoinOn() {
+        String name = "user1";
+
+        List<User> groups = groupRepository.find(Q.from(QGroup.group)
+                .addJoin(J.join(QGroup.group.users).inner().on(QUser.user1.name.eq(name)).fetch(false)), QUser.user1
+        );
+        assertHasName(groups, name);
+    }
+
 }

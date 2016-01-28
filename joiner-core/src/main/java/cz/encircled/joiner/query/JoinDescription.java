@@ -4,6 +4,7 @@ import javax.persistence.criteria.JoinType;
 
 import com.mysema.query.types.EntityPath;
 import com.mysema.query.types.Path;
+import com.mysema.query.types.Predicate;
 import com.mysema.query.types.path.CollectionPathBase;
 import org.springframework.util.Assert;
 
@@ -21,6 +22,8 @@ public class JoinDescription {
     private JoinType joinType = JoinType.LEFT;
 
     private boolean fetch = true;
+
+    private Predicate on;
 
     public JoinDescription(CollectionPathBase<?, ?, ?> collectionPath) {
         Assert.notNull(collectionPath);
@@ -41,6 +44,15 @@ public class JoinDescription {
     public JoinDescription fetch(final boolean fetch) {
         this.fetch = fetch;
         return this;
+    }
+
+    public JoinDescription on(Predicate on) {
+        this.on = on;
+        return this;
+    }
+
+    public Predicate getOn() {
+        return on;
     }
 
     public JoinType getJoinType() {
@@ -71,6 +83,18 @@ public class JoinDescription {
 
     public boolean isCollectionPath() {
         return collectionPath != null;
+    }
+
+    public JoinDescription inner() {
+        return joinType(JoinType.INNER);
+    }
+
+    public JoinDescription left() {
+        return joinType(JoinType.LEFT);
+    }
+
+    public JoinDescription right() {
+        return joinType(JoinType.RIGHT);
     }
 
 }

@@ -5,17 +5,18 @@ import java.util.List;
 import java.util.Set;
 
 import javax.persistence.EntityManager;
+import javax.persistence.criteria.JoinType;
 
 import com.mysema.query.jpa.impl.JPAQuery;
 import com.mysema.query.types.EntityPath;
 import com.mysema.query.types.Expression;
 import com.mysema.query.types.Operation;
 import com.mysema.query.types.Path;
-import com.mysema.query.types.Predicate;
 import cz.encircled.joiner.alias.JoinerAliasResolver;
 import cz.encircled.joiner.exception.AliasAlreadyUsedException;
 import cz.encircled.joiner.exception.AliasMissingException;
 import cz.encircled.joiner.exception.InsufficientSinglePathException;
+import cz.encircled.joiner.exception.JoinerException;
 import cz.encircled.joiner.query.JoinDescription;
 import cz.encircled.joiner.query.Q;
 import cz.encircled.joiner.repository.vendor.HibernateRepository;
@@ -42,7 +43,7 @@ public class Joiner<T> implements QRepository<T> {
 
         this.entityManager = entityManager;
         this.rootPath = rootPath;
-        joinerVendorRepository = new HibernateRepository(); // TODO
+        this.joinerVendorRepository = new HibernateRepository(); // TODO
     }
 
     public void setAliasResolvers(Set<JoinerAliasResolver> aliasResolvers) {
@@ -69,18 +70,23 @@ public class Joiner<T> implements QRepository<T> {
         Set<Path<?>> usedAliases = new HashSet<Path<?>>();
         usedAliases.add(request.getRootEntityPath());
 
+        addJoins(request, query, usedAliases);
+
+        checkAliasesArePresent(request, usedAliases);
+
+        query.where(request.getWhere());
+        if (request.getGroupBy() != null) {
+            query.groupBy(request.getGroupBy());
+        }
+        if (request.getHaving() != null) {
+            query.having(request.getHaving());
+        }
+        return query.list(projection);
+    }
+
+    private void addJoins(Q<T> request, JPAQuery query, Set<Path<?>> usedAliases) {
         for (JoinDescription join : request.getJoins()) {
-            if (join.getAlias() == null) {
-                setAliasFromResolver(join);
-
-                if (join.getAlias() == null) {
-                    setDefaultAlias(join);
-                }
-            }
-
-            if (usedAliases.contains(join.getAlias())) {
-                throw new AliasAlreadyUsedException("Alias " + join.getAlias() + " is already used!");
-            }
+            resolveJoinAlias(usedAliases, join);
 
             checkSinglePathCompletion(join);
             checkRootIsPresent(usedAliases, join);
@@ -89,13 +95,31 @@ public class Joiner<T> implements QRepository<T> {
 
             joinerVendorRepository.addJoin(query, join);
             if (join.isFetch()) {
+                if (join.getJoinType().equals(JoinType.RIGHT)) {
+                    throw new JoinerException("Fetch is not supported for right join!");
+                }
                 joinerVendorRepository.addFetch(query, join);
             }
         }
+    }
 
-        Predicate predicate = request.getPredicate();
-        if (predicate instanceof Operation) {
-            for (Object o : ((Operation) predicate).getArgs()) {
+    private void resolveJoinAlias(Set<Path<?>> usedAliases, JoinDescription join) {
+        if (join.getAlias() == null) {
+            setAliasFromResolver(join);
+
+            if (join.getAlias() == null) {
+                setDefaultAlias(join);
+            }
+        }
+
+        if (usedAliases.contains(join.getAlias())) {
+            throw new AliasAlreadyUsedException("Alias " + join.getAlias() + " is already used!");
+        }
+    }
+
+    private void checkAliasesArePresent(Q<T> request, Set<Path<?>> usedAliases) {
+        if (request.getWhere() instanceof Operation) {
+            for (Object o : ((Operation) request.getWhere()).getArgs()) {
                 if (o instanceof Path) {
                     Path predicatePath = ((Path) o).getRoot();
                     if (predicatePath.toString().startsWith("any(")) {
@@ -108,9 +132,6 @@ public class Joiner<T> implements QRepository<T> {
                 }
             }
         }
-
-        query.where(predicate);
-        return query.list(projection);
     }
 
     private void setDefaultAlias(JoinDescription join) {
@@ -145,7 +166,7 @@ public class Joiner<T> implements QRepository<T> {
         if (!join.isCollectionPath()) {
             if (join.getSinglePath().toString().equals(join.getSinglePath().getRoot().toString())) {
                 throw new InsufficientSinglePathException(
-                        "Set full path for single path join. For example 'QUser.user.address' instead of 'QAddress.address' ");
+                        "Set full join path. For example 'QUser.user.address' instead of 'QAddress.address' ");
             }
         }
     }

@@ -3,6 +3,7 @@ package cz.encircled.joiner.test.core;
 import cz.encircled.joiner.exception.AliasAlreadyUsedException;
 import cz.encircled.joiner.exception.AliasMissingException;
 import cz.encircled.joiner.exception.InsufficientSinglePathException;
+import cz.encircled.joiner.exception.JoinerException;
 import cz.encircled.joiner.query.J;
 import cz.encircled.joiner.query.JoinDescription;
 import cz.encircled.joiner.query.Q;
@@ -57,6 +58,11 @@ public class FailTest extends AbstractTest {
     public void nonCollisionAliasCollectionJoinTest() {
         groupRepository.find(Q.from(QGroup.group)
                 .addJoins(J.joins(QGroup.group.statuses, QGroup.group.users, QUser.user1.statuses)));
+    }
+
+    @Test(expected = JoinerException.class)
+    public void testRightJoinFetch() {
+        groupRepository.find(Q.from(QGroup.group).addJoin(J.join(QGroup.group.users).right()));
     }
 
 }

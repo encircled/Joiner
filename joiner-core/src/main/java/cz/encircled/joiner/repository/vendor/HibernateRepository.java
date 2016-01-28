@@ -7,7 +7,6 @@ import com.mysema.query.jpa.impl.JPAQuery;
 import com.mysema.query.types.CollectionExpression;
 import com.mysema.query.types.EntityPath;
 import com.mysema.query.types.Path;
-import cz.encircled.joiner.exception.JoinerException;
 import cz.encircled.joiner.query.JoinDescription;
 
 /**
@@ -43,7 +42,18 @@ public class HibernateRepository implements JoinerVendorRepository {
                 }
                 break;
             case RIGHT:
-                throw new JoinerException("Right join is not supported!");
+                if (joinDescription.isCollectionPath()) {
+                    CollectionExpression<?, Object> collectionPath = (CollectionExpression<?, Object>) joinDescription.getCollectionPath();
+                    query.rightJoin(collectionPath, alias);
+                } else {
+                    EntityPath<Object> singlePath = (EntityPath<Object>) joinDescription.getSinglePath();
+                    query.rightJoin(singlePath, alias);
+                }
+                break;
+        }
+
+        if (joinDescription.getOn() != null) {
+            query.on(joinDescription.getOn());
         }
     }
 
