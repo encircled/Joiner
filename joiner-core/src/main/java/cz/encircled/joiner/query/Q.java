@@ -1,12 +1,13 @@
 package cz.encircled.joiner.query;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import com.mysema.query.types.EntityPath;
 import com.mysema.query.types.Expression;
+import com.mysema.query.types.Path;
 import com.mysema.query.types.Predicate;
 import org.springframework.util.Assert;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author Kisel on 11.01.2016.
@@ -83,20 +84,36 @@ public class Q<T> {
         return this;
     }
 
-    public Q<T> addJoin(JoinDescription join) {
+    public Q<T> join(JoinDescription join) {
         if (joins == null) {
-            joins = new ArrayList<JoinDescription>();
+            joins = new ArrayList<>();
         }
 
         joins.add(join);
         return this;
     }
 
-    public Q<T> addJoins(List<JoinDescription> joins) {
+    public Q<T> join(Path<?> path) {
+        if (joins == null) {
+            joins = new ArrayList<>();
+        }
+
+        joins.add(J.join(path));
+        return this;
+    }
+
+    public Q<T> joins(Path<?>... paths) {
+        for (Path<?> path : paths) {
+            join(path);
+        }
+        return this;
+    }
+
+    public Q<T> joins(List<JoinDescription> joins) {
         Assert.notNull(joins);
 
         if (this.joins == null) {
-            this.joins = new ArrayList<JoinDescription>();
+            this.joins = new ArrayList<>();
         }
 
         this.joins.addAll(joins);

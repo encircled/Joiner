@@ -1,23 +1,13 @@
 package cz.encircled.joiner.test.core;
 
-import java.util.List;
-
-import javax.persistence.Persistence;
-
 import cz.encircled.joiner.query.J;
 import cz.encircled.joiner.query.Q;
-import cz.encircled.joiner.test.model.Address;
-import cz.encircled.joiner.test.model.Group;
-import cz.encircled.joiner.test.model.NormalUser;
-import cz.encircled.joiner.test.model.QAddress;
-import cz.encircled.joiner.test.model.QGroup;
-import cz.encircled.joiner.test.model.QNormalUser;
-import cz.encircled.joiner.test.model.QSuperUser;
-import cz.encircled.joiner.test.model.QUser;
-import cz.encircled.joiner.test.model.SuperUser;
-import cz.encircled.joiner.test.model.User;
+import cz.encircled.joiner.test.model.*;
 import org.junit.Assert;
 import org.junit.Test;
+
+import javax.persistence.Persistence;
+import java.util.List;
 
 /**
  * Created by Kisel on 28.01.2016.
@@ -27,8 +17,8 @@ public class InheritanceJoinTest extends AbstractTest {
     @Test
     public void joinSingleEntityOnChildTest() {
         List<Group> groups = groupRepository.find(Q.from(QGroup.group)
-                .addJoin(J.join(QGroup.group.users).alias(new QUser("superUser")))
-                .addJoin(J.join(QSuperUser.superUser.key))
+                .join(J.join(QGroup.group.users).alias(new QUser("superUser")))
+                .join(J.join(QSuperUser.superUser.key))
         );
 
         check(groups, true, false);
@@ -36,10 +26,9 @@ public class InheritanceJoinTest extends AbstractTest {
 
     @Test
     public void joinSingleAndCollectionMultipleChildrenTest() {
-        List<Group> groups = groupRepository.find(Q.from(QGroup.group)
-                .addJoin(J.join(QGroup.group.users))
-                .addJoin(J.join(QSuperUser.superUser.key))
-                .addJoin(J.join(QNormalUser.normalUser.passwords))
+        List<Group> groups = groupRepository.find(new Q<Group>()
+                .joins(QGroup.group.users, QSuperUser.superUser.key, QNormalUser.normalUser.passwords)
+                .where(QKey.key.name.ne("bad_key"))
         );
 
         check(groups, true, false);
@@ -48,8 +37,8 @@ public class InheritanceJoinTest extends AbstractTest {
     @Test
     public void joinCollectionOnChildTest() {
         List<Group> groups = groupRepository.find(Q.from(QGroup.group)
-                .addJoin(J.join(QGroup.group.users).alias(QNormalUser.normalUser._super))
-                .addJoin(J.join(QNormalUser.normalUser.passwords))
+                .join(J.join(QGroup.group.users).alias(QNormalUser.normalUser._super))
+                .join(QNormalUser.normalUser.passwords)
         );
 
         check(groups, false, true);
@@ -58,8 +47,8 @@ public class InheritanceJoinTest extends AbstractTest {
     @Test
     public void nestedTest() {
         List<Address> addresses = addressRepository.find(Q.from(QAddress.address)
-                .addJoin(J.join(QAddress.address.user).alias(QNormalUser.normalUser._super))
-                .addJoin(J.join(QNormalUser.normalUser.passwords))
+                .join(QAddress.address.user)
+                .join(J.join(QNormalUser.normalUser.passwords).inner())
         );
 
         Assert.assertFalse(addresses.isEmpty());

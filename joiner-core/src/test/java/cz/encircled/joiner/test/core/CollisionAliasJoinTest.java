@@ -19,13 +19,13 @@ public class CollisionAliasJoinTest extends AbstractTest {
     @Test
     public void collisionAliasCollectionJoinTest() {
         groupRepository.find(Q.from(QGroup.group)
-                .addJoins(J.joins(QGroup.group.statuses, QGroup.group.users, QUser.user1.statuses)));
+                .joins(J.joins(QGroup.group.statuses, QGroup.group.users, QUser.user1.statuses)));
     }
 
     @Test
     public void nestedCollisionAliasCollectionAndSingleJoinTest() {
         groupRepository.find(Q.from(QGroup.group)
-                .addJoins(J.joins(QGroup.group.statuses,
+                .joins(J.joins(QGroup.group.statuses,
                         TestAliasResolver.STATUS_ON_GROUP.statusType,
                         QGroup.group.users,
                         QUser.user1.statuses,

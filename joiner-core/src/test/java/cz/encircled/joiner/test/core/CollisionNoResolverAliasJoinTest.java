@@ -16,8 +16,8 @@ public class CollisionNoResolverAliasJoinTest extends AbstractTest {
     @Test
     public void collisionAliasCollectionJoinTest() {
         groupRepository.find(Q.from(QGroup.group)
-                .addJoins(J.joins(QGroup.group.statuses, QGroup.group.users))
-                .addJoin(J.join(QUser.user1.statuses).alias(new QStatus("userStatus"))));
+                .joins(J.joins(QGroup.group.statuses, QGroup.group.users))
+                .join(J.join(QUser.user1.statuses).alias(new QStatus("userStatus"))));
     }
 
     @Test
@@ -25,8 +25,8 @@ public class CollisionNoResolverAliasJoinTest extends AbstractTest {
         QStatus groupStatus = new QStatus("groupStatus");
 
         groupRepository.find(Q.from(QGroup.group)
-                .addJoin(J.join(QGroup.group.statuses).alias(groupStatus))
-                .addJoins(J.joins(groupStatus.statusType, QGroup.group.users, QUser.user1.statuses))
+                .join(J.join(QGroup.group.statuses).alias(groupStatus))
+                .joins(J.joins(groupStatus.statusType, QGroup.group.users, QUser.user1.statuses))
         );
     }
 
@@ -35,9 +35,9 @@ public class CollisionNoResolverAliasJoinTest extends AbstractTest {
         QStatus groupStatus = new QStatus("groupStatus");
 
         groupRepository.find(Q.from(QGroup.group)
-                .addJoin(J.join(QGroup.group.statuses).alias(groupStatus))
-                .addJoin(J.join(groupStatus.statusType).alias(new QStatusType("statusType2")))
-                .addJoins(J.joins(QGroup.group.users, QUser.user1.statuses, QStatus.status.statusType))
+                .join(J.join(QGroup.group.statuses).alias(groupStatus))
+                .join(J.join(groupStatus.statusType).alias(new QStatusType("statusType2")))
+                .joins(J.joins(QGroup.group.users, QUser.user1.statuses, QStatus.status.statusType))
         );
     }
 
