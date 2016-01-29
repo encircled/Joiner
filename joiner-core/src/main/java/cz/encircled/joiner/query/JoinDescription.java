@@ -1,5 +1,7 @@
 package cz.encircled.joiner.query;
 
+import java.lang.reflect.AnnotatedElement;
+
 import com.mysema.query.JoinType;
 import com.mysema.query.types.EntityPath;
 import com.mysema.query.types.Path;
@@ -80,6 +82,22 @@ public class JoinDescription {
         return singlePath;
     }
 
+    public JoinDescription singlePath(EntityPath<?> path) {
+        Assert.notNull(path);
+
+        singlePath = path;
+        collectionPath = null;
+        return this;
+    }
+
+    public JoinDescription collectionPath(CollectionPathBase<?, ?, ?> path) {
+        Assert.notNull(path);
+
+        collectionPath = path;
+        singlePath = null;
+        return this;
+    }
+
     public boolean isCollectionPath() {
         return collectionPath != null;
     }
@@ -94,6 +112,10 @@ public class JoinDescription {
 
     public JoinDescription right() {
         return joinType(JoinType.RIGHTJOIN);
+    }
+
+    public AnnotatedElement getAnnotatedElement() {
+        return isCollectionPath() ? collectionPath.getAnnotatedElement() : singlePath.getAnnotatedElement();
     }
 
 }

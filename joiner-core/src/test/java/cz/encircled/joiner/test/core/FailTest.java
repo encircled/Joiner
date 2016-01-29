@@ -1,5 +1,7 @@
 package cz.encircled.joiner.test.core;
 
+import java.util.List;
+
 import cz.encircled.joiner.exception.AliasAlreadyUsedException;
 import cz.encircled.joiner.exception.AliasMissingException;
 import cz.encircled.joiner.exception.InsufficientSinglePathException;
@@ -10,6 +12,7 @@ import cz.encircled.joiner.query.Q;
 import cz.encircled.joiner.test.model.QAddress;
 import cz.encircled.joiner.test.model.QGroup;
 import cz.encircled.joiner.test.model.QUser;
+import org.junit.Assert;
 import org.junit.Test;
 import org.springframework.dao.InvalidDataAccessApiUsageException;
 
@@ -63,6 +66,27 @@ public class FailTest extends AbstractTest {
     @Test(expected = JoinerException.class)
     public void testRightJoinFetch() {
         groupRepository.find(Q.from(QGroup.group).addJoin(J.join(QGroup.group.users).right()));
+    }
+
+    @Test(expected = AliasMissingException.class)
+    public void testGroupByNoAlias() {
+        List<Double> avg = addressRepository.find(
+                Q.from(QAddress.address).groupBy(QGroup.group.name),
+                QAddress.address.id.avg()
+        );
+        Assert.assertTrue(avg.size() > 0);
+        Assert.assertTrue(avg.size() < addressRepository.find(Q.from(QAddress.address)).size());
+    }
+
+    @Test(expected = AliasMissingException.class)
+    public void testGroupByHavingNoAlias() {
+        List<Double> avg = addressRepository.find(
+                Q.from(QAddress.address)
+                        .groupBy(QAddress.address.user)
+                        .having(QGroup.group.id.count().gt(2)),
+                QAddress.address.id.avg()
+        );
+        Assert.assertTrue(avg.isEmpty());
     }
 
 }

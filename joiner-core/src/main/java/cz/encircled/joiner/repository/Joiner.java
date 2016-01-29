@@ -1,6 +1,7 @@
 package cz.encircled.joiner.repository;
 
 import java.lang.reflect.Field;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -15,6 +16,7 @@ import com.mysema.query.types.EntityPath;
 import com.mysema.query.types.Expression;
 import com.mysema.query.types.Operation;
 import com.mysema.query.types.Path;
+import com.mysema.query.types.path.CollectionPathBase;
 import cz.encircled.joiner.alias.JoinerAliasResolver;
 import cz.encircled.joiner.exception.AliasAlreadyUsedException;
 import cz.encircled.joiner.exception.AliasMissingException;
@@ -32,6 +34,7 @@ import org.springframework.util.ReflectionUtils;
 /**
  * @author Kisel on 26.01.2016.
  */
+// TODO query customizer
 public class Joiner<T> implements QRepository<T> {
 
     private EntityManager entityManager;
@@ -80,16 +83,19 @@ public class Joiner<T> implements QRepository<T> {
             query.distinct();
         }
 
-        Set<Path<?>> usedAliases = new HashSet<Path<?>>();
+        Set<Path<?>> usedAliases = new HashSet<>();
         usedAliases.add(request.getRootEntityPath());
 
         for (JoinDescription join : request.getJoins()) {
+            checkSinglePathCompletion(join);
             resolveJoinAlias(usedAliases, join);
         }
 
-        addJoins(request, query, usedAliases);
+        addJoins(request, query);
 
-        checkAliasesArePresent(request, usedAliases);
+        checkAliasesArePresent(request.getWhere(), usedAliases);
+        checkAliasesArePresent(request.getHaving(), usedAliases);
+        checkAliasesArePresent(request.getGroupBy(), usedAliases);
 
         query.where(request.getWhere());
         if (request.getGroupBy() != null) {
@@ -107,12 +113,8 @@ public class Joiner<T> implements QRepository<T> {
         ReflectionUtils.setField(f, sourceQuery, ArrayListMultimap.create());
     }
 
-    private void addJoins(Q<T> request, JPAQuery query, Set<Path<?>> usedAliases) {
+    private void addJoins(Q<T> request, JPAQuery query) {
         for (JoinDescription join : request.getJoins()) {
-
-            checkSinglePathCompletion(join);
-            checkRootIsPresent(usedAliases, join);
-
             joinerVendorRepository.addJoin(query, join);
             if (join.isFetch()) {
                 if (join.getJoinType().equals(JoinType.RIGHTJOIN)) {
@@ -123,51 +125,75 @@ public class Joiner<T> implements QRepository<T> {
         }
     }
 
+    @SuppressWarnings("unchecked")
     private void resolveJoinAlias(Set<Path<?>> usedAliases, JoinDescription join) {
         if (join.getAlias() == null) {
-            setAliasFromResolver(join);
-
-            if (join.getAlias() == null) {
-                setDefaultAlias(join);
+            if (join.isCollectionPath()) {
+                join.alias(resolveAlias(join.getCollectionPath()));
+            } else {
+                join.alias(resolveAlias(join.getSinglePath()));
             }
         }
 
         if (usedAliases.contains(join.getAlias())) {
             throw new AliasAlreadyUsedException("Alias " + join.getAlias() + " is already used!");
         }
+
+        Path<?> root = join.isCollectionPath() ? join.getCollectionPath().getRoot() : join.getSinglePath().getRoot();
+        if (!usedAliases.contains(root)) {
+            EntityPath<?> generated = JoinerUtil.getGenerated(root, null);
+
+            String alias = resolveAlias((JoinerUtil.getSuper(generated))).toString();
+            EntityPath<?> parent = JoinerUtil.instantiate((Class<EntityPath<?>>) generated.getClass(), alias);
+
+            Object targetField = JoinerUtil.findAndGetField(parent, ((Field) join.getAnnotatedElement()).getName());
+
+            if (join.isCollectionPath()) {
+                join.collectionPath((CollectionPathBase<?, ?, ?>) targetField);
+            } else {
+                join.singlePath((EntityPath<?>) targetField);
+            }
+
+            if (usedAliases.contains(parent.getRoot())) {
+                if (join.isCollectionPath()) {
+                    join.alias(resolveAlias((CollectionPathBase<?, ?, ?>) targetField));
+                } else {
+                    join.alias(resolveAlias((EntityPath<?>) targetField));
+                }
+            } else {
+                throw new AliasMissingException("Can't join " + join + ", alias " + join.getAlias() + " is not present!");
+            }
+        }
+
         usedAliases.add(join.getAlias());
     }
 
-    private void checkAliasesArePresent(Q<T> request, Set<Path<?>> usedAliases) {
-        if (request.getWhere() instanceof Operation) {
-            for (Object o : ((Operation) request.getWhere()).getArgs()) {
-                if (o instanceof Path) {
-                    Path predicatePath = ((Path) o).getRoot();
-                    if (predicatePath.toString().startsWith("any(")) {
-                        // TODO what to do?
-                    } else {
-                        if (!usedAliases.contains(predicatePath)) {
-                            throw new AliasMissingException("Alias " + predicatePath + " is not present in joins!");
-                        }
-                    }
+    private void checkAliasesArePresent(Expression<?> expression, Set<Path<?>> usedAliases) {
+        for (Path<?> path : resolvePaths(expression)) {
+            Path predicatePath = path.getRoot();
+            if (predicatePath.toString().startsWith("any(")) {
+                // TODO what to do?
+            } else {
+                if (!usedAliases.contains(predicatePath)) {
+                    throw new AliasMissingException("Alias " + predicatePath + " is not present in joins!");
                 }
             }
         }
     }
 
-    private void setDefaultAlias(JoinDescription join) {
-        if (join.isCollectionPath()) {
-            join.alias(JoinerUtil.getDefaultAlias(join.getCollectionPath()));
-        } else {
-            join.alias(JoinerUtil.getDefaultAlias(join.getSinglePath()));
-        }
+    private List<Path<?>> resolvePaths(Expression<?> expression) {
+        List<Path<?>> result = new ArrayList<>();
+        resolvePathsInternal(expression, result);
+        return result;
     }
 
-    private void setAliasFromResolver(JoinDescription join) {
-        if (join.isCollectionPath()) {
-            join.alias(resolveAlias(join.getCollectionPath()));
-        } else {
-            join.alias(resolveAlias(join.getSinglePath()));
+    private void resolvePathsInternal(Expression<?> expression, List<Path<?>> paths) {
+        if (expression instanceof Path) {
+            paths.add((Path<?>) expression);
+        } else if (expression instanceof Operation) {
+            for (Expression exp : ((Operation<?>) expression).getArgs()) {
+                resolvePathsInternal(exp, paths);
+            }
         }
     }
 
@@ -180,7 +206,11 @@ public class Joiner<T> implements QRepository<T> {
                 }
             }
         }
-        return null;
+        if (path instanceof CollectionPathBase) {
+            return JoinerUtil.getDefaultAlias((CollectionPathBase) path);
+        } else {
+            return JoinerUtil.getDefaultAlias((EntityPath) path);
+        }
     }
 
     private void checkSinglePathCompletion(JoinDescription join) {
@@ -189,14 +219,6 @@ public class Joiner<T> implements QRepository<T> {
                 throw new InsufficientSinglePathException(
                         "Set full join path. For example 'QUser.user.address' instead of 'QAddress.address' ");
             }
-        }
-    }
-
-    private void checkRootIsPresent(Set<Path<?>> usedAliases, JoinDescription join) {
-        Path<?> root = join.isCollectionPath() ? join.getCollectionPath().getRoot() : join.getSinglePath().getRoot();
-
-        if (!usedAliases.contains(root)) {
-            throw new AliasMissingException("Can't join " + join + ", alias " + root + " is not present!");
         }
     }
 

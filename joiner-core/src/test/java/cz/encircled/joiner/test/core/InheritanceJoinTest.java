@@ -1,13 +1,23 @@
 package cz.encircled.joiner.test.core;
 
-import cz.encircled.joiner.query.J;
-import cz.encircled.joiner.query.Q;
-import cz.encircled.joiner.test.model.*;
-import org.junit.Assert;
-import org.junit.Test;
+import java.util.List;
 
 import javax.persistence.Persistence;
-import java.util.List;
+
+import cz.encircled.joiner.query.J;
+import cz.encircled.joiner.query.Q;
+import cz.encircled.joiner.test.model.Address;
+import cz.encircled.joiner.test.model.Group;
+import cz.encircled.joiner.test.model.NormalUser;
+import cz.encircled.joiner.test.model.QAddress;
+import cz.encircled.joiner.test.model.QGroup;
+import cz.encircled.joiner.test.model.QNormalUser;
+import cz.encircled.joiner.test.model.QSuperUser;
+import cz.encircled.joiner.test.model.QUser;
+import cz.encircled.joiner.test.model.SuperUser;
+import cz.encircled.joiner.test.model.User;
+import org.junit.Assert;
+import org.junit.Test;
 
 /**
  * Created by Kisel on 28.01.2016.
@@ -17,8 +27,9 @@ public class InheritanceJoinTest extends AbstractTest {
     @Test
     public void joinSingleEntityOnChildTest() {
         List<Group> groups = groupRepository.find(Q.from(QGroup.group)
-                .addJoin(J.join(QGroup.group.users).alias(QSuperUser.superUser._super))
-                .addJoin(J.join(QSuperUser.superUser.key)));
+                .addJoin(J.join(QGroup.group.users).alias(new QUser("superUser")))
+                .addJoin(J.join(QSuperUser.superUser.key))
+        );
 
         check(groups, true, false);
     }
@@ -26,13 +37,12 @@ public class InheritanceJoinTest extends AbstractTest {
     @Test
     public void joinSingleAndCollectionMultipleChildrenTest() {
         List<Group> groups = groupRepository.find(Q.from(QGroup.group)
-                .addJoin(J.join(QGroup.group.users).alias(QSuperUser.superUser._super))
-                .addJoin(J.join(QGroup.group.users).alias(QNormalUser.normalUser._super))
+                .addJoin(J.join(QGroup.group.users))
                 .addJoin(J.join(QSuperUser.superUser.key))
                 .addJoin(J.join(QNormalUser.normalUser.passwords))
         );
 
-        check(groups, true, true);
+        check(groups, true, false);
     }
 
     @Test
@@ -69,13 +79,13 @@ public class InheritanceJoinTest extends AbstractTest {
             Assert.assertTrue(Persistence.getPersistenceUtil().isLoaded(group, "users"));
             for (User user : group.getUsers()) {
                 if (user instanceof SuperUser) {
-                    if (hasKey) {
+                    if (key) {
                         Assert.assertTrue(Persistence.getPersistenceUtil().isLoaded(user, "key"));
                     }
                     hasKey = true;
                 }
                 if (user instanceof NormalUser) {
-                    if (hasPassword) {
+                    if (password) {
                         Assert.assertTrue(Persistence.getPersistenceUtil().isLoaded(user, "passwords"));
                     }
                     hasPassword = true;

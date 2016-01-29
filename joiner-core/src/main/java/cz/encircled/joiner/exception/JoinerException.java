@@ -8,4 +8,8 @@ public class JoinerException extends RuntimeException {
     public JoinerException(String message) {
         super(message);
     }
+
+    public JoinerException(String message, Exception exception) {
+        super(message, exception);
+    }
 }
