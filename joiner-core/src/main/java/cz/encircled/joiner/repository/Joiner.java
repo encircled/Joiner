@@ -34,7 +34,6 @@ import org.springframework.util.ReflectionUtils;
 /**
  * @author Kisel on 26.01.2016.
  */
-// TODO query customizer
 public class Joiner<T> implements QRepository<T> {
 
     private EntityManager entityManager;
