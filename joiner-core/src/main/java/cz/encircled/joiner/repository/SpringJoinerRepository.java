@@ -1,6 +1,6 @@
 package cz.encircled.joiner.repository;
 
-import java.util.Set;
+import java.util.List;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
@@ -17,7 +17,10 @@ public abstract class SpringJoinerRepository<T> extends RepositoryParent<T> {
     private EntityManager entityManager;
 
     @Autowired(required = false)
-    private Set<JoinerAliasResolver> aliasResolvers;
+    private List<JoinerAliasResolver> aliasResolvers;
+
+    @Autowired(required = false)
+    private List<QueryPostProcessor> queryPostProcessors;
 
     @Override
     protected EntityManager getEntityManager() {
@@ -25,8 +28,13 @@ public abstract class SpringJoinerRepository<T> extends RepositoryParent<T> {
     }
 
     @Override
-    protected Set<JoinerAliasResolver> getAliasResolvers() {
+    protected List<JoinerAliasResolver> getAliasResolvers() {
         return aliasResolvers;
+    }
+
+    @Override
+    protected List<QueryPostProcessor> getQueryPostProcessors() {
+        return queryPostProcessors;
     }
 
 }

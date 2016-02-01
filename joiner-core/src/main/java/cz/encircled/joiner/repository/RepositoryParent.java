@@ -1,7 +1,7 @@
 package cz.encircled.joiner.repository;
 
+import java.util.Collections;
 import java.util.List;
-import java.util.Set;
 
 import javax.annotation.PostConstruct;
 import javax.persistence.EntityManager;
@@ -38,12 +38,19 @@ public abstract class RepositoryParent<T> implements QRepository<T> {
     private void init() {
         Joiner<T> joiner = new Joiner<T>(getEntityManager(), getRootEntityPath());
         joiner.setAliasResolvers(getAliasResolvers());
+        joiner.setPostProcessors(getQueryPostProcessors());
         delegate = joiner;
     }
 
     protected abstract EntityManager getEntityManager();
 
-    protected abstract Set<JoinerAliasResolver> getAliasResolvers();
+    protected List<JoinerAliasResolver> getAliasResolvers() {
+        return Collections.emptyList();
+    }
+
+    protected List<QueryPostProcessor> getQueryPostProcessors() {
+        return Collections.emptyList();
+    }
 
     protected abstract EntityPath<T> getRootEntityPath();
 

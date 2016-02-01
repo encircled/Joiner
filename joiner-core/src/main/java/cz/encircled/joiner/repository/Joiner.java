@@ -43,7 +43,9 @@ public class Joiner<T> implements QRepository<T> {
 
     private JoinerVendorRepository joinerVendorRepository;
 
-    private Set<JoinerAliasResolver> aliasResolvers;
+    private List<JoinerAliasResolver> aliasResolvers;
+
+    private List<QueryPostProcessor> postProcessors;
 
     public Joiner(EntityManager entityManager, EntityPath<T> rootPath) {
         Assert.notNull(entityManager);
@@ -60,14 +62,30 @@ public class Joiner<T> implements QRepository<T> {
         }
     }
 
-    public void setAliasResolvers(Set<JoinerAliasResolver> aliasResolvers) {
+    public void setPostProcessors(List<QueryPostProcessor> postProcessors) {
+        this.postProcessors = postProcessors;
+    }
+
+    public void setAliasResolvers(List<JoinerAliasResolver> aliasResolvers) {
         this.aliasResolvers = aliasResolvers;
     }
 
+    @Override
+    public T findOne(Q<T> request) {
+        return null;
+    }
+
+    @Override
+    public <P> P findOne(Q<T> request, Expression<P> projection) {
+        return null;
+    }
+
+    @Override
     public List<T> find(Q<T> request) {
         return find(request, rootPath);
     }
 
+    @Override
     public <P> List<P> find(Q<T> request, Expression<P> projection) {
         Assert.notNull(request);
         Assert.notNull(projection);
@@ -104,6 +122,9 @@ public class Joiner<T> implements QRepository<T> {
         if (request.getHaving() != null) {
             query.having(request.getHaving());
         }
+
+        doPostProcess(query);
+
         return query.list(projection);
     }
 
@@ -222,12 +243,12 @@ public class Joiner<T> implements QRepository<T> {
         }
     }
 
-    public T findOne(Q<T> request) {
-        return null;
-    }
-
-    public <P> P findOne(Q<T> request, Expression<P> projection) {
-        return null;
+    private void doPostProcess(JPAQuery query) {
+        if (postProcessors != null) {
+            for (QueryPostProcessor postProcessor : postProcessors) {
+                postProcessor.process(query);
+            }
+        }
     }
 
 }
