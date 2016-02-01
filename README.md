@@ -1,5 +1,3 @@
-Welcome to the **Joiner** wiki!
-
 The main goal of **Joiner** is to make [QueryDSL](http://www.querydsl.com/) even more useful. 
 **Joiner** is beneficial for applications with complex domain model, it provides:
 * a simple way to add joins to the QueryDSL queries at build or runtime
