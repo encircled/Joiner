@@ -1,13 +1,19 @@
 package cz.encircled.joiner.repository.vendor;
 
+import java.lang.reflect.Field;
 import java.util.Collection;
 
 import javax.persistence.EntityManager;
 
+import com.google.common.collect.ArrayListMultimap;
+import com.mysema.query.JoinType;
 import com.mysema.query.jpa.EclipseLinkTemplates;
+import com.mysema.query.jpa.impl.AbstractJPAQuery;
 import com.mysema.query.jpa.impl.JPAQuery;
 import com.mysema.query.types.EntityPath;
+import cz.encircled.joiner.exception.JoinerException;
 import cz.encircled.joiner.query.JoinDescription;
+import org.springframework.util.ReflectionUtils;
 
 /**
  * @author Kisel on 28.01.2016.
@@ -19,7 +25,15 @@ public class EclipselinkRepository extends AbstractVendorRepository implements J
 
     @Override
     public JPAQuery createQuery(EntityManager entityManager) {
-        return new JPAQuery(entityManager, EclipseLinkTemplates.DEFAULT);
+        JPAQuery query = new JPAQuery(entityManager, EclipseLinkTemplates.DEFAULT);
+        makeInsertionOrderHints(query);
+        return query;
+    }
+
+    private void makeInsertionOrderHints(AbstractJPAQuery<JPAQuery> sourceQuery) {
+        Field f = ReflectionUtils.findField(AbstractJPAQuery.class, "hints");
+        ReflectionUtils.makeAccessible(f);
+        ReflectionUtils.setField(f, sourceQuery, ArrayListMultimap.create());
     }
 
     @Override
@@ -31,6 +45,15 @@ public class EclipselinkRepository extends AbstractVendorRepository implements J
         String fetchHint = joinDescription.getJoinType().equals(com.mysema.query.JoinType.LEFTJOIN) ? "eclipselink.left-join-fetch" : "eclipselink.join-fetch";
         query.setHint(fetchHint, path);
 //        }
+    }
+
+    @Override
+    public void addJoin(JPAQuery query, JoinDescription joinDescription) {
+        if (joinDescription.getJoinType().equals(JoinType.RIGHTJOIN)) {
+            throw new JoinerException("Right join is not supported in EclipseLink!");
+        }
+
+        super.addJoin(query, joinDescription);
     }
 
     private String resolvePathToFieldFromRoot(String rootAlias, JoinDescription targetJoinDescription, Collection<JoinDescription> joins) {

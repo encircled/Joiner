@@ -14,6 +14,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.env.Environment;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestExecutionListeners;
 import org.springframework.test.context.junit4.AbstractTransactionalJUnit4SpringContextTests;
@@ -41,6 +42,9 @@ public abstract class AbstractTest extends AbstractTransactionalJUnit4SpringCont
     @PersistenceContext
     protected EntityManager entityManager;
 
+    @Autowired
+    private Environment environment;
+
     @Before
     public void before() {
         entityManager.clear();
@@ -56,6 +60,18 @@ public abstract class AbstractTest extends AbstractTransactionalJUnit4SpringCont
     protected void assertHasName(AbstractEntity entity, String name) {
         Assert.assertNotNull(entity);
         Assert.assertEquals(name, entity.getName());
+    }
+
+    protected boolean isEclipse() {
+        return hasProfiles("eclipse");
+    }
+
+    protected boolean hasProfiles(String... profiles) {
+        return environment.acceptsProfiles(profiles);
+    }
+
+    protected boolean noProfiles(String... profiles) {
+        return !environment.acceptsProfiles(profiles);
     }
 
 }

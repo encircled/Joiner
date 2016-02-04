@@ -1,15 +1,22 @@
 package cz.encircled.joiner.test.core;
 
+import java.util.Collections;
+import java.util.List;
+
+import javax.persistence.Persistence;
+
+import cz.encircled.joiner.exception.JoinerException;
 import cz.encircled.joiner.query.J;
 import cz.encircled.joiner.query.JoinDescription;
 import cz.encircled.joiner.query.Q;
-import cz.encircled.joiner.test.model.*;
+import cz.encircled.joiner.test.model.Address;
+import cz.encircled.joiner.test.model.Group;
+import cz.encircled.joiner.test.model.QAddress;
+import cz.encircled.joiner.test.model.QGroup;
+import cz.encircled.joiner.test.model.QUser;
+import cz.encircled.joiner.test.model.User;
 import org.junit.Assert;
 import org.junit.Test;
-
-import javax.persistence.Persistence;
-import java.util.Collections;
-import java.util.List;
 
 /**
  * @author Kisel on 21.01.2016.
@@ -34,14 +41,14 @@ public class BasicJoinTest extends AbstractTest {
 
     @Test
     public void testNestedCollectionAndSingleJoin() {
-        List<Address> addresses = addressRepository.find(Q.from(QAddress.address));
+        if (noProfiles("eclipse")) {
+            List<Address> addresses = addressRepository.find(Q.from(QAddress.address));
+            Assert.assertFalse(Persistence.getPersistenceUtil().isLoaded(addresses.get(0), "user"));
+            Assert.assertFalse(Persistence.getPersistenceUtil().isLoaded(addresses.get(0).getUser(), "groups"));
+            entityManager.clear();
+        }
 
-        Assert.assertFalse(Persistence.getPersistenceUtil().isLoaded(addresses.get(0), "user"));
-        Assert.assertFalse(Persistence.getPersistenceUtil().isLoaded(addresses.get(0).getUser(), "groups"));
-
-        entityManager.clear();
-
-        addresses = addressRepository.find(Q.from(QAddress.address)
+        List<Address> addresses = addressRepository.find(Q.from(QAddress.address)
                 .join(J.join(QAddress.address.user))
                 .join(J.join(QUser.user1.groups)));
 
@@ -86,19 +93,39 @@ public class BasicJoinTest extends AbstractTest {
 
     @Test
     public void testRightJoinNoFetch() {
-        List<Group> groups = groupRepository.find(Q.from(QGroup.group)
-                .join(J.join(QGroup.group.users).right().fetch(false))
-                .where(QUser.user1.name.eq("user1")));
-        Assert.assertFalse(groups.isEmpty());
+        if (noProfiles("eclipse")) {
+            List<Group> groups = groupRepository.find(Q.from(QGroup.group)
+                    .join(J.join(QGroup.group.users).right().fetch(false))
+                    .where(QUser.user1.name.eq("user1")));
+            Assert.assertFalse(groups.isEmpty());
+        }
+    }
+
+    @Test(expected = JoinerException.class)
+    public void testRightJoinNoFetchEclipse() {
+        if (isEclipse()) {
+            List<Group> groups = groupRepository.find(Q.from(QGroup.group)
+                    .join(J.join(QGroup.group.users).right().fetch(false))
+                    .where(QUser.user1.name.eq("user1")));
+            Assert.assertFalse(groups.isEmpty());
+        } else {
+            throw new JoinerException("Test");
+        }
     }
 
     @Test
     public void testNonDistinct() {
-        int nonDistinct = userRepository.find(Q.from(QUser.user1).join(J.join(QUser.user1.addresses)).distinct(false)).size();
+        int nonDistinct = userRepository.find(Q.from(QUser.user1)
+                .joins(QUser.user1.addresses, QAddress.address.statuses)
+                .distinct(false)).size();
         entityManager.clear();
         int distinct = userRepository.find(Q.from(QUser.user1).join(J.join(QUser.user1.addresses))).size();
 
-        Assert.assertTrue(distinct < nonDistinct);
+        if (isEclipse()) {
+            Assert.assertTrue(distinct == nonDistinct);
+        } else {
+            Assert.assertTrue(distinct < nonDistinct);
+        }
     }
 
     @Test
