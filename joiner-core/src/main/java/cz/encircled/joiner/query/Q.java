@@ -1,13 +1,14 @@
 package cz.encircled.joiner.query;
 
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+
 import com.mysema.query.types.EntityPath;
 import com.mysema.query.types.Expression;
 import com.mysema.query.types.Path;
 import com.mysema.query.types.Predicate;
 import org.springframework.util.Assert;
-
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * @author Kisel on 11.01.2016.
@@ -18,13 +19,15 @@ public class Q<T> {
 
     private EntityPath<T> rootEntityPath;
 
-    private List<JoinDescription> joins = new ArrayList<JoinDescription>();
+    private List<JoinDescription> joins = new ArrayList<>();
 
     private boolean distinct = true;
 
     private Expression<?> groupBy;
 
     private Predicate having;
+
+    private LinkedHashMap<String, List<Object>> hints = new LinkedHashMap<>();
 
     public static <T> Q<T> from(EntityPath<T> from) {
         return new Q<T>().rootEntityPath(from);
@@ -118,6 +121,24 @@ public class Q<T> {
 
         this.joins.addAll(joins);
         return this;
+    }
+
+    public Q<T> addHint(String hint, Object value) {
+        Assert.notNull(hint);
+
+        List<Object> values = hints.get(hint);
+
+        if (values == null) {
+            values = new ArrayList<>(2);
+            hints.put(hint, values);
+        }
+
+        values.add(value);
+        return this;
+    }
+
+    public LinkedHashMap<String, List<Object>> getHints() {
+        return hints;
     }
 
 }

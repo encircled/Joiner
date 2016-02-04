@@ -4,6 +4,7 @@ import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import javax.persistence.EntityManager;
@@ -109,6 +110,7 @@ public class Joiner<T> implements QRepository<T> {
         }
 
         addJoins(request, query);
+        addHints(request, query);
 
         checkAliasesArePresent(request.getWhere(), usedAliases);
         checkAliasesArePresent(request.getHaving(), usedAliases);
@@ -141,6 +143,16 @@ public class Joiner<T> implements QRepository<T> {
                     throw new JoinerException("Fetch is not supported for right join!");
                 }
                 joinerVendorRepository.addFetch(query, join, request.getJoins(), request.getRootEntityPath());
+            }
+        }
+    }
+
+    private void addHints(Q<T> request, JPAQuery query) {
+        for (Map.Entry<String, List<Object>> entry : request.getHints().entrySet()) {
+            if (entry.getValue() != null) {
+                for (Object value : entry.getValue()) {
+                    query.setHint(entry.getKey(), value);
+                }
             }
         }
     }

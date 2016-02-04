@@ -7,7 +7,7 @@ import org.springframework.context.annotation.Configuration;
  * @author Kisel on 01.02.2016.
  */
 @Configuration
-public class TestConfigWithPostProcessor {
+public class TestConfigWithFailPostProcessor {
 
     @Bean
     public TestPostProcessor testPostProcessor() {
