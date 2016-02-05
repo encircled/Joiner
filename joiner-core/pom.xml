@@ -6,7 +6,7 @@
 
     <groupId>cz.encircled</groupId>
     <artifactId>joiner-core</artifactId>
-    <version>0.1-SNAPSHOT</version>
+    <version>0.1</version>
 
     <name>Joiner</name>
     <description>
