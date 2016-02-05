@@ -13,6 +13,13 @@ import com.mysema.query.types.Predicate;
 import org.springframework.util.Assert;
 
 /**
+ * This class is a transfer object for repository queries.
+ *
+ * <p>
+ *  T - root entity type
+ * </p>
+ *
+ * @see JoinDescription
  * @author Kisel on 11.01.2016.
  */
 public class Q<T> {

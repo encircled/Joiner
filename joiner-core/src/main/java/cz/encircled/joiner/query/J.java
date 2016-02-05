@@ -10,6 +10,8 @@ import cz.encircled.joiner.exception.JoinerException;
 import org.springframework.util.Assert;
 
 /**
+ * Util class, which helps to build new {@link JoinDescription joins}
+ *
  * @author Kisel on 26.01.2016.
  */
 public class J {

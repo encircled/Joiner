@@ -20,7 +20,8 @@ public class TestAliasResolver implements JoinerAliasResolver {
     public static final QStatus STATUS_ON_USER = new QStatus("userStatus");
     public static final QStatusType STATUS_TYPE_ON_STATUS_ON_GROUP = new QStatusType("statusTypeOnStatusOnGroup");
     public static final QStatusType STATUS_TYPE_ON_STATUS_ON_USER = new QStatusType("statusTypeOnStatusOnUser");
-    public static Map<Path<?>, EntityPath<?>> collections = new HashMap<Path<?>, EntityPath<?>>();
+
+    public static Map<Path<?>, EntityPath<?>> collections = new HashMap<>();
 
     static {
         collections.put(QGroup.group.statuses, STATUS_ON_GROUP);
@@ -32,4 +33,5 @@ public class TestAliasResolver implements JoinerAliasResolver {
     public EntityPath<?> resolveAlias(Path<?> path) {
         return collections.get(path);
     }
+
 }

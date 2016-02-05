@@ -10,6 +10,17 @@ import com.mysema.query.types.path.CollectionPathBase;
 import org.springframework.util.Assert;
 
 /**
+ * Represents query join.
+ * For collection joins - {@link JoinDescription#collectionPath collectionPath} is used, for single entity joins - {@link JoinDescription#singlePath singlePath}.
+ * <p>
+ *     When there are multiple joins in a single query, an alias collision may occur. Alias collision may be resolved by setting a custom alias to the join description,
+ *     or by using {@link cz.encircled.joiner.alias.JoinerAliasResolver}.
+ * </p>
+ * <p>
+ *     By default, all joins are <b>left fetch</b> joins
+ * </p>
+ *
+ * @see cz.encircled.joiner.alias.JoinerAliasResolver
  * @author Kisel on 21.01.2016.
  */
 public class JoinDescription {
