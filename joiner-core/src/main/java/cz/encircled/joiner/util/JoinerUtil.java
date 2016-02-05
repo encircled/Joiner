@@ -2,6 +2,8 @@ package cz.encircled.joiner.util;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import com.mysema.query.types.CollectionExpression;
 import com.mysema.query.types.EntityPath;
@@ -19,6 +21,7 @@ public class JoinerUtil {
 
     private static Field listQueryTypeField;
     private static Field setQueryTypeField;
+    private static Map<Class<EntityPath<?>>, EntityPath<?>> pathToDefaultAlias = new ConcurrentHashMap<>();
 
     static {
         listQueryTypeField = ReflectionUtils.findField(ListPath.class, "queryType");
@@ -40,7 +43,6 @@ public class JoinerUtil {
         return (EntityPath) ReflectionUtils.getField(instanceField, null);
     }
 
-    // TODO add caching
     @SuppressWarnings("unchecked")
     public static EntityPath<?> getDefaultAlias(EntityPath<?> path) {
         return getDefaultAlias((Class<EntityPath<?>>) path.getClass());
@@ -48,9 +50,12 @@ public class JoinerUtil {
 
     @SuppressWarnings("unchecked")
     public static EntityPath<?> getDefaultAlias(Class<EntityPath<?>> clazz) {
-        Field instanceField = getQInstanceField(clazz, getSimpleNameOfQ(clazz));
-
-        return (EntityPath) ReflectionUtils.getField(instanceField, null);
+        EntityPath<?> alias = pathToDefaultAlias.get(clazz);
+        if (alias == null) {
+            Field instanceField = getQInstanceField(clazz, getSimpleNameOfQ(clazz));
+            alias = (EntityPath) ReflectionUtils.getField(instanceField, null);
+        }
+        return alias;
     }
 
     public static EntityPath<?> getSuper(EntityPath<?> path) {
