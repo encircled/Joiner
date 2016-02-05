@@ -1,7 +1,8 @@
-package cz.encircled.joiner.test.core;
+package cz.encircled.joiner.test.core.resolver;
 
 import cz.encircled.joiner.query.J;
 import cz.encircled.joiner.query.Q;
+import cz.encircled.joiner.test.core.AbstractTest;
 import cz.encircled.joiner.test.model.QGroup;
 import cz.encircled.joiner.test.model.QStatus;
 import cz.encircled.joiner.test.model.QStatusType;

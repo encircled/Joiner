@@ -1,8 +1,10 @@
 package cz.encircled.joiner.query;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 import com.mysema.query.types.EntityPath;
 import com.mysema.query.types.Expression;
@@ -27,7 +29,9 @@ public class Q<T> {
 
     private Predicate having;
 
-    private LinkedHashMap<String, List<Object>> hints = new LinkedHashMap<>();
+    private LinkedHashMap<String, List<Object>> hints = new LinkedHashMap<>(2);
+
+    private Map<Object, Object> customProperties = new HashMap<>(2);
 
     public static <T> Q<T> from(EntityPath<T> from) {
         return new Q<T>().rootEntityPath(from);
@@ -135,6 +139,18 @@ public class Q<T> {
 
         values.add(value);
         return this;
+    }
+
+    public Q<T> addCustomProperty(Object key, Object value) {
+        Assert.notNull(key);
+
+        customProperties.put(key, value);
+
+        return this;
+    }
+
+    public Map<Object, Object> getCustomProperties() {
+        return customProperties;
     }
 
     public LinkedHashMap<String, List<Object>> getHints() {

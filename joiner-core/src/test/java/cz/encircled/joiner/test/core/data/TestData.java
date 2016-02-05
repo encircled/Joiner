@@ -1,13 +1,20 @@
-package cz.encircled.joiner.test.core;
+package cz.encircled.joiner.test.core.data;
 
-import cz.encircled.joiner.test.model.*;
-import org.springframework.stereotype.Component;
-import org.springframework.test.annotation.Commit;
-import org.springframework.transaction.annotation.Transactional;
+import java.util.Collections;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
-import java.util.Collections;
+
+import cz.encircled.joiner.test.model.Address;
+import cz.encircled.joiner.test.model.Group;
+import cz.encircled.joiner.test.model.Key;
+import cz.encircled.joiner.test.model.NormalUser;
+import cz.encircled.joiner.test.model.Password;
+import cz.encircled.joiner.test.model.SuperUser;
+import cz.encircled.joiner.test.model.User;
+import org.springframework.stereotype.Component;
+import org.springframework.test.annotation.Commit;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * @author Kisel on 26.01.2016.

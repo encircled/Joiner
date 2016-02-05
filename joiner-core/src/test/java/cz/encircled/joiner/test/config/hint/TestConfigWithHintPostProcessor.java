@@ -1,4 +1,4 @@
-package cz.encircled.joiner.test.config;
+package cz.encircled.joiner.test.config.hint;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

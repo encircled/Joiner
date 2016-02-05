@@ -124,7 +124,7 @@ public class Joiner<T> implements QRepository<T> {
             query.having(request.getHaving());
         }
 
-        doPostProcess(query);
+        doPostProcess(request, query);
 
         return query.list(projection);
     }
@@ -254,10 +254,10 @@ public class Joiner<T> implements QRepository<T> {
         }
     }
 
-    private void doPostProcess(JPAQuery query) {
+    private void doPostProcess(Q<?> request, JPAQuery query) {
         if (postProcessors != null) {
             for (QueryPostProcessor postProcessor : postProcessors) {
-                postProcessor.process(query);
+                postProcessor.process(request, query);
             }
         }
     }

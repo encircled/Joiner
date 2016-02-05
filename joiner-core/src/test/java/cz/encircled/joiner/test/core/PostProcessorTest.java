@@ -4,7 +4,6 @@ import cz.encircled.joiner.query.Q;
 import cz.encircled.joiner.test.config.TestConfig;
 import cz.encircled.joiner.test.config.TestConfigWithFailPostProcessor;
 import cz.encircled.joiner.test.model.User;
-import org.junit.Assert;
 import org.junit.Test;
 import org.springframework.test.context.ContextConfiguration;
 
@@ -14,16 +13,9 @@ import org.springframework.test.context.ContextConfiguration;
 @ContextConfiguration(classes = { TestConfig.class, TestConfigWithFailPostProcessor.class })
 public class PostProcessorTest extends AbstractTest {
 
-    @Test
+    @Test(expected = TestException.class)
     public void testPostProcessorIsCalled() {
-
-        try {
-            userRepository.find(new Q<User>());
-            Assert.fail("PostProcessor has not been called");
-        } catch (Exception e) {
-            Assert.assertEquals("TestPostProcessor", e.getMessage());
-        }
-
+        userRepository.find(new Q<User>());
     }
 
 }

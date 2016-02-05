@@ -6,6 +6,7 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 
 import cz.encircled.joiner.test.config.TestConfig;
+import cz.encircled.joiner.test.core.data.TestDataListener;
 import cz.encircled.joiner.test.model.AbstractEntity;
 import cz.encircled.joiner.test.repository.AddressRepository;
 import cz.encircled.joiner.test.repository.GroupRepository;

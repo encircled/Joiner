@@ -1,4 +1,4 @@
-package cz.encircled.joiner.test.core;
+package cz.encircled.joiner.test.core.data;
 
 import org.springframework.test.context.TestContext;
 import org.springframework.test.context.TestExecutionListener;
