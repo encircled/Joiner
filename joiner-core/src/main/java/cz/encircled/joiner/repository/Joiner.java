@@ -109,7 +109,7 @@ public class Joiner<T> implements QRepository<T> {
             resolveJoinAlias(usedAliases, join);
         }
 
-        addJoins(request, query);
+        addJoins(request, query, request.getRootEntityPath().equals(projection));
         addHints(request, query);
 
         checkAliasesArePresent(request.getWhere(), usedAliases);
@@ -135,10 +135,10 @@ public class Joiner<T> implements QRepository<T> {
         ReflectionUtils.setField(f, sourceQuery, ArrayListMultimap.create());
     }
 
-    private void addJoins(Q<T> request, JPAQuery query) {
+    private void addJoins(Q<T> request, JPAQuery query, boolean canFetch) {
         for (JoinDescription join : request.getJoins()) {
             joinerVendorRepository.addJoin(query, join);
-            if (join.isFetch()) {
+            if (canFetch && join.isFetch()) {
                 if (join.getJoinType().equals(JoinType.RIGHTJOIN)) {
                     throw new JoinerException("Fetch is not supported for right join!");
                 }
