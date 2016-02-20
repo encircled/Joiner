@@ -1,20 +1,19 @@
 package cz.encircled.joiner.repository;
 
-import java.util.Collections;
-import java.util.List;
-
-import javax.annotation.PostConstruct;
-import javax.persistence.EntityManager;
-
 import com.mysema.query.types.EntityPath;
 import com.mysema.query.types.Expression;
 import cz.encircled.joiner.alias.JoinerAliasResolver;
 import cz.encircled.joiner.query.Q;
 
+import javax.annotation.PostConstruct;
+import javax.persistence.EntityManager;
+import java.util.Collections;
+import java.util.List;
+
 /**
  * @author Kisel on 21.01.2016.
  */
-public abstract class RepositoryParent<T> implements QRepository<T> {
+public abstract class JoinerRepository<T> implements QRepository<T> {
 
     protected QRepository<T> delegate;
 

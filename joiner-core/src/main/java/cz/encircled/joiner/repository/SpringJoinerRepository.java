@@ -1,17 +1,16 @@
 package cz.encircled.joiner.repository;
 
-import java.util.List;
+import cz.encircled.joiner.alias.JoinerAliasResolver;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
-
-import cz.encircled.joiner.alias.JoinerAliasResolver;
-import org.springframework.beans.factory.annotation.Autowired;
+import java.util.List;
 
 /**
  * @author Kisel on 26.01.2016.
  */
-public abstract class SpringJoinerRepository<T> extends RepositoryParent<T> {
+public abstract class SpringJoinerRepository<T> extends JoinerRepository<T> {
 
     @PersistenceContext
     private EntityManager entityManager;
