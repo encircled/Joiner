@@ -18,9 +18,6 @@ public abstract class SpringJoinerRepository<T> extends JoinerRepository<T> {
     @Autowired(required = false)
     private List<JoinerAliasResolver> aliasResolvers;
 
-    @Autowired(required = false)
-    private List<QueryPostProcessor> queryPostProcessors;
-
     @Override
     protected EntityManager getEntityManager() {
         return entityManager;
@@ -29,11 +26,6 @@ public abstract class SpringJoinerRepository<T> extends JoinerRepository<T> {
     @Override
     protected List<JoinerAliasResolver> getAliasResolvers() {
         return aliasResolvers;
-    }
-
-    @Override
-    protected List<QueryPostProcessor> getQueryPostProcessors() {
-        return queryPostProcessors;
     }
 
 }

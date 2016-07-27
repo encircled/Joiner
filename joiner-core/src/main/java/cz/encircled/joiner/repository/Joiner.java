@@ -1,14 +1,5 @@
 package cz.encircled.joiner.repository;
 
-import java.lang.reflect.Field;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import javax.persistence.EntityManager;
-
 import com.google.common.collect.ArrayListMultimap;
 import com.mysema.query.JoinType;
 import com.mysema.query.jpa.impl.AbstractJPAQuery;
@@ -25,12 +16,17 @@ import cz.encircled.joiner.exception.InsufficientSinglePathException;
 import cz.encircled.joiner.exception.JoinerException;
 import cz.encircled.joiner.query.JoinDescription;
 import cz.encircled.joiner.query.Q;
+import cz.encircled.joiner.query.QueryFeature;
 import cz.encircled.joiner.repository.vendor.EclipselinkRepository;
 import cz.encircled.joiner.repository.vendor.HibernateRepository;
 import cz.encircled.joiner.repository.vendor.JoinerVendorRepository;
 import cz.encircled.joiner.util.JoinerUtil;
 import org.springframework.util.Assert;
 import org.springframework.util.ReflectionUtils;
+
+import javax.persistence.EntityManager;
+import java.lang.reflect.Field;
+import java.util.*;
 
 /**
  * @author Kisel on 26.01.2016.
@@ -45,8 +41,6 @@ public class Joiner<T> implements QRepository<T> {
 
     private List<JoinerAliasResolver> aliasResolvers;
 
-    private List<QueryPostProcessor> postProcessors;
-
     public Joiner(EntityManager entityManager, EntityPath<T> rootPath) {
         Assert.notNull(entityManager);
         Assert.notNull(rootPath);
@@ -60,10 +54,6 @@ public class Joiner<T> implements QRepository<T> {
         } else if (implName.startsWith("org.eclipse")) {
             this.joinerVendorRepository = new EclipselinkRepository();
         }
-    }
-
-    public void setPostProcessors(List<QueryPostProcessor> postProcessors) {
-        this.postProcessors = postProcessors;
     }
 
     public void setAliasResolvers(List<JoinerAliasResolver> aliasResolvers) {
@@ -89,6 +79,10 @@ public class Joiner<T> implements QRepository<T> {
     public <P> List<P> find(Q<T> request, Expression<P> projection) {
         Assert.notNull(request);
         Assert.notNull(projection);
+
+        for (QueryFeature feature : request.getFeatures()) {
+            request = doPreProcess(request, feature);
+        }
 
         JPAQuery query = joinerVendorRepository.createQuery(entityManager);
         makeInsertionOrderHints(query);
@@ -124,9 +118,19 @@ public class Joiner<T> implements QRepository<T> {
             query.having(request.getHaving());
         }
 
-        doPostProcess(request, query);
+        for (QueryFeature feature : request.getFeatures()) {
+            query = doPostProcess(request, query, feature);
+        }
 
         return query.list(projection);
+    }
+
+    private JPAQuery doPostProcess(Q<T> request, JPAQuery query, QueryFeature feature) {
+        return feature.after(request, query);
+    }
+
+    private Q<T> doPreProcess(Q<T> request, QueryFeature feature) {
+        return feature.before(request);
     }
 
     private void makeInsertionOrderHints(AbstractJPAQuery<JPAQuery> sourceQuery) {
@@ -250,14 +254,6 @@ public class Joiner<T> implements QRepository<T> {
             if (join.getSinglePath().toString().equals(join.getSinglePath().getRoot().toString())) {
                 throw new InsufficientSinglePathException(
                         "Set full join path. For example 'QUser.user.address' instead of 'QAddress.address' ");
-            }
-        }
-    }
-
-    private void doPostProcess(Q<?> request, JPAQuery query) {
-        if (postProcessors != null) {
-            for (QueryPostProcessor postProcessor : postProcessors) {
-                postProcessor.process(request, query);
             }
         }
     }

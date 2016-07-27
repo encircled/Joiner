@@ -1,16 +1,15 @@
 package cz.encircled.joiner.query;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-
 import com.mysema.query.types.EntityPath;
 import com.mysema.query.types.Expression;
 import com.mysema.query.types.Path;
 import com.mysema.query.types.Predicate;
 import org.springframework.util.Assert;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.LinkedHashMap;
+import java.util.List;
 
 /**
  * This class is a transfer object for repository queries.
@@ -38,7 +37,7 @@ public class Q<T> {
 
     private LinkedHashMap<String, List<Object>> hints = new LinkedHashMap<>(2);
 
-    private Map<Object, Object> customProperties = new HashMap<>(2);
+    private List<QueryFeature> features = new ArrayList<>(2);
 
     public static <T> Q<T> from(EntityPath<T> from) {
         return new Q<T>().rootEntityPath(from);
@@ -148,16 +147,13 @@ public class Q<T> {
         return this;
     }
 
-    public Q<T> addCustomProperty(Object key, Object value) {
-        Assert.notNull(key);
-
-        customProperties.put(key, value);
-
+    public Q<T> addFeatures(QueryFeature... features) {
+        Collections.addAll(this.features, features);
         return this;
     }
 
-    public Map<Object, Object> getCustomProperties() {
-        return customProperties;
+    public List<QueryFeature> getFeatures() {
+        return features;
     }
 
     public LinkedHashMap<String, List<Object>> getHints() {
