@@ -58,23 +58,30 @@ public class Joiner {
     }
 
     public <T> T findOne(Q<T> request) {
-        return findOne(request, request.getRootEntityPath());
+        return findOne(request, request.getFrom());
     }
 
     public <T, P> P findOne(Q<T> request, Expression<P> projection) {
-        return null;
+        List<P> list = find(request, projection);
+        if (list.isEmpty()) {
+            return null;
+        } else if (list.size() == 1) {
+            return list.get(0);
+        } else {
+            throw new JoinerException("FindOne returned multiple records!");
+        }
     }
 
     public <T> List<T> find(Q<T> request) {
         Assert.notNull(request);
-        return find(request, request.getRootEntityPath());
+        return find(request, request.getFrom());
     }
 
     public <T, P> List<P> find(Q<T> request, Expression<P> projection) {
         Assert.notNull(request);
         Assert.notNull(projection);
         // TODO extract validation
-        Assert.notNull(request.getRootEntityPath());
+        Assert.notNull(request.getFrom());
 
         for (QueryFeature feature : request.getFeatures()) {
             request = doPreProcess(request, feature);
@@ -83,19 +90,19 @@ public class Joiner {
         JPAQuery query = joinerVendorRepository.createQuery(entityManager);
         makeInsertionOrderHints(query);
 
-        query.from(request.getRootEntityPath());
+        query.from(request.getFrom());
         if (request.isDistinct()) {
             query.distinct();
         }
 
         Set<Path<?>> usedAliases = new HashSet<>();
-        usedAliases.add(request.getRootEntityPath());
+        usedAliases.add(request.getFrom());
 
         for (JoinDescription join : request.getJoins()) {
-            resolveJoinAlias(usedAliases, join, request.getRootEntityPath());
+            resolveJoinAlias(usedAliases, join, request.getFrom());
         }
 
-        addJoins(request, query, request.getRootEntityPath().equals(projection));
+        addJoins(request, query, request.getFrom().equals(projection));
         addHints(request, query);
 
         checkAliasesArePresent(request.getWhere(), usedAliases);
@@ -142,7 +149,7 @@ public class Joiner {
                 if (join.getJoinType().equals(JoinType.RIGHTJOIN)) {
                     throw new JoinerException("Fetch is not supported for right join!");
                 }
-                joinerVendorRepository.addFetch(query, join, request.getJoins(), request.getRootEntityPath());
+                joinerVendorRepository.addFetch(query, join, request.getJoins(), request.getFrom());
             }
         }
     }

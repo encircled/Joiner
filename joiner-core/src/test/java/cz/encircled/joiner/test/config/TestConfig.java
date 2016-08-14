@@ -4,6 +4,7 @@ import org.eclipse.persistence.config.PersistenceUnitProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Import;
 import org.springframework.core.env.Environment;
 import org.springframework.dao.annotation.PersistenceExceptionTranslationPostProcessor;
 import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseBuilder;
@@ -16,7 +17,6 @@ import org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
-import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.sql.DataSource;
 import java.util.Properties;
@@ -27,6 +27,7 @@ import java.util.Properties;
 @Configuration
 @EnableTransactionManagement
 @ComponentScan(basePackages = {"cz.encircled.joiner.test.core", "cz.encircled.joiner.test.repository"})
+@Import(JoinerConfiguration.class)
 public class TestConfig {
 
     /*@Bean
@@ -62,11 +63,6 @@ public class TestConfig {
             em.setJpaProperties(hibernateProperties(fresh));
         }
         return em;
-    }
-
-    @Bean
-    public EntityManager entityManager(EntityManagerFactory emf) {
-        return emf.createEntityManager();
     }
 
     @Bean(name = "transactionManager")

@@ -21,7 +21,7 @@ public class Q<T> {
 
     private Predicate where;
 
-    private EntityPath<T> rootEntityPath;
+    private EntityPath<T> from;
 
     private List<JoinDescription> joins = new ArrayList<>();
 
@@ -75,12 +75,12 @@ public class Q<T> {
         return having;
     }
 
-    public EntityPath<T> getRootEntityPath() {
-        return rootEntityPath;
+    public EntityPath<T> getFrom() {
+        return from;
     }
 
     public Q<T> rootEntityPath(EntityPath<T> rootEntityPath) {
-        this.rootEntityPath = rootEntityPath;
+        this.from = rootEntityPath;
         return this;
     }
 
