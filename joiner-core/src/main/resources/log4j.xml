@@ -12,6 +12,8 @@
 
     <logger name="org.hibernate" level="debug"/>
 
+    <logger name="org.eclipse" level="debug"/>
+
     <root level="debug">
         <appender-ref ref="APP" />
     </root>

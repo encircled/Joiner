@@ -1,10 +1,5 @@
 package cz.encircled.joiner.test.core;
 
-import java.util.Collection;
-
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-
 import cz.encircled.joiner.test.config.TestConfig;
 import cz.encircled.joiner.test.core.data.TestDataListener;
 import cz.encircled.joiner.test.model.AbstractEntity;
@@ -21,6 +16,11 @@ import org.springframework.test.context.TestExecutionListeners;
 import org.springframework.test.context.junit4.AbstractTransactionalJUnit4SpringContextTests;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.transaction.annotation.Transactional;
+
+import javax.persistence.EntityManager;
+import javax.persistence.Persistence;
+import javax.persistence.PersistenceContext;
+import java.util.Collection;
 
 /**
  * @author Kisel on 11.01.2016.
@@ -73,6 +73,10 @@ public abstract class AbstractTest extends AbstractTransactionalJUnit4SpringCont
 
     protected boolean noProfiles(String... profiles) {
         return !environment.acceptsProfiles(profiles);
+    }
+
+    protected boolean isLoaded(Object entity, String attribute) {
+        return Persistence.getPersistenceUtil().isLoaded(entity, attribute);
     }
 
 }

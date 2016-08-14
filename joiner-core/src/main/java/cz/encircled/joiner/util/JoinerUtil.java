@@ -1,10 +1,5 @@
 package cz.encircled.joiner.util;
 
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Field;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-
 import com.mysema.query.types.CollectionExpression;
 import com.mysema.query.types.EntityPath;
 import com.mysema.query.types.Path;
@@ -13,6 +8,11 @@ import com.mysema.query.types.path.SetPath;
 import cz.encircled.joiner.exception.JoinerException;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.util.ReflectionUtils;
+
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * @author Kisel on 25.01.2016.
@@ -44,12 +44,7 @@ public class JoinerUtil {
     }
 
     @SuppressWarnings("unchecked")
-    public static EntityPath<?> getDefaultAlias(EntityPath<?> path) {
-        return getDefaultAlias((Class<EntityPath<?>>) path.getClass());
-    }
-
-    @SuppressWarnings("unchecked")
-    public static EntityPath<?> getDefaultAlias(Class<EntityPath<?>> clazz) {
+    public static EntityPath<?> getDefaultAlias(Class<? extends EntityPath> clazz) {
         EntityPath<?> alias = pathToDefaultAlias.get(clazz);
         if (alias == null) {
             Field instanceField = getQInstanceField(clazz, getSimpleNameOfQ(clazz));
@@ -82,14 +77,14 @@ public class JoinerUtil {
     }
 
     @SuppressWarnings("unchecked")
-    public static <T> EntityPath<T> instantiate(Class<EntityPath<?>> generatedClass, String alias) {
+    public static <T extends EntityPath> T instantiate(Class<? extends EntityPath> generatedClass, String alias) {
         if (alias == null) {
             alias = getDefaultAlias(generatedClass).toString();
         }
 
         try {
-            Constructor<EntityPath<?>> constructor = generatedClass.getConstructor(String.class);
-            return (EntityPath<T>) constructor.newInstance(alias);
+            Constructor<? extends EntityPath> constructor = generatedClass.getConstructor(String.class);
+            return (T) constructor.newInstance(alias);
         } catch (NoSuchMethodException e) {
             throw new JoinerException("EntityPath String constructor is missing on " + generatedClass);
         } catch (Exception e) {
@@ -100,6 +95,10 @@ public class JoinerUtil {
     public static Object findAndGetField(Object object, String name) {
         Field field = ReflectionUtils.findField(object.getClass(), name);
         return ReflectionUtils.getField(field, object);
+    }
+
+    public static <T extends EntityPath> T getAliasForChild(EntityPath<?> parent, T childPath) {
+        return JoinerUtil.instantiate(childPath.getClass(), childPath.toString() + "_on_" + parent.toString());
     }
 
     private static Field getQInstanceField(Class<?> targetClass, String instanceName) {

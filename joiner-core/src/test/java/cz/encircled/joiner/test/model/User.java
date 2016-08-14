@@ -10,7 +10,7 @@ import java.util.Set;
  */
 @Entity
 @Table(name = "test_user")
-@Inheritance(strategy = InheritanceType.JOINED)
+@Inheritance(strategy = InheritanceType.SINGLE_TABLE)
 @DiscriminatorColumn
 @DiscriminatorValue("user")
 public class User extends AbstractEntity {

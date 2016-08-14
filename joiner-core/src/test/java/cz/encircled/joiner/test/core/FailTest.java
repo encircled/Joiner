@@ -1,11 +1,8 @@
 package cz.encircled.joiner.test.core;
 
-import cz.encircled.joiner.exception.AliasAlreadyUsedException;
 import cz.encircled.joiner.exception.AliasMissingException;
-import cz.encircled.joiner.exception.InsufficientSinglePathException;
 import cz.encircled.joiner.exception.JoinerException;
 import cz.encircled.joiner.query.J;
-import cz.encircled.joiner.query.JoinDescription;
 import cz.encircled.joiner.query.Q;
 import cz.encircled.joiner.test.model.QAddress;
 import cz.encircled.joiner.test.model.QGroup;
@@ -36,36 +33,14 @@ public class FailTest extends AbstractTest {
         addressRepository.find(null, QUser.user1);
     }
 
-    @Test(expected = InsufficientSinglePathException.class)
-    public void testInsufficientSinglePath() {
-        addressRepository.find(Q.from(QAddress.address)
-                .join(J.join(QUser.user1)));
-    }
-
-    @Test(expected = AliasMissingException.class)
-    public void testCollectionAliasIsMissing() {
-        groupRepository.find(Q.from(QGroup.group).join(new JoinDescription(QUser.user1.addresses)));
-    }
-
-    @Test(expected = AliasMissingException.class)
-    public void testSingleAliasIsMissing() {
-        groupRepository.find(Q.from(QGroup.group).join(new JoinDescription(QAddress.address.user)));
-    }
-
     @Test(expected = AliasMissingException.class)
     public void predicateNoAliasTest() {
         userRepository.find(Q.from(QUser.user1).where(QAddress.address.name.eq("user1street1")));
     }
 
-    @Test(expected = AliasAlreadyUsedException.class)
-    public void nonCollisionAliasCollectionJoinTest() {
-        groupRepository.find(Q.from(QGroup.group)
-                .joins(J.joins(QGroup.group.statuses, QGroup.group.users, QUser.user1.statuses)));
-    }
-
     @Test(expected = JoinerException.class)
     public void testRightJoinFetch() {
-        groupRepository.find(Q.from(QGroup.group).join(J.join(QGroup.group.users).right()));
+        groupRepository.find(Q.from(QGroup.group).joins(J.left(QUser.user1).right()));
     }
 
     @Test(expected = AliasMissingException.class)

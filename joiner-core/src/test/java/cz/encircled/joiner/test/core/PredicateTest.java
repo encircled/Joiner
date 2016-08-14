@@ -1,6 +1,6 @@
 package cz.encircled.joiner.test.core;
 
-import cz.encircled.joiner.query.JoinDescription;
+import cz.encircled.joiner.query.J;
 import cz.encircled.joiner.query.Q;
 import cz.encircled.joiner.test.model.Address;
 import cz.encircled.joiner.test.model.QAddress;
@@ -26,7 +26,7 @@ public class PredicateTest extends AbstractTest {
     public void predicateInCollectionTest() {
         String name = "user1street1";
         List<User> result = userRepository.find(Q.from(QUser.user1)
-                .join(new JoinDescription(QUser.user1.addresses))
+                .joins(J.left(QAddress.address))
                 .where(QAddress.address.name.eq(name)));
         assertHasName(result, "user1");
         assertHasName(result.get(0).getAddresses(), name);
@@ -36,7 +36,7 @@ public class PredicateTest extends AbstractTest {
     public void predicateInSinglePathTest() {
         String name = "user1";
         List<Address> result = addressRepository.find(Q.from(QAddress.address)
-                .join(new JoinDescription(QAddress.address.user))
+                .joins(J.left(QUser.user1))
                 .where(QAddress.address.user.name.eq(name)));
 
         for (Address address : result) {

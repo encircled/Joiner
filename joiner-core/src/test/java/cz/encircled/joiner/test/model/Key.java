@@ -9,4 +9,5 @@ import javax.persistence.Table;
 @Entity
 @Table(name = "test_key")
 public class Key extends AbstractEntity {
+
 }

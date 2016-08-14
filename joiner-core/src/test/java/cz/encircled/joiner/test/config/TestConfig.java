@@ -50,14 +50,16 @@ public class TestConfig {
         em.setDataSource(dataSource);
         em.setPackagesToScan("cz.encircled");
 
+        boolean fresh = environment.acceptsProfiles("fresh");
+
         if (environment.acceptsProfiles("eclipse")) {
             AbstractJpaVendorAdapter vendorAdapter = new EclipseLinkJpaVendorAdapter();
             em.setJpaVendorAdapter(vendorAdapter);
-            em.setJpaProperties(eclipseProperties());
+            em.setJpaProperties(eclipseProperties(fresh));
         } else {
-            AbstractJpaVendorAdapter vendorAdapter = new HibernateJpaVendorAdapter();
+            HibernateJpaVendorAdapter vendorAdapter = new HibernateJpaVendorAdapter();
             em.setJpaVendorAdapter(vendorAdapter);
-            em.setJpaProperties(hibernateProperties(environment.acceptsProfiles("fresh")));
+            em.setJpaProperties(hibernateProperties(fresh));
         }
         return em;
     }
@@ -80,10 +82,13 @@ public class TestConfig {
         return new PersistenceExceptionTranslationPostProcessor();
     }
 
-    Properties eclipseProperties() {
+    Properties eclipseProperties(boolean fresh) {
         Properties properties = new Properties();
         properties.put(PersistenceUnitProperties.CACHE_SHARED_DEFAULT, "false");
         properties.put(PersistenceUnitProperties.WEAVING, "false");
+        if (fresh) {
+            properties.put(PersistenceUnitProperties.DDL_GENERATION, "drop-and-create-tables");
+        }
         return properties;
     }
 

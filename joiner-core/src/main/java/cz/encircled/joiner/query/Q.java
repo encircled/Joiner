@@ -2,24 +2,20 @@ package cz.encircled.joiner.query;
 
 import com.mysema.query.types.EntityPath;
 import com.mysema.query.types.Expression;
-import com.mysema.query.types.Path;
 import com.mysema.query.types.Predicate;
 import org.springframework.util.Assert;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.LinkedHashMap;
-import java.util.List;
+import java.util.*;
 
 /**
  * This class is a transfer object for repository queries.
- *
  * <p>
- *  T - root entity type
+ * <p>
+ * T - root entity type
  * </p>
  *
- * @see JoinDescription
  * @author Kisel on 11.01.2016.
+ * @see JoinDescription
  */
 public class Q<T> {
 
@@ -97,29 +93,15 @@ public class Q<T> {
         return this;
     }
 
-    public Q<T> join(JoinDescription join) {
-        if (joins == null) {
-            joins = new ArrayList<>();
+    public Q<T> joins(EntityPath<?>... paths) {
+        for (EntityPath<?> path : paths) {
+            joins.add(J.left(path));
         }
-
-        joins.add(join);
         return this;
     }
 
-    public Q<T> join(Path<?> path) {
-        if (joins == null) {
-            joins = new ArrayList<>();
-        }
-
-        joins.add(J.join(path));
-        return this;
-    }
-
-    public Q<T> joins(Path<?>... paths) {
-        for (Path<?> path : paths) {
-            join(path);
-        }
-        return this;
+    public Q<T> joins(JoinDescription... joins) {
+        return joins(Arrays.asList(joins));
     }
 
     public Q<T> joins(List<JoinDescription> joins) {

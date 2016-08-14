@@ -1,26 +1,22 @@
 package cz.encircled.joiner.query;
 
-import java.lang.reflect.AnnotatedElement;
-
 import com.mysema.query.JoinType;
 import com.mysema.query.types.EntityPath;
-import com.mysema.query.types.Path;
 import com.mysema.query.types.Predicate;
 import com.mysema.query.types.path.CollectionPathBase;
 import org.springframework.util.Assert;
+
+import java.lang.reflect.AnnotatedElement;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Represents query join.
  * For collection joins - {@link JoinDescription#collectionPath collectionPath} is used, for single entity joins - {@link JoinDescription#singlePath singlePath}.
  * <p>
- *     When there are multiple joins in a single query, an alias collision may occur. Alias collision may be resolved by setting a custom alias to the join description,
- *     or by using {@link cz.encircled.joiner.alias.JoinerAliasResolver}.
- * </p>
- * <p>
  *     By default, all joins are <b>left fetch</b> joins
  * </p>
  *
- * @see cz.encircled.joiner.alias.JoinerAliasResolver
  * @author Kisel on 21.01.2016.
  */
 public class JoinDescription {
@@ -29,7 +25,7 @@ public class JoinDescription {
 
     private EntityPath<?> singlePath;
 
-    private Path<?> alias;
+    private EntityPath<?> alias;
 
     private JoinType joinType = JoinType.LEFTJOIN;
 
@@ -37,16 +33,15 @@ public class JoinDescription {
 
     private Predicate on;
 
-    public JoinDescription(CollectionPathBase<?, ?, ?> collectionPath) {
-        Assert.notNull(collectionPath);
+    private JoinDescription parent;
 
-        this.collectionPath = collectionPath;
-    }
+    private List<JoinDescription> children = new ArrayList<>();
 
-    public JoinDescription(EntityPath<?> singlePath) {
-        Assert.notNull(singlePath);
+    @Deprecated
+    public JoinDescription(EntityPath<?> alias) {
+        Assert.notNull(alias);
 
-        this.singlePath = singlePath;
+        this.alias = alias;
     }
 
     public boolean isFetch() {
@@ -76,11 +71,11 @@ public class JoinDescription {
         return this;
     }
 
-    public Path<?> getAlias() {
+    public EntityPath<?> getAlias() {
         return alias;
     }
 
-    public JoinDescription alias(final Path<?> alias) {
+    public JoinDescription alias(EntityPath<?> alias) {
         this.alias = alias;
         return this;
     }
@@ -123,6 +118,22 @@ public class JoinDescription {
 
     public JoinDescription right() {
         return joinType(JoinType.RIGHTJOIN);
+    }
+
+    public JoinDescription nested(JoinDescription... joins) {
+        for (JoinDescription join : joins) {
+            join.parent = this;
+            children.add(join);
+        }
+        return this;
+    }
+
+    public JoinDescription getParent() {
+        return parent;
+    }
+
+    public List<JoinDescription> getChildren() {
+        return children;
     }
 
     public AnnotatedElement getAnnotatedElement() {

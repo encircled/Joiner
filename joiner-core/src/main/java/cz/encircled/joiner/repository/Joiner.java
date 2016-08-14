@@ -8,11 +8,10 @@ import com.mysema.query.types.EntityPath;
 import com.mysema.query.types.Expression;
 import com.mysema.query.types.Operation;
 import com.mysema.query.types.Path;
+import com.mysema.query.types.path.BooleanPath;
 import com.mysema.query.types.path.CollectionPathBase;
-import cz.encircled.joiner.alias.JoinerAliasResolver;
-import cz.encircled.joiner.exception.AliasAlreadyUsedException;
+import com.mysema.query.types.path.EntityPathBase;
 import cz.encircled.joiner.exception.AliasMissingException;
-import cz.encircled.joiner.exception.InsufficientSinglePathException;
 import cz.encircled.joiner.exception.JoinerException;
 import cz.encircled.joiner.query.JoinDescription;
 import cz.encircled.joiner.query.Q;
@@ -21,25 +20,29 @@ import cz.encircled.joiner.repository.vendor.EclipselinkRepository;
 import cz.encircled.joiner.repository.vendor.HibernateRepository;
 import cz.encircled.joiner.repository.vendor.JoinerVendorRepository;
 import cz.encircled.joiner.util.JoinerUtil;
+import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.util.Assert;
 import org.springframework.util.ReflectionUtils;
 
 import javax.persistence.EntityManager;
 import java.lang.reflect.Field;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+
+import static org.springframework.util.ReflectionUtils.getField;
 
 /**
  * @author Kisel on 26.01.2016.
  */
 public class Joiner<T> implements QRepository<T> {
 
+    private static final Path<?> nullPath = new BooleanPath("");
+    private final Map<Pair<Class, Class>, Path> aliasCache = new ConcurrentHashMap<>();
     private EntityManager entityManager;
 
     private EntityPath<T> rootPath;
 
     private JoinerVendorRepository joinerVendorRepository;
-
-    private List<JoinerAliasResolver> aliasResolvers;
 
     public Joiner(EntityManager entityManager, EntityPath<T> rootPath) {
         Assert.notNull(entityManager);
@@ -54,10 +57,6 @@ public class Joiner<T> implements QRepository<T> {
         } else if (implName.startsWith("org.eclipse")) {
             this.joinerVendorRepository = new EclipselinkRepository();
         }
-    }
-
-    public void setAliasResolvers(List<JoinerAliasResolver> aliasResolvers) {
-        this.aliasResolvers = aliasResolvers;
     }
 
     @Override
@@ -99,8 +98,7 @@ public class Joiner<T> implements QRepository<T> {
         usedAliases.add(request.getRootEntityPath());
 
         for (JoinDescription join : request.getJoins()) {
-            checkSinglePathCompletion(join);
-            resolveJoinAlias(usedAliases, join);
+            resolveJoinAlias(usedAliases, join, request.getRootEntityPath());
         }
 
         addJoins(request, query, request.getRootEntityPath().equals(projection));
@@ -140,7 +138,12 @@ public class Joiner<T> implements QRepository<T> {
     }
 
     private void addJoins(Q<T> request, JPAQuery query, boolean canFetch) {
+        List<JoinDescription> joins = new ArrayList<>();
         for (JoinDescription join : request.getJoins()) {
+            collectChildren(join, joins);
+        }
+
+        for (JoinDescription join : joins) {
             joinerVendorRepository.addJoin(query, join);
             if (canFetch && join.isFetch()) {
                 if (join.getJoinType().equals(JoinType.RIGHTJOIN)) {
@@ -148,6 +151,13 @@ public class Joiner<T> implements QRepository<T> {
                 }
                 joinerVendorRepository.addFetch(query, join, request.getJoins(), request.getRootEntityPath());
             }
+        }
+    }
+
+    private void collectChildren(JoinDescription join, List<JoinDescription> collection) {
+        collection.add(join);
+        for (JoinDescription child : join.getChildren()) {
+            collectChildren(child, collection);
         }
     }
 
@@ -162,54 +172,80 @@ public class Joiner<T> implements QRepository<T> {
     }
 
     @SuppressWarnings("unchecked")
-    private void resolveJoinAlias(Set<Path<?>> usedAliases, JoinDescription join) {
-        if (join.getAlias() == null) {
-            if (join.isCollectionPath()) {
-                join.alias(resolveAlias(join.getCollectionPath()));
-            } else {
-                join.alias(resolveAlias(join.getSinglePath()));
-            }
+    private void resolveJoinAlias(Set<Path<?>> usedAliases, JoinDescription join, EntityPath<T> root) {
+        Path<?> parent = join.getParent() != null ? join.getParent().getAlias() : root;
+        Class<?> targetType = join.getAlias().getType();
+
+        Path<?> fieldOnParent = findPathOnParent(parent, targetType, join);
+        if (fieldOnParent instanceof CollectionPathBase) {
+            join.collectionPath((CollectionPathBase<?, ?, ?>) fieldOnParent);
+        } else if (fieldOnParent instanceof EntityPath) {
+            join.singlePath((EntityPath<?>) fieldOnParent);
         }
-
-        if (usedAliases.contains(join.getAlias())) {
-            throw new AliasAlreadyUsedException("Alias " + join.getAlias() + " is already used!");
-        }
-
-        Path<?> root = join.isCollectionPath() ? join.getCollectionPath().getRoot() : join.getSinglePath().getRoot();
-        if (!usedAliases.contains(root)) {
-            EntityPath<?> generated = JoinerUtil.getGenerated(root, null);
-
-            String alias = resolveAlias((JoinerUtil.getSuper(generated))).toString();
-            EntityPath<?> parent = JoinerUtil.instantiate((Class<EntityPath<?>>) generated.getClass(), alias);
-
-            Object targetField = JoinerUtil.findAndGetField(parent, ((Field) join.getAnnotatedElement()).getName());
-
-            if (join.isCollectionPath()) {
-                join.collectionPath((CollectionPathBase<?, ?, ?>) targetField);
-            } else {
-                join.singlePath((EntityPath<?>) targetField);
-            }
-
-            if (usedAliases.contains(parent.getRoot())) {
-                if (join.isCollectionPath()) {
-                    join.alias(resolveAlias((CollectionPathBase<?, ?, ?>) targetField));
-                } else {
-                    join.alias(resolveAlias((EntityPath<?>) targetField));
-                }
-            } else {
-                throw new AliasMissingException("Can't join " + join + ", alias " + join.getAlias() + " is not present!");
-            }
+        if (join.getParent() != null) {
+            join.alias(JoinerUtil.getAliasForChild(join.getParent().getAlias(), join.getAlias()));
         }
 
         usedAliases.add(join.getAlias());
+
+        for (JoinDescription child : join.getChildren()) {
+            resolveJoinAlias(usedAliases, child, root);
+        }
+
+    }
+
+    private Path<?> findPathOnParent(Object parent, Class<?> targetType, JoinDescription joinDescription) {
+        while (!targetType.equals(Object.class)) {
+            Pair<Class, Class> cacheKey = Pair.of(parent.getClass(), targetType);
+            Path cached = aliasCache.get(cacheKey);
+            if (cached != null && !cached.equals(nullPath)) {
+                // TODO test
+                // TODO optimize inheritance cases
+                return cached;
+            }
+
+            Path<?> result = null;
+
+            for (Field field : parent.getClass().getFields()) {
+                Object candidate = getField(field, parent);
+
+                if (candidate instanceof CollectionPathBase) {
+                    Field elementTypeField = ReflectionUtils.findField(candidate.getClass(), "elementType");
+                    elementTypeField.setAccessible(true);
+                    Class<?> elementType = (Class<?>) getField(elementTypeField, candidate);
+                    elementTypeField.setAccessible(false);
+
+                    if (elementType.equals(targetType)) {
+                        result = (Path<?>) candidate;
+                    }
+                } else if (candidate instanceof EntityPathBase) {
+                    Class type = ((EntityPathBase) candidate).getType();
+                    if (type.equals(targetType)) {
+                        result = (Path<?>) candidate;
+                    }
+                }
+            }
+
+            if (result == null) {
+                joinDescription.fetch(false);
+                for (JoinDescription child : joinDescription.getChildren()) {
+                    child.fetch(false);
+                }
+                aliasCache.put(cacheKey, nullPath);
+                targetType = targetType.getSuperclass();
+            } else {
+                aliasCache.put(cacheKey, result);
+                return result;
+            }
+        }
+
+        return null;
     }
 
     private void checkAliasesArePresent(Expression<?> expression, Set<Path<?>> usedAliases) {
         for (Path<?> path : resolvePaths(expression)) {
             Path predicatePath = path.getRoot();
-            if (predicatePath.toString().startsWith("any(")) {
-                // TODO what to do?
-            } else {
+            if (!predicatePath.toString().startsWith("any(")) {
                 if (!usedAliases.contains(predicatePath)) {
                     throw new AliasMissingException("Alias " + predicatePath + " is not present in joins!");
                 }
@@ -229,31 +265,6 @@ public class Joiner<T> implements QRepository<T> {
         } else if (expression instanceof Operation) {
             for (Expression exp : ((Operation<?>) expression).getArgs()) {
                 resolvePathsInternal(exp, paths);
-            }
-        }
-    }
-
-    private EntityPath<?> resolveAlias(Path<?> path) {
-        if (aliasResolvers != null) {
-            for (JoinerAliasResolver aliasResolver : aliasResolvers) {
-                EntityPath<?> resolved = aliasResolver.resolveAlias(path);
-                if (resolved != null) {
-                    return resolved;
-                }
-            }
-        }
-        if (path instanceof CollectionPathBase) {
-            return JoinerUtil.getDefaultAlias((CollectionPathBase) path);
-        } else {
-            return JoinerUtil.getDefaultAlias((EntityPath) path);
-        }
-    }
-
-    private void checkSinglePathCompletion(JoinDescription join) {
-        if (!join.isCollectionPath()) {
-            if (join.getSinglePath().toString().equals(join.getSinglePath().getRoot().toString())) {
-                throw new InsufficientSinglePathException(
-                        "Set full join path. For example 'QUser.user.address' instead of 'QAddress.address' ");
             }
         }
     }
