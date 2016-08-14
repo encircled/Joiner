@@ -23,7 +23,7 @@ public class InheritanceJoinTest extends AbstractTest {
 
     @Test
     public void joinSingleEntityOnChildTest() {
-        List<Group> groups = groupRepository.find(Q.from(QGroup.group)
+        List<Group> groups = joiner.find(Q.from(QGroup.group)
                 .joins(J.left(QUser.user1).alias(new QUser("superUser")), J.left(QSuperUser.superUser.key)));
 
         check(groups, true, false);
@@ -31,7 +31,7 @@ public class InheritanceJoinTest extends AbstractTest {
 
     @Test
     public void joinSingleAndCollectionMultipleChildrenTest() {
-        List<Group> groups = groupRepository.find(new Q<Group>()
+        List<Group> groups = joiner.find(new Q<Group>()
                 .joins(J.left(QUser.user1)
                         .nested(J.left(QKey.key), J.left(QPassword.password)))
                 .where(QKey.key.name.ne("bad_key"))
@@ -42,7 +42,7 @@ public class InheritanceJoinTest extends AbstractTest {
 
     @Test
     public void joinCollectionOnChildTest() {
-        List<Group> groups = groupRepository.find(Q.from(QGroup.group)
+        List<Group> groups = joiner.find(Q.from(QGroup.group)
                 .joins(J.left(QUser.user1).alias(QNormalUser.normalUser._super).nested(J.left(QPassword.password)))
         );
 
@@ -51,7 +51,7 @@ public class InheritanceJoinTest extends AbstractTest {
 
     @Test
     public void nestedTest() {
-        List<Address> addresses = addressRepository.find(Q.from(QAddress.address)
+        List<Address> addresses = joiner.find(Q.from(QAddress.address)
                 .joins(J.left(QUser.user1).nested(J.left(QPassword.password)))
         );
 

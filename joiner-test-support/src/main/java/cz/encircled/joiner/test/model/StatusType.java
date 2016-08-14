@@ -1,11 +1,10 @@
 package cz.encircled.joiner.test.model;
 
-import java.util.Set;
-
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
+import java.util.Set;
 
 /**
  * @author Kisel on 27.01.2016.

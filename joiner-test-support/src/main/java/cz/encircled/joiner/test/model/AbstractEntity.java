@@ -1,11 +1,6 @@
 package cz.encircled.joiner.test.model;
 
-import javax.persistence.Column;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.MappedSuperclass;
-import javax.persistence.SequenceGenerator;
+import javax.persistence.*;
 
 /**
  * @author Kisel on 21.01.2016.

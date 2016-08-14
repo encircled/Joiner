@@ -19,23 +19,23 @@ public class BasicJoinTest extends AbstractTest {
 
     @Test
     public void noFetchJoinTest() {
-        List<User> users = userRepository.find(Q.from(QUser.user1));
+        List<User> users = joiner.find(Q.from(QUser.user1));
         Assert.assertFalse(Persistence.getPersistenceUtil().isLoaded(users.get(0), "groups"));
 
         JoinDescription e = J.left(QGroup.group).fetch(false);
 
-        users = userRepository.find(Q.from(QUser.user1).joins(Collections.singletonList(e)));
+        users = joiner.find(Q.from(QUser.user1).joins(Collections.singletonList(e)));
         Assert.assertFalse(Persistence.getPersistenceUtil().isLoaded(users.get(0), "groups"));
 
         e.fetch(true);
         entityManager.clear();
-        users = userRepository.find(Q.from(QUser.user1).joins(Collections.singletonList(e)));
+        users = joiner.find(Q.from(QUser.user1).joins(Collections.singletonList(e)));
         Assert.assertTrue(Persistence.getPersistenceUtil().isLoaded(users.get(0), "groups"));
     }
 
     @Test
     public void test1() {
-        List<Group> groups = groupRepository.find(Q.from(QGroup.group)
+        List<Group> groups = joiner.find(Q.from(QGroup.group)
                 .joins(J.left(QUser.user1)
                         .nested(J.left(QStatus.status)))
                 .joins(J.left(QStatus.status))
@@ -55,7 +55,7 @@ public class BasicJoinTest extends AbstractTest {
 
     @Test
     public void testFoundSubclassPredicated() {
-        List<Group> groups = groupRepository.find(Q.from(QGroup.group)
+        List<Group> groups = joiner.find(Q.from(QGroup.group)
                 .joins(J.left(QSuperUser.superUser)
                         .nested(J.left(QKey.key)))
                 .joins(J.left(QStatus.status))
@@ -80,7 +80,7 @@ public class BasicJoinTest extends AbstractTest {
 
     @Test
     public void testNotFoundSubclassPredicated() {
-        List<Group> groups = groupRepository.find(Q.from(QGroup.group)
+        List<Group> groups = joiner.find(Q.from(QGroup.group)
                 .joins(J.left(QSuperUser.superUser)
                         .nested(J.left(QKey.key)))
                 .joins(J.left(QStatus.status))
@@ -93,13 +93,13 @@ public class BasicJoinTest extends AbstractTest {
     @Test
     public void testNestedCollectionAndSingleJoin() {
         if (noProfiles("eclipse")) {
-            List<Address> addresses = addressRepository.find(Q.from(QAddress.address));
+            List<Address> addresses = joiner.find(Q.from(QAddress.address));
             Assert.assertFalse(Persistence.getPersistenceUtil().isLoaded(addresses.get(0), "user"));
             Assert.assertFalse(Persistence.getPersistenceUtil().isLoaded(addresses.get(0).getUser(), "groups"));
             entityManager.clear();
         }
 
-        List<Address> addresses = addressRepository.find(Q.from(QAddress.address)
+        List<Address> addresses = joiner.find(Q.from(QAddress.address)
                 .joins(J.left(QUser.user1).nested(J.left(QGroup.group))));
 
         Assert.assertTrue(Persistence.getPersistenceUtil().isLoaded(addresses.get(0), "user"));
@@ -109,14 +109,14 @@ public class BasicJoinTest extends AbstractTest {
 
     @Test
     public void testNestedCollectionJoin() {
-        List<Group> groups = groupRepository.find(Q.from(QGroup.group));
+        List<Group> groups = joiner.find(Q.from(QGroup.group));
 
         Assert.assertFalse(Persistence.getPersistenceUtil().isLoaded(groups.get(0), "users"));
         Assert.assertFalse(Persistence.getPersistenceUtil().isLoaded(groups.get(0).getUsers().iterator().next(), "addresses"));
 
         entityManager.clear();
 
-        groups = groupRepository.find(Q.from(QGroup.group)
+        groups = joiner.find(Q.from(QGroup.group)
                 .joins(J.left(QUser.user1)
                         .nested(J.left(QAddress.address))));
 
@@ -129,22 +129,22 @@ public class BasicJoinTest extends AbstractTest {
         Q<User> q = Q.from(QUser.user1)
                 .joins(J.inner(QAddress.address));
 
-        Assert.assertFalse(userRepository.find(q).isEmpty());
+        Assert.assertFalse(joiner.find(q).isEmpty());
 
         q.where(QUser.user1.name.eq("user3"));
-        Assert.assertTrue(userRepository.find(q).isEmpty());
+        Assert.assertTrue(joiner.find(q).isEmpty());
     }
 
     @Test
     public void nonCollisionAliasCollectionJoinTest() {
-        groupRepository.find(Q.from(QGroup.group)
+        joiner.find(Q.from(QGroup.group)
                 .joins(J.left(QStatus.status)));
     }
 
     @Test
     public void testRightJoinNoFetch() {
         if (noProfiles("eclipse")) {
-            List<Group> groups = groupRepository.find(Q.from(QGroup.group)
+            List<Group> groups = joiner.find(Q.from(QGroup.group)
                     .joins(J.left(QUser.user1).right().fetch(false))
                     .where(QUser.user1.name.eq("user1")));
             Assert.assertFalse(groups.isEmpty());
@@ -154,7 +154,7 @@ public class BasicJoinTest extends AbstractTest {
     @Test(expected = JoinerException.class)
     public void testRightJoinNoFetchEclipse() {
         if (isEclipse()) {
-            List<Group> groups = groupRepository.find(Q.from(QGroup.group)
+            List<Group> groups = joiner.find(Q.from(QGroup.group)
                     .joins(J.left(QUser.user1).right()
                             .fetch(false))
                     .where(QUser.user1.name.eq("user1")));
@@ -166,7 +166,7 @@ public class BasicJoinTest extends AbstractTest {
 
     @Test
     public void testNonDistinct() {
-        int nonDistinct = userRepository.find(Q.from(QUser.user1)
+        int nonDistinct = joiner.find(Q.from(QUser.user1)
                 .joins(J.left(QAddress.address)
                         .nested(J.left(QStatus.status)))
                 .distinct(false))
@@ -174,7 +174,7 @@ public class BasicJoinTest extends AbstractTest {
 
         entityManager.clear();
 
-        int distinct = userRepository.find(Q.from(QUser.user1).joins(J.left(QAddress.address))).size();
+        int distinct = joiner.find(Q.from(QUser.user1).joins(J.left(QAddress.address))).size();
 
         if (isEclipse()) {
             Assert.assertTrue(distinct == nonDistinct);
@@ -187,7 +187,7 @@ public class BasicJoinTest extends AbstractTest {
     public void testJoinOn() {
         String name = "user1";
 
-        List<User> groups = groupRepository.find(Q.from(QGroup.group)
+        List<User> groups = joiner.find(Q.from(QGroup.group)
                 .joins(J.inner(QUser.user1)
                         .on(QUser.user1.name.eq(name))
                         .fetch(false)), QUser.user1

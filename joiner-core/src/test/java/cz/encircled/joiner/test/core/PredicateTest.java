@@ -18,14 +18,14 @@ public class PredicateTest extends AbstractTest {
     @Test
     public void basicPredicateTest() {
         String name = "user1";
-        List<User> result = userRepository.find(Q.from(QUser.user1).where(QUser.user1.name.eq(name)));
+        List<User> result = joiner.find(Q.from(QUser.user1).where(QUser.user1.name.eq(name)));
         assertHasName(result, name);
     }
 
     @Test
     public void predicateInCollectionTest() {
         String name = "user1street1";
-        List<User> result = userRepository.find(Q.from(QUser.user1)
+        List<User> result = joiner.find(Q.from(QUser.user1)
                 .joins(J.left(QAddress.address))
                 .where(QAddress.address.name.eq(name)));
         assertHasName(result, "user1");
@@ -35,7 +35,7 @@ public class PredicateTest extends AbstractTest {
     @Test
     public void predicateInSinglePathTest() {
         String name = "user1";
-        List<Address> result = addressRepository.find(Q.from(QAddress.address)
+        List<Address> result = joiner.find(Q.from(QAddress.address)
                 .joins(J.left(QUser.user1))
                 .where(QAddress.address.user.name.eq(name)));
 

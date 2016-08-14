@@ -1,11 +1,9 @@
 package cz.encircled.joiner.test.core;
 
+import cz.encircled.joiner.repository.Joiner;
 import cz.encircled.joiner.test.config.TestConfig;
 import cz.encircled.joiner.test.core.data.TestDataListener;
 import cz.encircled.joiner.test.model.AbstractEntity;
-import cz.encircled.joiner.test.repository.AddressRepository;
-import cz.encircled.joiner.test.repository.GroupRepository;
-import cz.encircled.joiner.test.repository.UserRepository;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.runner.RunWith;
@@ -26,19 +24,12 @@ import java.util.Collection;
  * @author Kisel on 11.01.2016.
  */
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(classes = { TestConfig.class })
+@ContextConfiguration(classes = {TestConfig.class})
 @Transactional
-@TestExecutionListeners(listeners = { TestDataListener.class })
+@TestExecutionListeners(listeners = {TestDataListener.class})
 public abstract class AbstractTest extends AbstractTransactionalJUnit4SpringContextTests {
 
-    @Autowired
-    protected UserRepository userRepository;
-
-    @Autowired
-    protected GroupRepository groupRepository;
-
-    @Autowired
-    protected AddressRepository addressRepository;
+    protected Joiner joiner;
 
     @PersistenceContext
     protected EntityManager entityManager;
@@ -48,6 +39,9 @@ public abstract class AbstractTest extends AbstractTransactionalJUnit4SpringCont
 
     @Before
     public void before() {
+        if (joiner == null) {
+            joiner = new Joiner(entityManager);
+        }
         entityManager.clear();
     }
 

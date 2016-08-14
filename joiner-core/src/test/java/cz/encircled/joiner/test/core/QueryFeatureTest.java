@@ -4,6 +4,7 @@ import com.mysema.query.jpa.impl.JPAQuery;
 import cz.encircled.joiner.query.Q;
 import cz.encircled.joiner.query.QueryFeature;
 import cz.encircled.joiner.test.config.TestConfig;
+import cz.encircled.joiner.test.model.QUser;
 import cz.encircled.joiner.test.model.User;
 import org.junit.Test;
 import org.springframework.test.context.ContextConfiguration;
@@ -16,7 +17,7 @@ public class QueryFeatureTest extends AbstractTest {
 
     @Test(expected = TestException.class)
     public void testQueryFeatureBefore() {
-        Q<User> request = new Q<>();
+        Q<User> request = Q.from(QUser.user1);
         request.addFeatures(new QueryFeature() {
             @Override
             public <T> Q<T> before(Q<T> request) {
@@ -28,12 +29,12 @@ public class QueryFeatureTest extends AbstractTest {
                 return query;
             }
         });
-        userRepository.find(request);
+        joiner.find(request);
     }
 
     @Test(expected = TestException.class)
     public void testQueryFeatureAfter() {
-        Q<User> request = new Q<>();
+        Q<User> request = Q.from(QUser.user1);
         request.addFeatures(new QueryFeature() {
             @Override
             public <T> Q<T> before(Q<T> request) {
@@ -45,7 +46,7 @@ public class QueryFeatureTest extends AbstractTest {
                 throw new TestException();
             }
         });
-        userRepository.find(request);
+        joiner.find(request);
     }
 
 }

@@ -18,7 +18,7 @@ public class PredicateConverterTest extends AbstractTest {
 
     @Test
     public void basicTest() {
-        groupRepository.find(Q.from(QGroup.group)
+        joiner.find(Q.from(QGroup.group)
                 .joins(J.left(QStatus.status), J.left(QUser.user1).nested(J.left(QStatus.status)))
                 .where(QGroup.group.statuses.any().id.eq(2L)));
     }

@@ -18,7 +18,7 @@ public class CollisionAliasJoinTest extends AbstractTest {
 
     @Test
     public void collisionAliasCollectionJoinTest() {
-        groupRepository.find(Q.from(QGroup.group)
+        joiner.find(Q.from(QGroup.group)
                 .joins(J.left(QStatus.status), J.left(QUser.user1).nested(J.left(QStatus.status))));
     }
 
