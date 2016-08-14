@@ -4,7 +4,7 @@ import com.mysema.query.JoinType;
 import com.mysema.query.types.EntityPath;
 import com.mysema.query.types.Predicate;
 import com.mysema.query.types.path.CollectionPathBase;
-import org.springframework.util.Assert;
+import cz.encircled.joiner.util.Assert;
 
 import java.lang.reflect.AnnotatedElement;
 import java.util.ArrayList;

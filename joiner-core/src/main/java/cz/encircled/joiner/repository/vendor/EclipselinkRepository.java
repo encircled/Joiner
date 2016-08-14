@@ -1,10 +1,5 @@
 package cz.encircled.joiner.repository.vendor;
 
-import java.lang.reflect.Field;
-import java.util.Collection;
-
-import javax.persistence.EntityManager;
-
 import com.google.common.collect.ArrayListMultimap;
 import com.mysema.query.JoinType;
 import com.mysema.query.jpa.EclipseLinkTemplates;
@@ -13,7 +8,11 @@ import com.mysema.query.jpa.impl.JPAQuery;
 import com.mysema.query.types.EntityPath;
 import cz.encircled.joiner.exception.JoinerException;
 import cz.encircled.joiner.query.JoinDescription;
-import org.springframework.util.ReflectionUtils;
+import cz.encircled.joiner.util.ReflectionUtils;
+
+import javax.persistence.EntityManager;
+import java.lang.reflect.Field;
+import java.util.Collection;
 
 /**
  * @author Kisel on 28.01.2016.
@@ -32,7 +31,6 @@ public class EclipselinkRepository extends AbstractVendorRepository implements J
 
     private void makeInsertionOrderHints(AbstractJPAQuery<JPAQuery> sourceQuery) {
         Field f = ReflectionUtils.findField(AbstractJPAQuery.class, "hints");
-        ReflectionUtils.makeAccessible(f);
         ReflectionUtils.setField(f, sourceQuery, ArrayListMultimap.create());
     }
 

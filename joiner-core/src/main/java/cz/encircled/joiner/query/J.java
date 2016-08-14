@@ -1,8 +1,8 @@
 package cz.encircled.joiner.query;
 
 import com.mysema.query.types.EntityPath;
+import cz.encircled.joiner.util.Assert;
 import cz.encircled.joiner.util.JoinerUtil;
-import org.springframework.util.Assert;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -13,32 +13,41 @@ import java.util.List;
  */
 public abstract class JoinerRepository<T> implements QRepository<T> {
 
-    protected QRepository<T> delegate;
+    protected Joiner delegate;
 
     @Override
     public List<T> find(Q<T> request) {
+        checkRootPath(request);
         return delegate.find(request);
     }
 
     @Override
     public <P> List<P> find(Q<T> request, Expression<P> projection) {
+        checkRootPath(request);
         return delegate.find(request, projection);
     }
 
     @Override
     public T findOne(Q<T> request) {
+        checkRootPath(request);
         return delegate.findOne(request);
     }
 
     @Override
     public <P> P findOne(Q<T> request, Expression<P> projection) {
+        checkRootPath(request);
         return delegate.findOne(request, projection);
     }
 
     @PostConstruct
     private void init() {
-        Joiner<T> joiner = new Joiner<>(getEntityManager(), getRootEntityPath());
-        delegate = joiner;
+        delegate = new Joiner(getEntityManager());
+    }
+
+    private void checkRootPath(Q<T> request) {
+        if (request != null && request.getRootEntityPath() == null) {
+            request.rootEntityPath(getRootEntityPath());
+        }
     }
 
     protected abstract EntityManager getEntityManager();

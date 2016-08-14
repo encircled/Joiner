@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xmlns="http://maven.apache.org/POM/4.0.0"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>cz.encircled</groupId>
+    <artifactId>joiner-parent</artifactId>
+    <version>0.1</version>
+    <name>joiner</name>
+
+    <modules>
+        <module>joiner-core</module>
+        <module>joiner-spring</module>
+    </modules>
+
+    <packaging>pom</packaging>
+
+    <properties>
+        <querydsl.version>3.7.0</querydsl.version>
+        <spring.version>4.3.2.RELEASE</spring.version>
+        <hibernate.version>5.2.2.Final</hibernate.version>
+        <eclipselink.version>2.6.3</eclipselink.version>
+        <vendor.name>hibernate</vendor.name>
+        <vendor.generate>no-fresh</vendor.generate>
+    </properties>
+
+    <dependencyManagement>
+        <dependencies>
+            <!-- Spring -->
+            <dependency>
+                <groupId>org.springframework</groupId>
+                <artifactId>spring-core</artifactId>
+                <version>${spring.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.springframework</groupId>
+                <artifactId>spring-context</artifactId>
+                <version>${spring.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.springframework</groupId>
+                <artifactId>spring-jdbc</artifactId>
+                <version>${spring.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.springframework</groupId>
+                <artifactId>spring-orm</artifactId>
+                <version>${spring.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.springframework</groupId>
+                <artifactId>spring-tx</artifactId>
+                <version>${spring.version}</version>
+            </dependency>
+
+
+            <dependency>
+                <groupId>org.springframework</groupId>
+                <artifactId>spring-test</artifactId>
+                <version>${spring.version}</version>
+            </dependency>
+            <!-- Spring end -->
+
+        </dependencies>
+    </dependencyManagement>
+
+</project>

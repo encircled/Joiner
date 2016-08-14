@@ -3,7 +3,7 @@ package cz.encircled.joiner.query;
 import com.mysema.query.types.EntityPath;
 import com.mysema.query.types.Expression;
 import com.mysema.query.types.Predicate;
-import org.springframework.util.Assert;
+import cz.encircled.joiner.util.Assert;
 
 import java.util.*;
 

@@ -4,11 +4,16 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>cz.encircled</groupId>
     <artifactId>joiner-core</artifactId>
     <version>0.1</version>
+    <parent>
+        <groupId>cz.encircled</groupId>
+        <artifactId>joiner-parent</artifactId>
+        <version>0.1</version>
+        <relativePath>../pom.xml</relativePath>
+    </parent>
 
-    <name>Joiner</name>
+    <name>joiner-core</name>
     <description>
         The main goal of Joiner is to make QueryDSL even more useful. Joiner provides:
         - a simple way to add joins to querydsl queries at build or runtime
@@ -34,15 +39,6 @@
             <email>eencircled@gmail.com</email>
         </developer>
     </developers>
-
-    <properties>
-        <querydsl.version>3.7.0</querydsl.version>
-        <spring.version>4.3.2.RELEASE</spring.version>
-        <hibernate.version>5.2.2.Final</hibernate.version>
-        <eclipselink.version>2.6.3</eclipselink.version>
-        <vendor.name>hibernate</vendor.name>
-        <vendor.generate>no-fresh</vendor.generate>
-    </properties>
 
     <dependencies>
 
@@ -111,14 +107,12 @@
             <groupId>com.mysema.querydsl</groupId>
             <artifactId>querydsl-core</artifactId>
             <version>${querydsl.version}</version>
-            <scope>provided</scope>
         </dependency>
 
         <dependency>
             <groupId>com.mysema.querydsl</groupId>
             <artifactId>querydsl-jpa</artifactId>
             <version>${querydsl.version}</version>
-            <scope>provided</scope>
         </dependency>
 
         <dependency>
@@ -128,59 +122,14 @@
             <scope>test</scope>
         </dependency>
 
+        <!-- QueryDSL End -->
+
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-log4j12</artifactId>
             <version>1.6.1</version>
             <scope>provided</scope>
         </dependency>
-
-        <!-- Spring -->
-
-        <dependency>
-            <groupId>org.springframework</groupId>
-            <artifactId>spring-core</artifactId>
-            <version>${spring.version}</version>
-            <scope>provided</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>org.springframework</groupId>
-            <artifactId>spring-context</artifactId>
-            <version>${spring.version}</version>
-            <scope>provided</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>org.springframework</groupId>
-            <artifactId>spring-jdbc</artifactId>
-            <version>${spring.version}</version>
-            <scope>test</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>org.springframework</groupId>
-            <artifactId>spring-orm</artifactId>
-            <version>${spring.version}</version>
-            <scope>test</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>org.springframework</groupId>
-            <artifactId>spring-tx</artifactId>
-            <version>${spring.version}</version>
-            <scope>test</scope>
-        </dependency>
-
-
-        <dependency>
-            <groupId>org.springframework</groupId>
-            <artifactId>spring-test</artifactId>
-            <version>${spring.version}</version>
-            <scope>test</scope>
-        </dependency>
-
-        <!-- Spring end -->
 
         <dependency>
             <groupId>org.postgresql</groupId>
@@ -202,6 +151,44 @@
             <version>3.4</version>
             <scope>provided</scope>
         </dependency>
+
+        <!-- Spring -->
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-core</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-context</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-jdbc</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-orm</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-tx</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <!-- Spring end -->
 
     </dependencies>
 

@@ -19,37 +19,35 @@ import cz.encircled.joiner.query.QueryFeature;
 import cz.encircled.joiner.repository.vendor.EclipselinkRepository;
 import cz.encircled.joiner.repository.vendor.HibernateRepository;
 import cz.encircled.joiner.repository.vendor.JoinerVendorRepository;
+import cz.encircled.joiner.util.Assert;
 import cz.encircled.joiner.util.JoinerUtil;
+import cz.encircled.joiner.util.ReflectionUtils;
 import org.apache.commons.lang3.tuple.Pair;
-import org.springframework.util.Assert;
-import org.springframework.util.ReflectionUtils;
 
 import javax.persistence.EntityManager;
 import java.lang.reflect.Field;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
-import static org.springframework.util.ReflectionUtils.getField;
+import static cz.encircled.joiner.util.ReflectionUtils.getField;
 
 /**
  * @author Kisel on 26.01.2016.
  */
-public class Joiner<T> implements QRepository<T> {
+public class Joiner {
 
     private static final Path<?> nullPath = new BooleanPath("");
-    private final Map<Pair<Class, Class>, Path> aliasCache = new ConcurrentHashMap<>();
-    private EntityManager entityManager;
 
-    private EntityPath<T> rootPath;
+    private final Map<Pair<Class, Class>, Path> aliasCache = new ConcurrentHashMap<>();
+
+    private EntityManager entityManager;
 
     private JoinerVendorRepository joinerVendorRepository;
 
-    public Joiner(EntityManager entityManager, EntityPath<T> rootPath) {
+    public Joiner(EntityManager entityManager) {
         Assert.notNull(entityManager);
-        Assert.notNull(rootPath);
 
         this.entityManager = entityManager;
-        this.rootPath = rootPath;
 
         String implName = entityManager.getDelegate().getClass().getName();
         if (implName.startsWith("org.hibernate")) {
@@ -59,25 +57,24 @@ public class Joiner<T> implements QRepository<T> {
         }
     }
 
-    @Override
-    public T findOne(Q<T> request) {
+    public <T> T findOne(Q<T> request) {
+        return findOne(request, request.getRootEntityPath());
+    }
+
+    public <T, P> P findOne(Q<T> request, Expression<P> projection) {
         return null;
     }
 
-    @Override
-    public <P> P findOne(Q<T> request, Expression<P> projection) {
-        return null;
+    public <T> List<T> find(Q<T> request) {
+        Assert.notNull(request);
+        return find(request, request.getRootEntityPath());
     }
 
-    @Override
-    public List<T> find(Q<T> request) {
-        return find(request, rootPath);
-    }
-
-    @Override
-    public <P> List<P> find(Q<T> request, Expression<P> projection) {
+    public <T, P> List<P> find(Q<T> request, Expression<P> projection) {
         Assert.notNull(request);
         Assert.notNull(projection);
+        // TODO extract validation
+        Assert.notNull(request.getRootEntityPath());
 
         for (QueryFeature feature : request.getFeatures()) {
             request = doPreProcess(request, feature);
@@ -86,9 +83,6 @@ public class Joiner<T> implements QRepository<T> {
         JPAQuery query = joinerVendorRepository.createQuery(entityManager);
         makeInsertionOrderHints(query);
 
-        if (request.getRootEntityPath() == null) {
-            request.rootEntityPath(rootPath);
-        }
         query.from(request.getRootEntityPath());
         if (request.isDistinct()) {
             query.distinct();
@@ -123,21 +117,20 @@ public class Joiner<T> implements QRepository<T> {
         return query.list(projection);
     }
 
-    private JPAQuery doPostProcess(Q<T> request, JPAQuery query, QueryFeature feature) {
+    private JPAQuery doPostProcess(Q<?> request, JPAQuery query, QueryFeature feature) {
         return feature.after(request, query);
     }
 
-    private Q<T> doPreProcess(Q<T> request, QueryFeature feature) {
+    private <T> Q<T> doPreProcess(Q<T> request, QueryFeature feature) {
         return feature.before(request);
     }
 
     private void makeInsertionOrderHints(AbstractJPAQuery<JPAQuery> sourceQuery) {
         Field f = ReflectionUtils.findField(AbstractJPAQuery.class, "hints");
-        ReflectionUtils.makeAccessible(f);
         ReflectionUtils.setField(f, sourceQuery, ArrayListMultimap.create());
     }
 
-    private void addJoins(Q<T> request, JPAQuery query, boolean canFetch) {
+    private void addJoins(Q<?> request, JPAQuery query, boolean canFetch) {
         List<JoinDescription> joins = new ArrayList<>();
         for (JoinDescription join : request.getJoins()) {
             collectChildren(join, joins);
@@ -161,7 +154,7 @@ public class Joiner<T> implements QRepository<T> {
         }
     }
 
-    private void addHints(Q<T> request, JPAQuery query) {
+    private void addHints(Q<?> request, JPAQuery query) {
         for (Map.Entry<String, List<Object>> entry : request.getHints().entrySet()) {
             if (entry.getValue() != null) {
                 for (Object value : entry.getValue()) {
@@ -172,7 +165,7 @@ public class Joiner<T> implements QRepository<T> {
     }
 
     @SuppressWarnings("unchecked")
-    private void resolveJoinAlias(Set<Path<?>> usedAliases, JoinDescription join, EntityPath<T> root) {
+    private void resolveJoinAlias(Set<Path<?>> usedAliases, JoinDescription join, EntityPath<?> root) {
         Path<?> parent = join.getParent() != null ? join.getParent().getAlias() : root;
         Class<?> targetType = join.getAlias().getType();
 
@@ -211,9 +204,7 @@ public class Joiner<T> implements QRepository<T> {
 
                 if (candidate instanceof CollectionPathBase) {
                     Field elementTypeField = ReflectionUtils.findField(candidate.getClass(), "elementType");
-                    elementTypeField.setAccessible(true);
                     Class<?> elementType = (Class<?>) getField(elementTypeField, candidate);
-                    elementTypeField.setAccessible(false);
 
                     if (elementType.equals(targetType)) {
                         result = (Path<?>) candidate;
