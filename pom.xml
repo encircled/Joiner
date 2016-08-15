@@ -1,17 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xmlns="http://maven.apache.org/POM/4.0.0"
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/POM/4.0.0"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>cz.encircled</groupId>
     <artifactId>joiner-parent</artifactId>
-    <version>0.1</version>
+    <version>0.2-SNAPSHOT</version>
     <name>joiner</name>
     <description>Joiner parent module</description>
 
     <url>https://github.com/encircled/Joiner</url>
     <scm>
+        <connection>scm:git:https://github.com/encircled/Joiner.git</connection>
         <url>https://github.com/encircled/Joiner.git</url>
     </scm>
 
@@ -178,7 +178,6 @@
 
         </dependencies>
     </dependencyManagement>
-
     <profiles>
         <profile>
             <id>release</id>
@@ -240,6 +239,20 @@
                 </plugins>
             </build>
         </profile>
+
+        <!-- Test -->
+        <profile>
+            <id>eclipse</id>
+            <properties>
+                <vendor.name>eclipse</vendor.name>
+            </properties>
+        </profile>
+        <profile>
+            <id>fresh</id>
+            <properties>
+                <vendor.generate>fresh</vendor.generate>
+            </properties>
+        </profile>
     </profiles>
 
     <build>
@@ -276,6 +289,17 @@
                         </configuration>
                     </execution>
                 </executions>
+            </plugin>
+
+            <!-- Test -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <systemPropertyVariables>
+                        <spring.profiles.active>${vendor.name},${vendor.generate}</spring.profiles.active>
+                    </systemPropertyVariables>
+                </configuration>
             </plugin>
         </plugins>
     </build>
