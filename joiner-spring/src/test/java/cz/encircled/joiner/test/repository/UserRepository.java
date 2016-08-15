@@ -1,6 +1,6 @@
 package cz.encircled.joiner.test.repository;
 
-import cz.encircled.joiner.repository.JoinerRepository;
+import cz.encircled.joiner.core.JoinerRepository;
 import cz.encircled.joiner.test.model.User;
 
 /**

@@ -11,4 +11,10 @@ public class Assert {
         }
     }
 
+    public static void assertThat(boolean predicate) {
+        if (!predicate) {
+            throw new IllegalArgumentException("Predicate must be true!");
+        }
+    }
+
 }

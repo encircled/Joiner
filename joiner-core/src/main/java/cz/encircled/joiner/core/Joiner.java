@@ -1,4 +1,4 @@
-package cz.encircled.joiner.repository;
+package cz.encircled.joiner.core;
 
 import com.google.common.collect.ArrayListMultimap;
 import com.mysema.query.JoinType;
@@ -11,14 +11,15 @@ import com.mysema.query.types.Path;
 import com.mysema.query.types.path.BooleanPath;
 import com.mysema.query.types.path.CollectionPathBase;
 import com.mysema.query.types.path.EntityPathBase;
+import cz.encircled.joiner.core.vendor.EclipselinkRepository;
+import cz.encircled.joiner.core.vendor.HibernateRepository;
+import cz.encircled.joiner.core.vendor.JoinerVendorRepository;
 import cz.encircled.joiner.exception.AliasMissingException;
 import cz.encircled.joiner.exception.JoinerException;
-import cz.encircled.joiner.query.JoinDescription;
 import cz.encircled.joiner.query.Q;
 import cz.encircled.joiner.query.QueryFeature;
-import cz.encircled.joiner.repository.vendor.EclipselinkRepository;
-import cz.encircled.joiner.repository.vendor.HibernateRepository;
-import cz.encircled.joiner.repository.vendor.JoinerVendorRepository;
+import cz.encircled.joiner.query.join.JoinDescription;
+import cz.encircled.joiner.query.join.JoinGraphRegistry;
 import cz.encircled.joiner.util.Assert;
 import cz.encircled.joiner.util.JoinerUtil;
 import cz.encircled.joiner.util.ReflectionUtils;
@@ -43,6 +44,8 @@ public class Joiner {
     private EntityManager entityManager;
 
     private JoinerVendorRepository joinerVendorRepository;
+
+    private JoinGraphRegistry joinGraphRegistry;
 
     public Joiner(EntityManager entityManager) {
         Assert.notNull(entityManager);
@@ -83,6 +86,8 @@ public class Joiner {
         // TODO extract validation
         Assert.notNull(request.getFrom());
 
+        setJoinsFromJoinsGraphs(request);
+
         for (QueryFeature feature : request.getFeatures()) {
             request = doPreProcess(request, feature);
         }
@@ -122,6 +127,25 @@ public class Joiner {
         }
 
         return query.list(projection);
+    }
+
+    private <T> void setJoinsFromJoinsGraphs(Q<T> request) {
+        if (!request.getJoinGraphs().isEmpty()) {
+            if (joinGraphRegistry == null) {
+                throw new JoinerException("Join graph are set, but joinGraphRegistry is null!");
+            }
+
+            Class<? extends T> queryRootClass = request.getFrom().getType();
+
+            for (String name : request.getJoinGraphs()) {
+                List<JoinDescription> joins = joinGraphRegistry.getJoinGraph(queryRootClass, name);
+                if (joins == null) {
+                    throw new JoinerException(String.format("JoinGraph with name [%s] is not defined for class [%s]", name, queryRootClass));
+                } else {
+                    request.joins(joins);
+                }
+            }
+        }
     }
 
     private JPAQuery doPostProcess(Q<?> request, JPAQuery query, QueryFeature feature) {
@@ -267,4 +291,7 @@ public class Joiner {
         }
     }
 
+    public void setJoinGraphRegistry(JoinGraphRegistry joinGraphRegistry) {
+        this.joinGraphRegistry = joinGraphRegistry;
+    }
 }

@@ -2,9 +2,9 @@ package cz.encircled.joiner.spring;
 
 import com.mysema.query.types.EntityPath;
 import com.mysema.query.types.Expression;
+import cz.encircled.joiner.core.Joiner;
+import cz.encircled.joiner.core.JoinerRepository;
 import cz.encircled.joiner.query.Q;
-import cz.encircled.joiner.repository.Joiner;
-import cz.encircled.joiner.repository.JoinerRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.List;

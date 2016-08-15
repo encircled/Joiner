@@ -2,8 +2,8 @@ package cz.encircled.joiner.test.core;
 
 import cz.encircled.joiner.exception.AliasMissingException;
 import cz.encircled.joiner.exception.JoinerException;
-import cz.encircled.joiner.query.J;
 import cz.encircled.joiner.query.Q;
+import cz.encircled.joiner.query.join.J;
 import cz.encircled.joiner.test.model.QAddress;
 import cz.encircled.joiner.test.model.QGroup;
 import cz.encircled.joiner.test.model.QUser;

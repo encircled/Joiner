@@ -1,6 +1,8 @@
 package cz.encircled.joiner.spring;
 
-import cz.encircled.joiner.repository.Joiner;
+import cz.encircled.joiner.core.Joiner;
+import cz.encircled.joiner.query.join.DefaultJoinGraphRegistry;
+import cz.encircled.joiner.query.join.JoinGraphRegistry;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -17,8 +19,15 @@ public class JoinerConfiguration {
     private EntityManager entityManager;
 
     @Bean
-    public Joiner joiner() {
-        return new Joiner(entityManager);
+    public JoinGraphRegistry joinGraphRegistry() {
+        return new DefaultJoinGraphRegistry();
+    }
+
+    @Bean
+    public Joiner joiner(JoinGraphRegistry joinGraphRegistry) {
+        Joiner joiner = new Joiner(entityManager);
+        joiner.setJoinGraphRegistry(joinGraphRegistry);
+        return joiner;
     }
 
 }

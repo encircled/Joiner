@@ -1,11 +1,11 @@
-package cz.encircled.joiner.repository.vendor;
+package cz.encircled.joiner.core.vendor;
 
 import com.mysema.query.jpa.impl.JPAQuery;
 import com.mysema.query.types.CollectionExpression;
 import com.mysema.query.types.EntityPath;
 import com.mysema.query.types.Path;
 import cz.encircled.joiner.exception.JoinerException;
-import cz.encircled.joiner.query.JoinDescription;
+import cz.encircled.joiner.query.join.JoinDescription;
 
 /**
  * @author Kisel on 28.01.2016.

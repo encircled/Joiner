@@ -1,4 +1,4 @@
-package cz.encircled.joiner.repository.vendor;
+package cz.encircled.joiner.core.vendor;
 
 import com.google.common.collect.ArrayListMultimap;
 import com.mysema.query.JoinType;
@@ -7,7 +7,7 @@ import com.mysema.query.jpa.impl.AbstractJPAQuery;
 import com.mysema.query.jpa.impl.JPAQuery;
 import com.mysema.query.types.EntityPath;
 import cz.encircled.joiner.exception.JoinerException;
-import cz.encircled.joiner.query.JoinDescription;
+import cz.encircled.joiner.query.join.JoinDescription;
 import cz.encircled.joiner.util.ReflectionUtils;
 
 import javax.persistence.EntityManager;

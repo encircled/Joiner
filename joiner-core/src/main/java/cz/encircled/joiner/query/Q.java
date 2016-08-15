@@ -3,6 +3,7 @@ package cz.encircled.joiner.query;
 import com.mysema.query.types.EntityPath;
 import com.mysema.query.types.Expression;
 import com.mysema.query.types.Predicate;
+import cz.encircled.joiner.query.join.JoinDescription;
 import cz.encircled.joiner.util.Assert;
 
 import java.util.*;
@@ -23,7 +24,9 @@ public class Q<T> {
 
     private EntityPath<T> from;
 
-    private List<JoinDescription> joins = new ArrayList<>();
+    private Set<JoinDescription> joins = new LinkedHashSet<>();
+
+    private List<String> joinGraphs = new ArrayList<>();
 
     private boolean distinct = true;
 
@@ -81,22 +84,21 @@ public class Q<T> {
 
     public Q<T> rootEntityPath(EntityPath<T> rootEntityPath) {
         this.from = rootEntityPath;
+
         return this;
     }
 
-    public List<JoinDescription> getJoins() {
+    public List<String> getJoinGraphs() {
+        return joinGraphs;
+    }
+
+    public Set<JoinDescription> getJoins() {
         return joins;
     }
 
-    public Q<T> setJoins(List<JoinDescription> joins) {
-        this.joins = joins;
-        return this;
-    }
+    public Q<T> joinGraphs(String... names) {
+        Collections.addAll(joinGraphs, names);
 
-    public Q<T> joins(EntityPath<?>... paths) {
-        for (EntityPath<?> path : paths) {
-            joins.add(J.left(path));
-        }
         return this;
     }
 
@@ -104,28 +106,26 @@ public class Q<T> {
         return joins(Arrays.asList(joins));
     }
 
-    public Q<T> joins(List<JoinDescription> joins) {
+    public Q<T> joins(Collection<JoinDescription> joins) {
         Assert.notNull(joins);
 
-        if (this.joins == null) {
-            this.joins = new ArrayList<>();
+        for (JoinDescription join : joins) {
+            if (!this.joins.add(join)) {
+                if (join.getChildren() != null) {
+                    joins(join.getChildren());
+                }
+            }
         }
 
-        this.joins.addAll(joins);
         return this;
     }
 
     public Q<T> addHint(String hint, Object value) {
         Assert.notNull(hint);
 
-        List<Object> values = hints.get(hint);
+        hints.computeIfAbsent(hint, h -> new ArrayList<>(2));
+        hints.get(hint).add(value);
 
-        if (values == null) {
-            values = new ArrayList<>(2);
-            hints.put(hint, values);
-        }
-
-        values.add(value);
         return this;
     }
 

@@ -1,4 +1,4 @@
-package cz.encircled.joiner.query;
+package cz.encircled.joiner.query.join;
 
 import com.mysema.query.JoinType;
 import com.mysema.query.types.EntityPath;
@@ -6,7 +6,6 @@ import com.mysema.query.types.Predicate;
 import com.mysema.query.types.path.CollectionPathBase;
 import cz.encircled.joiner.util.Assert;
 
-import java.lang.reflect.AnnotatedElement;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -37,8 +36,7 @@ public class JoinDescription {
 
     private List<JoinDescription> children = new ArrayList<>();
 
-    @Deprecated
-    public JoinDescription(EntityPath<?> alias) {
+    JoinDescription(EntityPath<?> alias) {
         Assert.notNull(alias);
 
         this.alias = alias;
@@ -136,8 +134,22 @@ public class JoinDescription {
         return children;
     }
 
-    public AnnotatedElement getAnnotatedElement() {
-        return isCollectionPath() ? collectionPath.getAnnotatedElement() : singlePath.getAnnotatedElement();
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof JoinDescription)) return false;
+
+        JoinDescription that = (JoinDescription) o;
+
+        if (!alias.equals(that.alias)) return false;
+        return parent != null ? parent.equals(that.parent) : that.parent == null;
+
     }
 
+    @Override
+    public int hashCode() {
+        int result = alias.hashCode();
+        result = 31 * result + (parent != null ? parent.hashCode() : 0);
+        return result;
+    }
 }

@@ -1,11 +1,11 @@
 package cz.encircled.joiner.test.core;
 
-import cz.encircled.joiner.repository.Joiner;
+import cz.encircled.joiner.core.Joiner;
+import cz.encircled.joiner.query.join.JoinGraphRegistry;
 import cz.encircled.joiner.test.config.TestConfig;
 import cz.encircled.joiner.test.core.data.TestDataListener;
 import cz.encircled.joiner.test.model.AbstractEntity;
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
@@ -29,21 +29,17 @@ import java.util.Collection;
 @TestExecutionListeners(listeners = {TestDataListener.class})
 public abstract class AbstractTest extends AbstractTransactionalJUnit4SpringContextTests {
 
+    @Autowired
     protected Joiner joiner;
+
+    @Autowired
+    protected JoinGraphRegistry joinGraphRegistry;
 
     @PersistenceContext
     protected EntityManager entityManager;
 
     @Autowired
     private Environment environment;
-
-    @Before
-    public void before() {
-        if (joiner == null) {
-            joiner = new Joiner(entityManager);
-        }
-        entityManager.clear();
-    }
 
     protected void assertHasName(Collection<? extends AbstractEntity> entities, String name) {
         Assert.assertFalse("Found collection must be not empty!", entities.isEmpty());

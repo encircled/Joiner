@@ -2,7 +2,6 @@ package cz.encircled.joiner.test.config;
 
 import org.eclipse.persistence.config.PersistenceUnitProperties;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.env.Environment;
 import org.springframework.dao.annotation.PersistenceExceptionTranslationPostProcessor;
@@ -25,7 +24,6 @@ import java.util.Properties;
  */
 @Configuration
 @EnableTransactionManagement
-@ComponentScan(basePackages = {"cz.encircled.joiner.test.core", "cz.encircled.joiner.test.repository"})
 public class EntityManagerConfig {
 
     @Bean
@@ -69,7 +67,7 @@ public class EntityManagerConfig {
         return new PersistenceExceptionTranslationPostProcessor();
     }
 
-    Properties eclipseProperties(boolean fresh) {
+    private Properties eclipseProperties(boolean fresh) {
         Properties properties = new Properties();
         properties.put(PersistenceUnitProperties.CACHE_SHARED_DEFAULT, "false");
         properties.put(PersistenceUnitProperties.WEAVING, "false");
@@ -79,7 +77,7 @@ public class EntityManagerConfig {
         return properties;
     }
 
-    Properties hibernateProperties(boolean fresh) {
+    private Properties hibernateProperties(boolean fresh) {
         Properties properties = new Properties();
         properties.setProperty("hibernate.hbm2ddl.auto", fresh ? "create" : "update");
         properties.setProperty("hibernate.show_sql", "true");

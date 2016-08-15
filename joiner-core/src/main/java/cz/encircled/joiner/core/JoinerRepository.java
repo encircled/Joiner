@@ -1,4 +1,4 @@
-package cz.encircled.joiner.repository;
+package cz.encircled.joiner.core;
 
 import com.mysema.query.types.Expression;
 import cz.encircled.joiner.query.Q;

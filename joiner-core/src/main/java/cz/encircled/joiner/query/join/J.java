@@ -1,11 +1,8 @@
-package cz.encircled.joiner.query;
+package cz.encircled.joiner.query.join;
 
 import com.mysema.query.types.EntityPath;
 import cz.encircled.joiner.util.Assert;
 import cz.encircled.joiner.util.JoinerUtil;
-
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * TODO add join labels for grouping
@@ -22,14 +19,6 @@ public class J {
             return JoinerUtil.getAliasForChild(parent, path);
         }
         return path;
-    }
-
-    public static List<JoinDescription> joins(EntityPath<?>... paths) {
-        List<JoinDescription> result = new ArrayList<JoinDescription>(paths.length);
-        for (EntityPath<?> path : paths) {
-            result.add(left(path));
-        }
-        return result;
     }
 
     public static JoinDescription left(EntityPath<?> path) {
