@@ -7,6 +7,8 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
+ * ConcurrentHashMap-based implementation of {@link JoinGraphRegistry}
+ *
  * @author Vlad on 15-Aug-16.
  */
 public class DefaultJoinGraphRegistry implements JoinGraphRegistry {

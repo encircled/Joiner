@@ -1,6 +1,8 @@
 package cz.encircled.joiner.util;
 
 /**
+ * Assert util methods
+ *
  * @author Vlad on 14-Aug-16.
  */
 public class Assert {

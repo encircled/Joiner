@@ -82,9 +82,9 @@ public class BasicJoinTest extends AbstractTest {
     public void testNotFoundSubclassPredicated() {
         List<Group> groups = joiner.find(Q.from(QGroup.group)
                 .joins(J.left(QSuperUser.superUser)
-                        .nested(J.left(QKey.key)))
-                .joins(J.left(QStatus.status))
-                .where(QSuperUser.superUser.key.name.eq("not_exists"))
+                                .nested(J.left(QKey.key)),
+                        J.left(QStatus.status))
+                .where(J.path(QSuperUser.superUser, QKey.key).name.eq("not_exists"))
         );
 
         Assert.assertTrue(groups.isEmpty());

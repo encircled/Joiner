@@ -8,9 +8,6 @@ import com.mysema.query.types.EntityPath;
 import com.mysema.query.types.Expression;
 import com.mysema.query.types.Operation;
 import com.mysema.query.types.Path;
-import com.mysema.query.types.path.BooleanPath;
-import com.mysema.query.types.path.CollectionPathBase;
-import com.mysema.query.types.path.EntityPathBase;
 import cz.encircled.joiner.core.vendor.EclipselinkRepository;
 import cz.encircled.joiner.core.vendor.HibernateRepository;
 import cz.encircled.joiner.core.vendor.JoinerVendorRepository;
@@ -21,31 +18,24 @@ import cz.encircled.joiner.query.QueryFeature;
 import cz.encircled.joiner.query.join.JoinDescription;
 import cz.encircled.joiner.query.join.JoinGraphRegistry;
 import cz.encircled.joiner.util.Assert;
-import cz.encircled.joiner.util.JoinerUtil;
 import cz.encircled.joiner.util.ReflectionUtils;
-import org.apache.commons.lang3.tuple.Pair;
 
 import javax.persistence.EntityManager;
 import java.lang.reflect.Field;
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
-
-import static cz.encircled.joiner.util.ReflectionUtils.getField;
 
 /**
  * @author Kisel on 26.01.2016.
  */
 public class Joiner {
 
-    private static final Path<?> nullPath = new BooleanPath("");
-
-    private final Map<Pair<Class, Class>, Path> aliasCache = new ConcurrentHashMap<>();
-
     private EntityManager entityManager;
 
     private JoinerVendorRepository joinerVendorRepository;
 
     private JoinGraphRegistry joinGraphRegistry;
+
+    private AliasResolver aliasResolver = new DefaultAliasResolver();
 
     public Joiner(EntityManager entityManager) {
         Assert.notNull(entityManager);
@@ -103,11 +93,13 @@ public class Joiner {
         Set<Path<?>> usedAliases = new HashSet<>();
         usedAliases.add(request.getFrom());
 
-        for (JoinDescription join : request.getJoins()) {
-            resolveJoinAlias(usedAliases, join, request.getFrom());
+        List<JoinDescription> joins = unrollChildren(request.getJoins());
+        for (JoinDescription join : joins) {
+            aliasResolver.resolveJoinAlias(join, request.getFrom());
+            usedAliases.add(join.getAlias());
         }
+        addJoins(joins, query, request.getFrom(), request.getFrom().equals(projection));
 
-        addJoins(request, query, request.getFrom().equals(projection));
         addHints(request, query);
 
         checkAliasesArePresent(request.getWhere(), usedAliases);
@@ -115,9 +107,11 @@ public class Joiner {
         checkAliasesArePresent(request.getGroupBy(), usedAliases);
 
         query.where(request.getWhere());
+
         if (request.getGroupBy() != null) {
             query.groupBy(request.getGroupBy());
         }
+
         if (request.getHaving() != null) {
             query.having(request.getHaving());
         }
@@ -161,27 +155,32 @@ public class Joiner {
         ReflectionUtils.setField(f, sourceQuery, ArrayListMultimap.create());
     }
 
-    private void addJoins(Q<?> request, JPAQuery query, boolean canFetch) {
-        List<JoinDescription> joins = new ArrayList<>();
-        for (JoinDescription join : request.getJoins()) {
-            collectChildren(join, joins);
-        }
-
+    private void addJoins(List<JoinDescription> joins, JPAQuery query, EntityPath<?> rootPath, boolean doFetch) {
         for (JoinDescription join : joins) {
             joinerVendorRepository.addJoin(query, join);
-            if (canFetch && join.isFetch()) {
+            if (doFetch && join.isFetch()) {
                 if (join.getJoinType().equals(JoinType.RIGHTJOIN)) {
                     throw new JoinerException("Fetch is not supported for right join!");
                 }
-                joinerVendorRepository.addFetch(query, join, request.getJoins(), request.getFrom());
+                joinerVendorRepository.addFetch(query, join, joins, rootPath);
             }
         }
     }
 
-    private void collectChildren(JoinDescription join, List<JoinDescription> collection) {
+    private List<JoinDescription> unrollChildren(Set<JoinDescription> joins) {
+        List<JoinDescription> collection = new LinkedList<>();
+
+        for (JoinDescription joinDescription : joins) {
+            unrollChildrenInternal(joinDescription, collection);
+        }
+
+        return collection;
+    }
+
+    private void unrollChildrenInternal(JoinDescription join, List<JoinDescription> collection) {
         collection.add(join);
         for (JoinDescription child : join.getChildren()) {
-            collectChildren(child, collection);
+            unrollChildrenInternal(child, collection);
         }
     }
 
@@ -195,77 +194,8 @@ public class Joiner {
         }
     }
 
-    @SuppressWarnings("unchecked")
-    private void resolveJoinAlias(Set<Path<?>> usedAliases, JoinDescription join, EntityPath<?> root) {
-        Path<?> parent = join.getParent() != null ? join.getParent().getAlias() : root;
-        Class<?> targetType = join.getAlias().getType();
-
-        Path<?> fieldOnParent = findPathOnParent(parent, targetType, join);
-        if (fieldOnParent instanceof CollectionPathBase) {
-            join.collectionPath((CollectionPathBase<?, ?, ?>) fieldOnParent);
-        } else if (fieldOnParent instanceof EntityPath) {
-            join.singlePath((EntityPath<?>) fieldOnParent);
-        }
-        if (join.getParent() != null) {
-            join.alias(JoinerUtil.getAliasForChild(join.getParent().getAlias(), join.getAlias()));
-        }
-
-        usedAliases.add(join.getAlias());
-
-        for (JoinDescription child : join.getChildren()) {
-            resolveJoinAlias(usedAliases, child, root);
-        }
-
-    }
-
-    private Path<?> findPathOnParent(Object parent, Class<?> targetType, JoinDescription joinDescription) {
-        while (!targetType.equals(Object.class)) {
-            Pair<Class, Class> cacheKey = Pair.of(parent.getClass(), targetType);
-            Path cached = aliasCache.get(cacheKey);
-            if (cached != null && !cached.equals(nullPath)) {
-                // TODO test
-                // TODO optimize inheritance cases
-                return cached;
-            }
-
-            Path<?> result = null;
-
-            for (Field field : parent.getClass().getFields()) {
-                Object candidate = getField(field, parent);
-
-                if (candidate instanceof CollectionPathBase) {
-                    Field elementTypeField = ReflectionUtils.findField(candidate.getClass(), "elementType");
-                    Class<?> elementType = (Class<?>) getField(elementTypeField, candidate);
-
-                    if (elementType.equals(targetType)) {
-                        result = (Path<?>) candidate;
-                    }
-                } else if (candidate instanceof EntityPathBase) {
-                    Class type = ((EntityPathBase) candidate).getType();
-                    if (type.equals(targetType)) {
-                        result = (Path<?>) candidate;
-                    }
-                }
-            }
-
-            if (result == null) {
-                joinDescription.fetch(false);
-                for (JoinDescription child : joinDescription.getChildren()) {
-                    child.fetch(false);
-                }
-                aliasCache.put(cacheKey, nullPath);
-                targetType = targetType.getSuperclass();
-            } else {
-                aliasCache.put(cacheKey, result);
-                return result;
-            }
-        }
-
-        return null;
-    }
-
     private void checkAliasesArePresent(Expression<?> expression, Set<Path<?>> usedAliases) {
-        for (Path<?> path : resolvePaths(expression)) {
+        for (Path<?> path : collectPredicatePaths(expression)) {
             Path predicatePath = path.getRoot();
             if (!predicatePath.toString().startsWith("any(")) {
                 if (!usedAliases.contains(predicatePath)) {
@@ -275,18 +205,18 @@ public class Joiner {
         }
     }
 
-    private List<Path<?>> resolvePaths(Expression<?> expression) {
+    private List<Path<?>> collectPredicatePaths(Expression<?> expression) {
         List<Path<?>> result = new ArrayList<>();
-        resolvePathsInternal(expression, result);
+        collectPredicatePathsInternal(expression, result);
         return result;
     }
 
-    private void resolvePathsInternal(Expression<?> expression, List<Path<?>> paths) {
+    private void collectPredicatePathsInternal(Expression<?> expression, List<Path<?>> paths) {
         if (expression instanceof Path) {
             paths.add((Path<?>) expression);
         } else if (expression instanceof Operation) {
             for (Expression exp : ((Operation<?>) expression).getArgs()) {
-                resolvePathsInternal(exp, paths);
+                collectPredicatePathsInternal(exp, paths);
             }
         }
     }
@@ -294,4 +224,5 @@ public class Joiner {
     public void setJoinGraphRegistry(JoinGraphRegistry joinGraphRegistry) {
         this.joinGraphRegistry = joinGraphRegistry;
     }
+
 }
