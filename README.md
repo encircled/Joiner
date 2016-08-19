@@ -42,7 +42,7 @@ List<Group> groups = joiner.find(Q.from(QGroup.group)
 <dependency>
     <groupId>cz.encircled</groupId>
     <artifactId>joiner-core</artifactId>
-    <version>0.1</version>
+    <version>0.2</version>
 </dependency>
 ```
 
@@ -50,7 +50,7 @@ List<Group> groups = joiner.find(Q.from(QGroup.group)
 ```
 <dependency>
     <groupId>cz.encircled</groupId>
-    <artifactId>joiner-core</artifactId>
-    <version>0.1</version>
+    <artifactId>joiner-spring</artifactId>
+    <version>0.2</version>
 </dependency>
 ```
