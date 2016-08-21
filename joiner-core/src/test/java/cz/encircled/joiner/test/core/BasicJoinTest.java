@@ -5,6 +5,10 @@ import cz.encircled.joiner.query.Q;
 import cz.encircled.joiner.query.join.J;
 import cz.encircled.joiner.query.join.JoinDescription;
 import cz.encircled.joiner.test.model.*;
+import org.eclipse.persistence.expressions.Expression;
+import org.eclipse.persistence.expressions.ExpressionBuilder;
+import org.eclipse.persistence.jpa.JpaQuery;
+import org.eclipse.persistence.queries.ReadAllQuery;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -35,6 +39,19 @@ public class BasicJoinTest extends AbstractTest {
 
     @Test
     public void test1() {
+        JpaQuery query = (org.eclipse.persistence.jpa.JpaQuery) entityManager.createQuery("SELECT u FROM User u");
+        ReadAllQuery databaseQuery = (ReadAllQuery) query.getDatabaseQuery();
+        ExpressionBuilder expressionBuilder = databaseQuery.getExpressionBuilder();
+//        expressionBuilder.treat(NormalUser.class);
+        Expression passwords = expressionBuilder.treat(NormalUser.class).anyOfAllowingNone("passwords", false);
+//        Expression passwords = expressionBuilder.anyOfAllowingNone("passwords", false);
+//        databaseQuery.addJoinedAttribute(passwords);
+
+//        QueryKeyExpression e = new QueryKeyExpression("passwords", passwords);
+
+
+        query.getResultList();
+
         List<Group> groups = joiner.find(Q.from(QGroup.group)
                 .joins(J.left(QUser.user1)
                         .nested(J.left(QStatus.status)))

@@ -19,6 +19,12 @@ public class User extends AbstractEntity {
     private Set<Address> addresses;
 
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "user")
+    private Set<Contact> contacts;
+
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "employmentUser")
+    private Set<Contact> employmentContacts;
+
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "user")
     private Set<Status> statuses;
 
     @ManyToMany(fetch = FetchType.LAZY)
@@ -30,6 +36,30 @@ public class User extends AbstractEntity {
     @OneToOne
     @JoinColumn(name = "parent_id")
     private User user;
+
+    public Set<Contact> getContacts() {
+        return contacts;
+    }
+
+    public void setContacts(Set<Contact> contacts) {
+        this.contacts = contacts;
+    }
+
+    public Set<Contact> getEmploymentContacts() {
+        return employmentContacts;
+    }
+
+    public void setEmploymentContacts(Set<Contact> employmentContacts) {
+        this.employmentContacts = employmentContacts;
+    }
+
+    public User getUser() {
+        return user;
+    }
+
+    public void setUser(User user) {
+        this.user = user;
+    }
 
     public Set<Address> getAddresses() {
         return addresses;

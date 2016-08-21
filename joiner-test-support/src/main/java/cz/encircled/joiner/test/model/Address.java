@@ -11,11 +11,12 @@ import java.util.Set;
 public class Address extends AbstractEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", unique = false)
+    @JoinColumn(name = "user_id")
     private User user;
 
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "address")
     private Set<Status> statuses;
+
 
     public User getUser() {
         return user;
