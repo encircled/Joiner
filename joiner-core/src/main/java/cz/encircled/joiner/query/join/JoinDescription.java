@@ -13,7 +13,7 @@ import java.util.List;
  * Represents query join.
  * For collection joins - {@link JoinDescription#collectionPath collectionPath} is used, for single entity joins - {@link JoinDescription#singlePath singlePath}.
  * <p>
- *     By default, all joins are <b>left fetch</b> joins
+ * By default, all joins are <b>left fetch</b> joins
  * </p>
  *
  * @author Kisel on 21.01.2016.
@@ -25,6 +25,8 @@ public class JoinDescription {
     private EntityPath<?> singlePath;
 
     private EntityPath<?> alias;
+
+    private EntityPath<?> originalAlias;
 
     private JoinType joinType = JoinType.LEFTJOIN;
 
@@ -39,7 +41,7 @@ public class JoinDescription {
     JoinDescription(EntityPath<?> alias) {
         Assert.notNull(alias);
 
-        this.alias = alias;
+        alias(alias);
     }
 
     public boolean isFetch() {
@@ -73,8 +75,15 @@ public class JoinDescription {
         return alias;
     }
 
+    public EntityPath<?> getOriginalAlias() {
+        return originalAlias;
+    }
+
     public JoinDescription alias(EntityPath<?> alias) {
         this.alias = alias;
+        if (this.originalAlias == null) {
+            this.originalAlias = alias;
+        }
         return this;
     }
 
@@ -152,4 +161,14 @@ public class JoinDescription {
         result = 31 * result + (parent != null ? parent.hashCode() : 0);
         return result;
     }
+
+    @Override
+    public String toString() {
+        return "JoinDescription{" +
+                "collectionPath=" + collectionPath +
+                ", singlePath=" + singlePath +
+                ", alias=" + alias +
+                '}';
+    }
+
 }

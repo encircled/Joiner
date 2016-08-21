@@ -3,9 +3,7 @@ package cz.encircled.joiner.test.core;
 import cz.encircled.joiner.exception.JoinerException;
 import cz.encircled.joiner.query.Q;
 import cz.encircled.joiner.query.join.J;
-import cz.encircled.joiner.test.model.QContact;
-import cz.encircled.joiner.test.model.QUser;
-import cz.encircled.joiner.test.model.User;
+import cz.encircled.joiner.test.model.*;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -36,7 +34,7 @@ public class MultipleMappingsForSameClassOnSingleEntityTest extends AbstractTest
     }
 
     @Test
-    public void testAllConflictResolvedAndFetched() {
+    public void testAllConflictsResolvedAndFetched() {
         List<User> users = joiner.find(Q.from(QUser.user1).joins(J.left(new QContact("employmentContacts")), J.left(new QContact("contacts"))));
         Assert.assertFalse(users.isEmpty());
 
@@ -44,6 +42,25 @@ public class MultipleMappingsForSameClassOnSingleEntityTest extends AbstractTest
             Assert.assertTrue(Persistence.getPersistenceUtil().isLoaded(user, "employmentContacts"));
             Assert.assertTrue(Persistence.getPersistenceUtil().isLoaded(user, "contacts"));
         }
+    }
+
+    @Test
+    public void testAllNestedConflictsResolvedAndFetched() {
+        Q<Group> request = Q.from(QGroup.group).joins(
+                J.left(QUser.user1).nested(J.left(new QContact("employmentContacts")).nested(J.left(new QUser("employmentUser"))), J.left(new QContact("contacts")))
+        );
+        List<Group> groups = joiner.find(request);
+        Assert.assertFalse(groups.isEmpty());
+
+        for (Group group : groups) {
+            Assert.assertFalse(group.getUsers().isEmpty());
+            for (User user : group.getUsers()) {
+                Assert.assertTrue(Persistence.getPersistenceUtil().isLoaded(user, "employmentContacts"));
+                Assert.assertTrue(Persistence.getPersistenceUtil().isLoaded(user, "contacts"));
+            }
+        }
+
+        groups = joiner.find(request);
     }
 
     @Test

@@ -87,7 +87,7 @@ public class DefaultAliasResolver implements AliasResolver {
                 return candidatePaths.get(0);
             } else {
                 // Multiple associations on parent, try find by specified alias
-                String targetFieldName = joinDescription.getAlias().toString();
+                String targetFieldName = joinDescription.getOriginalAlias().toString();
                 for (Path<?> candidatePath : candidatePaths) {
                     if (targetFieldName.equals(candidatePath.getMetadata().getElement())) {
                         aliasCache.put(cacheKey, candidatePath);
