@@ -6,6 +6,7 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 
 import cz.encircled.joiner.test.model.Address;
+import cz.encircled.joiner.test.model.Contact;
 import cz.encircled.joiner.test.model.Group;
 import cz.encircled.joiner.test.model.Key;
 import cz.encircled.joiner.test.model.NormalUser;
@@ -61,6 +62,17 @@ public class TestData {
         address.setName("normalUser1street1");
         address.setUser(user);
         entityManager.persist(address);
+
+        SuperUser superUser = new SuperUser();
+        superUser.setName("superUser2");
+        superUser.setGroups(Collections.singletonList(group));
+        entityManager.persist(superUser);
+
+        Contact contact = new Contact();
+        contact.setName("PhoneNumber");
+        contact.setEmploymentUser(user);
+        contact.setUser(superUser);
+        entityManager.persist(contact);
     }
 
     private void superUser(Group group) {

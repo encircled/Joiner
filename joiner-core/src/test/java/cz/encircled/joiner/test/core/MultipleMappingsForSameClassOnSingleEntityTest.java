@@ -1,14 +1,21 @@
 package cz.encircled.joiner.test.core;
 
+import java.util.List;
+import java.util.Objects;
+
+import javax.persistence.Persistence;
+
 import cz.encircled.joiner.exception.JoinerException;
 import cz.encircled.joiner.query.Q;
 import cz.encircled.joiner.query.join.J;
-import cz.encircled.joiner.test.model.*;
+import cz.encircled.joiner.test.model.Contact;
+import cz.encircled.joiner.test.model.Group;
+import cz.encircled.joiner.test.model.QContact;
+import cz.encircled.joiner.test.model.QGroup;
+import cz.encircled.joiner.test.model.QUser;
+import cz.encircled.joiner.test.model.User;
 import org.junit.Assert;
 import org.junit.Test;
-
-import javax.persistence.Persistence;
-import java.util.List;
 
 /**
  * Tests for cases when an entity has multiple associations with the same class type (i.e. User and Contacts in test domain model)
@@ -44,10 +51,30 @@ public class MultipleMappingsForSameClassOnSingleEntityTest extends AbstractTest
         }
     }
 
+    /* TODO should throw an exception
+                    List<Contact> result = joiner.find(Q.from(QContact.contact)
+                            .joins(J.left(new QContact("user")), J.left(new QContact("employmentUser"))));
+     */
+
+    @Test
+    public void testManyToOneMapping() {
+        List<Contact> result = joiner.find(Q.from(QContact.contact)
+                .joins(J.left(new QUser("user")), J.left(new QUser("employmentUser"))));
+
+        Assert.assertFalse(result.isEmpty());
+
+        for (Contact contact : result) {
+            Assert.assertTrue(Persistence.getPersistenceUtil().isLoaded(contact, "user"));
+            Assert.assertTrue(Persistence.getPersistenceUtil().isLoaded(contact, "employmentUser"));
+            Assert.assertFalse(Objects.equals(contact.getUser().getId(), contact.getEmploymentUser().getId()));
+        }
+    }
+
     @Test
     public void testAllNestedConflictsResolvedAndFetched() {
         Q<Group> request = Q.from(QGroup.group).joins(
-                J.left(QUser.user1).nested(J.left(new QContact("employmentContacts")).nested(J.left(new QUser("employmentUser"))), J.left(new QContact("contacts")))
+                J.left(QUser.user1)
+                        .nested(J.left(new QContact("employmentContacts")).nested(J.left(new QUser("employmentUser"))), J.left(new QContact("contacts")))
         );
         List<Group> groups = joiner.find(request);
         Assert.assertFalse(groups.isEmpty());
