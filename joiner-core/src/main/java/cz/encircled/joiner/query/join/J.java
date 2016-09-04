@@ -5,8 +5,6 @@ import cz.encircled.joiner.util.Assert;
 import cz.encircled.joiner.util.JoinerUtil;
 
 /**
- * TODO add join labels for grouping
- * <p>
  * Util class, which helps to build new {@link JoinDescription joins}
  *
  * @author Kisel on 26.01.2016.
