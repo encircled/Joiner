@@ -38,7 +38,7 @@ class SpringRepositoryTest {
         entityManager.flush()
         entityManager.clear()
 
-        val found = userRepository!!.findOne(Q.from<Any>(QUser.user1).where(QUser.user1.name.eq(testName)))
+        val found = userRepository!!.findOne(Q.from(QUser.user1).where(QUser.user1.name.eq(testName)))
         Assert.assertNotNull(found)
         Assert.assertEquals(testName, found.name)
     }

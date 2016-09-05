@@ -15,7 +15,7 @@ class CollisionAliasJoinTest : AbstractTest() {
 
     @Test
     fun collisionAliasCollectionJoinTest() {
-        joiner!!.find(Q.from<Any>(QGroup.group).joins(J.left(QStatus.status), J.left(QUser.user1).nested(J.left(QStatus.status))))
+        joiner.find(Q.from(QGroup.group).joins(J.left(QStatus.status), J.left(QUser.user1).nested(J.left(QStatus.status))))
     }
 
     @Test

@@ -15,7 +15,7 @@ class PredicateConverterTest : AbstractTest() {
 
     @Test
     fun basicTest() {
-        joiner!!.find(Q.from<Any>(QGroup.group).joins(J.left(QStatus.status), J.left(QUser.user1).nested(J.left(QStatus.status))).where(QGroup.group.statuses.any().id.eq(2L)))
+        joiner.find(Q.from(QGroup.group).joins(J.left(QStatus.status), J.left(QUser.user1).nested(J.left(QStatus.status))).where(QGroup.group.statuses.any().id.eq(2L)))
     }
 
 }

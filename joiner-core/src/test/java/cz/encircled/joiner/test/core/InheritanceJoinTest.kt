@@ -23,28 +23,28 @@ class InheritanceJoinTest : AbstractTest() {
 
     @Test
     fun joinSingleEntityOnChildTest() {
-        val groups = joiner!!.find(Q.from<Any>(QGroup.group).joins(J.left(QUser.user1).alias(QUser("superUser")), J.left(QSuperUser.superUser.key)))
+        val groups = joiner.find(Q.from(QGroup.group).joins(J.left(QUser.user1).alias(QUser("superUser")), J.left(QSuperUser.superUser.key)))
 
         check(groups, true, false)
     }
 
     @Test
     fun joinSingleAndCollectionMultipleChildrenTest() {
-        val groups = joiner!!.find(Q<Group>().joins(J.left(QUser.user1).nested(J.left(QKey.key), J.left(QPassword.password))).where(QKey.key.name.ne("bad_key")))
+        val groups = joiner.find(Q<Group>().joins(J.left(QUser.user1).nested(J.left(QKey.key), J.left(QPassword.password))).where(QKey.key.name.ne("bad_key")))
 
         check(groups, true, false)
     }
 
     @Test
     fun joinCollectionOnChildTest() {
-        val groups = joiner!!.find(Q.from<Any>(QGroup.group).joins(J.left(QUser.user1).alias(QNormalUser.normalUser._super).nested(J.left(QPassword.password))))
+        val groups = joiner.find(Q.from(QGroup.group).joins(J.left(QUser.user1).alias(QNormalUser.normalUser._super).nested(J.left(QPassword.password))))
 
         check(groups, false, true)
     }
 
     @Test
     fun nestedTest() {
-        val addresses = joiner!!.find(Q.from<Any>(QAddress.address).joins(J.left(QUser.user1).nested(J.left(QPassword.password))))
+        val addresses = joiner.find(Q.from(QAddress.address).joins(J.left(QUser.user1).nested(J.left(QPassword.password))))
 
         Assert.assertFalse(addresses.isEmpty())
         for (address in addresses) {

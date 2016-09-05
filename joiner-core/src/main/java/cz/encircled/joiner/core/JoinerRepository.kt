@@ -12,8 +12,8 @@ interface JoinerRepository<T> {
 
     fun <P> find(request: Q<T>, projection: Expression<P>): List<P>
 
-    fun findOne(request: Q<T>): T
+    fun findOne(request: Q<T>): T?
 
-    fun <P> findOne(request: Q<T>, projection: Expression<P>): P
+    fun <P> findOne(request: Q<T>, projection: Expression<P>): P?
 
 }

@@ -12,14 +12,14 @@ class PredicateTest : AbstractTest() {
     @Test
     fun basicPredicateTest() {
         val name = "user1"
-        val result = joiner!!.find(Q.from<Any>(QUser.user1).where(QUser.user1.name.eq(name)))
+        val result = joiner.find(Q.from(QUser.user1).where(QUser.user1.name.eq(name)))
         assertHasName(result, name)
     }
 
     @Test
     fun predicateInCollectionTest() {
         val name = "user1street1"
-        val result = joiner!!.find(Q.from<Any>(QUser.user1).joins(J.left(QAddress.address)).where(QAddress.address.name.eq(name)))
+        val result = joiner.find(Q.from(QUser.user1).joins(J.left(QAddress.address)).where(QAddress.address.name.eq(name)))
         assertHasName(result, "user1")
         assertHasName(result[0].addresses, name)
     }
@@ -27,7 +27,7 @@ class PredicateTest : AbstractTest() {
     @Test
     fun predicateInSinglePathTest() {
         val name = "user1"
-        val result = joiner!!.find(Q.from<Any>(QAddress.address).joins(J.left(QUser.user1)).where(QAddress.address.user.name.eq(name)))
+        val result = joiner.find(Q.from(QAddress.address).joins(J.left(QUser.user1)).where(QAddress.address.user.name.eq(name)))
 
         for (address in result) {
             assertHasName(address.user, name)

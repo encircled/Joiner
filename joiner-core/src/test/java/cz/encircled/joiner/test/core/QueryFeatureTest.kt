@@ -26,7 +26,7 @@ class QueryFeatureTest : AbstractTest() {
                 return query
             }
         })
-        joiner!!.find(request)
+        joiner.find(request)
     }
 
     @Test(expected = TestException::class)
@@ -41,7 +41,7 @@ class QueryFeatureTest : AbstractTest() {
                 throw TestException()
             }
         })
-        joiner!!.find(request)
+        joiner.find(request)
     }
 
 }

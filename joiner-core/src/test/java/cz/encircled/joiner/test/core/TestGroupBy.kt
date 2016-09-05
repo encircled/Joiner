@@ -11,17 +11,17 @@ class TestGroupBy : AbstractTest() {
 
     @Test
     fun testGroupBy() {
-        val avg = joiner!!.find<T, P>(
-                Q.from<Any>(QAddress.address).groupBy(QAddress.address.user),
+        val avg = joiner.find<T, P>(
+                Q.from(QAddress.address).groupBy(QAddress.address.user),
                 QAddress.address.id.avg())
         Assert.assertTrue(avg.size > 0)
-        Assert.assertTrue(avg.size < joiner!!.find(Q.from<Any>(QAddress.address)).size)
+        Assert.assertTrue(avg.size < joiner.find(Q.from(QAddress.address)).size)
     }
 
     @Test
     fun testGroupByHaving() {
-        val avg = joiner!!.find<T, P>(
-                Q.from<Any>(QAddress.address).groupBy(QAddress.address.user).having(QAddress.address.id.count().gt(2)),
+        val avg = joiner.find<T, P>(
+                Q.from(QAddress.address).groupBy(QAddress.address.user).having(QAddress.address.id.count().gt(2)),
                 QAddress.address.id.avg())
         Assert.assertTrue(avg.isEmpty())
     }

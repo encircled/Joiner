@@ -72,7 +72,7 @@ class JoinGraphTest : AbstractTest() {
     fun testQueryWithSingleJoinGraph() {
         joinGraphRegistry!!.registerJoinGraph("fullUsers", listOf(J.left(QUser.user1).nested(J.left(QStatus.status))), Group::class.java)
 
-        val groups = joiner!!.find(Q.from<Any>(QGroup.group).joinGraphs("fullUsers"))
+        val groups = joiner.find(Q.from(QGroup.group).joinGraphs("fullUsers"))
 
         assertUserAndStatusesFetched(groups, false)
     }
@@ -83,7 +83,7 @@ class JoinGraphTest : AbstractTest() {
         joinGraphRegistry!!.registerJoinGraph("users", listOf(J.left(QUser.user1)), Group::class.java)
         joinGraphRegistry!!.registerJoinGraph("userStatuses", listOf(J.left(QUser.user1).nested(J.left(QStatus.status))), Group::class.java)
 
-        val groups = joiner!!.find(Q.from<Any>(QGroup.group).joinGraphs("statuses", "users", "userStatuses"))
+        val groups = joiner.find(Q.from(QGroup.group).joinGraphs("statuses", "users", "userStatuses"))
 
         assertUserAndStatusesFetched(groups, true)
     }

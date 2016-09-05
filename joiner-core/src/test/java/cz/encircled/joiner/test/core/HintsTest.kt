@@ -15,17 +15,17 @@ class HintsTest : AbstractTest() {
 
     @Test
     fun testHint() {
-        joiner!!.find(Q.from<Any>(QUser.user1).addHint("testHint", "testHintValue").addFeatures(HintQueryFeature()))
+        joiner.find(Q.from(QUser.user1).addHint("testHint", "testHintValue").addFeatures(HintQueryFeature()))
     }
 
     @Test(expected = TestException::class)
     fun testOfTest() {
-        joiner!!.find(Q.from<Any>(QUser.user1).addHint("testHint", "exception").addFeatures(HintQueryFeature()))
+        joiner.find(Q.from(QUser.user1).addHint("testHint", "exception").addFeatures(HintQueryFeature()))
     }
 
     @Test(expected = IllegalArgumentException::class)
     fun testNullKeyHint() {
-        joiner!!.find(Q<User>().addHint(null, "testHintValue").addFeatures(HintQueryFeature()))
+        joiner.find(Q<User>().addHint(null, "testHintValue").addFeatures(HintQueryFeature()))
     }
 
 }

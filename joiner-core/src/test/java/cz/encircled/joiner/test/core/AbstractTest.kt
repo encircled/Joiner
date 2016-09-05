@@ -29,7 +29,7 @@ import javax.persistence.PersistenceContext
 abstract class AbstractTest : AbstractTransactionalJUnit4SpringContextTests() {
 
     @Autowired
-    protected var joiner: Joiner? = null
+    protected lateinit var joiner: Joiner
 
     @Autowired
     protected var joinGraphRegistry: JoinGraphRegistry? = null

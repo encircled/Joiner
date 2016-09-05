@@ -17,12 +17,12 @@ class MultipleMappingsForSameClassOnSingleEntityTest : AbstractTest() {
 
     @Test(expected = JoinerException::class)
     fun testJoinAmbiguousAliasException() {
-        joiner!!.find(Q.from<Any>(QUser.user1).joins(J.left(QContact.contact)))
+        joiner.find(Q.from(QUser.user1).joins(J.left(QContact.contact)))
     }
 
     @Test
     fun testConflictResolvedAndFetched() {
-        val users = joiner!!.find(Q.from<Any>(QUser.user1).joins(J.left(QContact("employmentContacts"))))
+        val users = joiner.find(Q.from(QUser.user1).joins(J.left(QContact("employmentContacts"))))
         Assert.assertFalse(users.isEmpty())
 
         for (user in users) {
@@ -33,7 +33,7 @@ class MultipleMappingsForSameClassOnSingleEntityTest : AbstractTest() {
 
     @Test
     fun testAllConflictsResolvedAndFetched() {
-        val users = joiner!!.find(Q.from<Any>(QUser.user1).joins(J.left(QContact("employmentContacts")), J.left(QContact("contacts"))))
+        val users = joiner.find(Q.from(QUser.user1).joins(J.left(QContact("employmentContacts")), J.left(QContact("contacts"))))
         Assert.assertFalse(users.isEmpty())
 
         for (user in users) {
@@ -49,7 +49,7 @@ class MultipleMappingsForSameClassOnSingleEntityTest : AbstractTest() {
 
     @Test
     fun testManyToOneMapping() {
-        val result = joiner!!.find(Q.from<Any>(QContact.contact).joins(J.left(QUser("user")), J.left(QUser("employmentUser"))))
+        val result = joiner.find(Q.from(QContact.contact).joins(J.left(QUser("user")), J.left(QUser("employmentUser"))))
 
         Assert.assertFalse(result.isEmpty())
 
@@ -62,9 +62,9 @@ class MultipleMappingsForSameClassOnSingleEntityTest : AbstractTest() {
 
     @Test
     fun testAllNestedConflictsResolvedAndFetched() {
-        val request = Q.from<Any>(QGroup.group).joins(
+        val request = Q.from(QGroup.group).joins(
                 J.left(QUser.user1).nested(J.left(QContact("employmentContacts")).nested(J.left(QUser("employmentUser"))), J.left(QContact("contacts"))))
-        var groups = joiner!!.find<Group>(request)
+        var groups = joiner.find<Group>(request)
         Assert.assertFalse(groups.isEmpty())
 
         for (group in groups) {
@@ -75,14 +75,14 @@ class MultipleMappingsForSameClassOnSingleEntityTest : AbstractTest() {
             }
         }
 
-        groups = joiner!!.find<Group>(request)
+        groups = joiner.find<Group>(request)
     }
 
     @Test
     fun testWrongValueNotCached() {
-        joiner!!.find(Q.from<Any>(QUser.user1).joins(J.left(QContact("employmentContacts"))))
+        joiner.find(Q.from(QUser.user1).joins(J.left(QContact("employmentContacts"))))
         try {
-            joiner!!.find(Q.from<Any>(QUser.user1).joins(J.left(QContact.contact)))
+            joiner.find(Q.from(QUser.user1).joins(J.left(QContact.contact)))
             Assert.fail()
         } catch (e: JoinerException) {
             // Expected
@@ -93,12 +93,12 @@ class MultipleMappingsForSameClassOnSingleEntityTest : AbstractTest() {
     @Test
     fun testWrongValueNotCached2() {
         try {
-            joiner!!.find(Q.from<Any>(QUser.user1).joins(J.left(QContact.contact)))
+            joiner.find(Q.from(QUser.user1).joins(J.left(QContact.contact)))
         } catch (e: JoinerException) {
             // Expected
         }
 
-        joiner!!.find(Q.from<Any>(QUser.user1).joins(J.left(QContact("employmentContacts"))))
+        joiner.find(Q.from(QUser.user1).joins(J.left(QContact("employmentContacts"))))
     }
 
 }
