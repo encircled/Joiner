@@ -1,10 +1,15 @@
 package cz.encircled.joiner.query.join;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
+
 import cz.encircled.joiner.exception.JoinerException;
 import cz.encircled.joiner.util.Assert;
-
-import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * ConcurrentHashMap-based implementation of {@link JoinGraphRegistry}
@@ -13,10 +18,10 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class DefaultJoinGraphRegistry implements JoinGraphRegistry {
 
-    private final Map<Class, Map<String, List<JoinDescription>>> registry = new ConcurrentHashMap<>();
+    private final Map<Class, Map<Object, List<JoinDescription>>> registry = new ConcurrentHashMap<>();
 
     @Override
-    public void registerJoinGraph(String graphName, Collection<JoinDescription> joins, Class<?>... rootClasses) {
+    public void registerJoinGraph(Object graphName, Collection<JoinDescription> joins, Class<?>... rootClasses) {
         Assert.notNull(graphName);
         Assert.notNull(joins);
         Assert.notNull(rootClasses);
@@ -24,7 +29,7 @@ public class DefaultJoinGraphRegistry implements JoinGraphRegistry {
 
         for (Class<?> clazz : rootClasses) {
             registry.computeIfAbsent(clazz, c -> new ConcurrentHashMap<>());
-            Map<String, List<JoinDescription>> joinsOfClass = registry.get(clazz);
+            Map<Object, List<JoinDescription>> joinsOfClass = registry.get(clazz);
             if (joinsOfClass.containsKey(graphName)) {
                 throw new JoinerException(String.format("JoinGraph with name [%s] is already defined for the class [%s]", graphName, clazz.getName()));
             } else {
@@ -34,12 +39,13 @@ public class DefaultJoinGraphRegistry implements JoinGraphRegistry {
     }
 
     @Override
-    public List<JoinDescription> getJoinGraph(Class<?> clazz, String name) {
-        Map<String, List<JoinDescription>> joinsOfClass = registry.get(clazz);
+    public List<JoinDescription> getJoinGraph(Class<?> clazz, Object name) {
+        // TODO add tests for join description modifying
+        Map<Object, List<JoinDescription>> joinsOfClass = registry.get(clazz);
         if (joinsOfClass != null) {
             List<JoinDescription> joins = joinsOfClass.get(name);
             if (joins != null) {
-                return joins;
+                return joins.stream().map(JoinDescription::copy).collect(Collectors.toList());
             }
         }
 

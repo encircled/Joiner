@@ -10,8 +10,8 @@ import java.util.List;
  */
 public interface JoinGraphRegistry {
 
-    void registerJoinGraph(String graphName, Collection<JoinDescription> joins, Class<?>... rootClasses);
+    void registerJoinGraph(Object graphName, Collection<JoinDescription> joins, Class<?>... rootClasses);
 
-    List<JoinDescription> getJoinGraph(Class<?> clazz, String name);
+    List<JoinDescription> getJoinGraph(Class<?> clazz, Object name);
 
 }

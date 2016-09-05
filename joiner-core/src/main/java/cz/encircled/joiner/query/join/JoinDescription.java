@@ -1,13 +1,14 @@
 package cz.encircled.joiner.query.join;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
+
 import com.mysema.query.JoinType;
 import com.mysema.query.types.EntityPath;
 import com.mysema.query.types.Predicate;
 import com.mysema.query.types.path.CollectionPathBase;
 import cz.encircled.joiner.util.Assert;
-
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Represents query join.
@@ -42,6 +43,18 @@ public class JoinDescription {
         Assert.notNull(alias);
 
         alias(alias);
+    }
+
+    public JoinDescription copy() {
+        JoinDescription copy = new JoinDescription(alias);
+        copy.children = children.stream().map(JoinDescription::copy).collect(Collectors.toList());
+        copy.fetch = fetch;
+        copy.on = on;
+        copy.parent = parent;
+        copy.collectionPath = collectionPath;
+        copy.singlePath = singlePath;
+        copy.joinType = joinType;
+        return copy;
     }
 
     public boolean isFetch() {
