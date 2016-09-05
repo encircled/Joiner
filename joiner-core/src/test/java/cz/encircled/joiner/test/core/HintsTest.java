@@ -26,7 +26,7 @@ public class HintsTest extends AbstractTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void testNullKeyHint() {
-        joiner.find(new Q<User>().addHint(null, "testHintValue").addFeatures(new HintQueryFeature()));
+        joiner.find(new Q<User>(from).addHint(null, "testHintValue").addFeatures(new HintQueryFeature()));
     }
 
 }

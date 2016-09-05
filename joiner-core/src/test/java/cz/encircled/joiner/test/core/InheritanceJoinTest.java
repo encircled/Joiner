@@ -31,7 +31,7 @@ public class InheritanceJoinTest extends AbstractTest {
 
     @Test
     public void joinSingleAndCollectionMultipleChildrenTest() {
-        List<Group> groups = joiner.find(new Q<Group>()
+        List<Group> groups = joiner.find(new Q<>(QGroup.group)
                 .joins(J.left(QUser.user1)
                         .nested(J.left(QKey.key), J.left(QPassword.password)))
                 .where(QKey.key.name.ne("bad_key"))

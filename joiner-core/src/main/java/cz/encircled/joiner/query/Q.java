@@ -20,10 +20,8 @@ import java.util.*;
  */
 public class Q<T> {
 
+    private final EntityPath<T> from;
     private Predicate where;
-
-    private EntityPath<T> from;
-
     private Set<JoinDescription> joins = new LinkedHashSet<>();
 
     private List<String> joinGraphs = new ArrayList<>();
@@ -38,8 +36,12 @@ public class Q<T> {
 
     private List<QueryFeature> features = new ArrayList<>(2);
 
+    public Q(EntityPath<T> from) {
+        this.from = from;
+    }
+
     public static <T> Q<T> from(EntityPath<T> from) {
-        return new Q<T>().rootEntityPath(from);
+        return new Q<>(from);
     }
 
     public Predicate getWhere() {
@@ -80,12 +82,6 @@ public class Q<T> {
 
     public EntityPath<T> getFrom() {
         return from;
-    }
-
-    public Q<T> rootEntityPath(EntityPath<T> rootEntityPath) {
-        this.from = rootEntityPath;
-
-        return this;
     }
 
     public List<String> getJoinGraphs() {
