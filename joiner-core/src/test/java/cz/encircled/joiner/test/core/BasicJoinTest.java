@@ -49,7 +49,7 @@ public class BasicJoinTest extends AbstractTest {
             for (User user : group.getUsers()) {
                 if (user instanceof SuperUser) {
                     SuperUser superUser = (SuperUser) user;
-                    if (superUser.getKey().getName().equals("key1")) {
+                    if (superUser.getKey() != null && superUser.getKey().getName().equals("key1")) {
                         hasKey = true;
                     }
                 }

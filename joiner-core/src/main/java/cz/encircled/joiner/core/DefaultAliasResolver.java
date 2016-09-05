@@ -46,7 +46,8 @@ public class DefaultAliasResolver implements AliasResolver {
 
     private Path<?> findPathOnParent(Object parent, Class<?> targetType, JoinDescription joinDescription) {
         while (!targetType.equals(Object.class)) {
-            String cacheKey = parent.getClass().getName() + targetType.getSimpleName() + joinDescription.getAlias().toString();
+            // TODO more efficient cache key
+            String cacheKey = parent.getClass().getName() + parent.toString() + targetType.getSimpleName() + joinDescription.getAlias().toString();
             Path cached = aliasCache.get(cacheKey);
             if (cached != null && !cached.equals(nullPath)) {
                 // TODO test

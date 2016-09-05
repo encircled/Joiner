@@ -70,7 +70,7 @@ public class EntityManagerConfig {
     private Properties eclipseProperties(boolean fresh) {
         Properties properties = new Properties();
         properties.put(PersistenceUnitProperties.CACHE_SHARED_DEFAULT, "false");
-        properties.put(PersistenceUnitProperties.WEAVING, "false");
+        properties.put(PersistenceUnitProperties.WEAVING, "static");
         if (fresh) {
             properties.put(PersistenceUnitProperties.DDL_GENERATION, "drop-and-create-tables");
         }

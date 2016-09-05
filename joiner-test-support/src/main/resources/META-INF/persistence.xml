@@ -1,0 +1,23 @@
+<persistence xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://java.sun.com/xml/ns/persistence"
+             xsi:schemaLocation="http://java.sun.com/xml/ns/persistence persistence_1_0.xsd" version="1.0">
+    <persistence-unit name="HumanResources">
+        <class>cz.encircled.joiner.test.model.Group</class>
+        <class>cz.encircled.joiner.test.model.User</class>
+        <class>cz.encircled.joiner.test.model.NormalUser</class>
+        <class>cz.encircled.joiner.test.model.SuperUser</class>
+        <class>cz.encircled.joiner.test.model.Phone</class>
+        <class>cz.encircled.joiner.test.model.AbstractEntity</class>
+        <class>cz.encircled.joiner.test.model.Address</class>
+        <class>cz.encircled.joiner.test.model.Key</class>
+        <class>cz.encircled.joiner.test.model.Password</class>
+        <class>cz.encircled.joiner.test.model.Contact</class>
+        <class>cz.encircled.joiner.test.model.Status</class>
+        <class>cz.encircled.joiner.test.model.StatusType</class>
+        <properties>
+            <property
+                    name="eclipselink.weaving"
+                    value="static"
+            />
+        </properties>
+    </persistence-unit>
+</persistence>
