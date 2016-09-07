@@ -1,38 +1,55 @@
-# Joiner
+# Overview
 
-Joiner is an addition for [QueryDSL](http://www.querydsl.com/) JPA framework. QueryDSL itself enables the construction of type-safe SQL-like queries in Java. Joiner has similar API for query construction, but unlike QueryDSL it is focused on applications with complex domain model, which require a lot of work with query joins.   
+Joiner is a Java library which allows to create type-safe JPA queries. It is focused on applications with complex domain model, which require a lot of work with query joins.   
 
-Joiner can be used instead of or together with QueryDSL. Joiner uses QueryDSL internally and expects that QueryDSL maven APT plugin is used for entities metamodel. See more about QueryDSL installation at [QueryDSL](http://www.querydsl.com/static/querydsl/latest/reference/html/ch02.html#jpa_integration).
+Joiner can be used instead of or together with QueryDSL. Joiner uses QueryDSL APT maven plugin for entitiy metamodel generation. See more about QueryDSL installation at [QueryDSL](http://www.querydsl.com/static/querydsl/latest/reference/html/ch02.html#jpa_integration).
 
 Joiner offers following extra features:
-* a simple way of adding complex joins to the jpa queries
-* helps to resolve alias uniqueness in the queries
-* correct join fetching in Hibernate and Eclipselink as well
-* separating QueryDSL `JPAQuery` and query parameters
+* simple way of adding complex joins to the queries
+* automatic resolving of alias uniqueness in queries
+* fixed join fetching in Eclipselink (when using inheritance)
 
+Joiner represents query joins as a graph, which makes it possible to automatically resolve unique aliases for nested joins (even when there are name collisions).
 
 ## Examples
 
-Joiner allows specifying nested joins and resolves alias uniqueness for you
-
+Basic select query
 ```
-List<Group> groups = joiner.find(Q.from(QGroup.group)
-                                            .joins(J.inner(QSuperUser.superUser)
-                                                .nested(J.left(QUserKey.userKey), J.left(QStatus.status)))
-                                            .joins(J.left(QStatus.status))
-                                    );
+joiner.findOne(Q.from(QGroup.group)
+                .where(QGroup.group.id.eq(1L)));
 ```
 
-As you can see, `statuses` are present on user and on group entities. Aliases are resolved automatically and can be referenced in query predicates, for example in `where`:
-
+Basic join
 ```
-List<Group> groups = joiner.find(Q.from(QGroup.group)
-                                            .joins(J.inner(QSuperUser.superUser)
-                                                    .nested(J.left(QUserKey.userKey), J.left(QStatus.status)))
-                                            .joins(J.left(QStatus.status))
-                                            .where(QStatus.status.name.eq("GroupStatus")
-                                                    .or(J.path(QSuperUser.superUser, QStatus.status).name.eq("UserStatus")))
-                                    );
+joiner.findOne(Q.from(QGroup.group)
+                .joins(J.left(QUser.user1))
+                .where(QGroup.group.id.eq(1L)));
+```
+
+Joining a subclass only (`SuperUser` extends `User`)
+```
+joiner.findOne(Q.from(QGroup.group)
+                .joins(J.left(QSuperUser.superUser))
+                .where(QGroup.group.id.eq(1L)));
+```
+
+Joining an association, which is present on a subclass only (`Key` is present on `SuperUser` only)
+```
+joiner.findOne(Q.from(QGroup.group)
+                .joins(J.left(QSuperUser.superUser)
+                        .nested(J.left(QKey.key)))
+                .where(QGroup.group.id.eq(1L)));
+```
+
+Joining multiple nested associations
+```
+joiner.findOne(Q.from(QGroup.group)
+                .joins(J.left(QSuperUser.superUser)
+                        .nested(
+                                J.left(QKey.key),
+                                J.left(QContact.contact)
+                        ))
+                .where(QGroup.group.id.eq(1L)));
 ```
 
 ## Maven dependencies  
@@ -42,7 +59,7 @@ List<Group> groups = joiner.find(Q.from(QGroup.group)
 <dependency>
     <groupId>cz.encircled</groupId>
     <artifactId>joiner-core</artifactId>
-    <version>0.2</version>
+    <version>${joiner.version}</version>
 </dependency>
 ```
 
@@ -51,6 +68,14 @@ List<Group> groups = joiner.find(Q.from(QGroup.group)
 <dependency>
     <groupId>cz.encircled</groupId>
     <artifactId>joiner-spring</artifactId>
-    <version>0.2</version>
+    <version>${joiner.version}</version>
 </dependency>
 ```
+
+### Eclipselink support module
+```
+<dependency>
+    <groupId>cz.encircled</groupId>
+    <artifactId>joiner-eclipselink</artifactId>
+    <version>${joiner.version}</version>
+</depend
