@@ -10,11 +10,13 @@ import cz.encircled.joiner.query.join.JoinDescription;
 import cz.encircled.joiner.util.JoinerUtil;
 import cz.encircled.joiner.util.ReflectionUtils;
 
+import javax.persistence.EntityManager;
+import javax.persistence.metamodel.Type;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 import static cz.encircled.joiner.util.ReflectionUtils.getField;
 
@@ -24,8 +26,19 @@ import static cz.encircled.joiner.util.ReflectionUtils.getField;
 public class DefaultAliasResolver implements AliasResolver {
 
     private static final Path<?> nullPath = new BooleanPath("");
-
+    private final EntityManager entityManager;
     private final Map<String, Path> aliasCache = new ConcurrentHashMap<>();
+
+    public DefaultAliasResolver(EntityManager entityManager) {
+        this.entityManager = entityManager;
+    }
+
+    private Set<Class> getSubclasses(Class<?> parent) {
+        return entityManager.getMetamodel().getEntities().stream()
+                .filter(entityType -> parent.isAssignableFrom(entityType.getJavaType()))
+                .map(Type::getJavaType)
+                .collect(Collectors.toCollection(HashSet::new));
+    }
 
     @Override
     @SuppressWarnings("unchecked")
@@ -44,7 +57,7 @@ public class DefaultAliasResolver implements AliasResolver {
         }
     }
 
-    private Path<?> findPathOnParent(Object parent, Class<?> targetType, JoinDescription joinDescription) {
+    private Path<?> findPathOnParent(Path<?> parent, Class<?> targetType, JoinDescription joinDescription) {
         while (!targetType.equals(Object.class)) {
             // TODO more efficient cache key
             String cacheKey = parent.getClass().getName() + parent.toString() + targetType.getSimpleName() + joinDescription.getAlias().toString();
@@ -60,17 +73,30 @@ public class DefaultAliasResolver implements AliasResolver {
             for (Field field : parent.getClass().getFields()) {
                 Object candidate = getField(field, parent);
 
-                if (candidate instanceof CollectionPathBase) {
-                    Field elementTypeField = ReflectionUtils.findField(candidate.getClass(), "elementType");
-                    Class<?> elementType = (Class<?>) getField(elementTypeField, candidate);
+                testAliasCandidate(targetType, candidatePaths, candidate);
+            }
 
-                    if (elementType.equals(targetType)) {
-                        candidatePaths.add((Path<?>) candidate);
+            if (candidatePaths.isEmpty()) {
+                for (Class child : getSubclasses(parent.getType())) {
+                    Class<?> real;
+                    Constructor<?> constructor;
+                    try {
+                        real = Class.forName(parent.getClass().getPackage().getName() + ".Q" + child.getSimpleName());
+                        constructor = real.getConstructor(String.class);
+                    } catch (Exception e) {
+                        throw new RuntimeException();
                     }
-                } else if (candidate instanceof EntityPathBase) {
-                    Class type = ((EntityPathBase) candidate).getType();
-                    if (type.equals(targetType)) {
-                        candidatePaths.add((Path<?>) candidate);
+
+                    Object childInstance;
+                    try {
+                        childInstance = constructor.newInstance(parent.getMetadata().getElement());
+                    } catch (Exception e) {
+                        throw new RuntimeException();
+                    }
+                    for (Field field : real.getFields()) {
+                        Object candidate = getField(field, childInstance);
+
+                        testAliasCandidate(targetType, candidatePaths, candidate);
                     }
                 }
             }
@@ -100,6 +126,22 @@ public class DefaultAliasResolver implements AliasResolver {
         }
 
         return null;
+    }
+
+    private void testAliasCandidate(Class<?> targetType, List<Path<?>> candidatePaths, Object candidate) {
+        if (candidate instanceof CollectionPathBase) {
+            Field elementTypeField = ReflectionUtils.findField(candidate.getClass(), "elementType");
+            Class<?> elementType = (Class<?>) getField(elementTypeField, candidate);
+
+            if (elementType.isAssignableFrom(targetType)) {
+                candidatePaths.add((Path<?>) candidate);
+            }
+        } else if (candidate instanceof EntityPathBase) {
+            Class<?> type = ((EntityPathBase) candidate).getType();
+            if (type.isAssignableFrom(targetType)) {
+                candidatePaths.add((Path<?>) candidate);
+            }
+        }
     }
 
 }

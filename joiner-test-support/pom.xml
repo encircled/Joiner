@@ -11,6 +11,11 @@
     <artifactId>joiner-test-support</artifactId>
 
     <dependencies>
+        <dependency>
+            <groupId>cz.encircled</groupId>
+            <artifactId>joiner-eclipse</artifactId>
+            <version>${project.version}</version>
+        </dependency>
         <!-- JUnit -->
         <dependency>
             <groupId>junit</groupId>

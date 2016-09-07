@@ -22,6 +22,10 @@ public class Status extends AbstractEntity {
     private Group group;
 
     @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "phone_id")
+    private Phone phone;
+
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "status_type_id")
     private StatusType statusType;
 
@@ -31,6 +35,14 @@ public class Status extends AbstractEntity {
 
     public void setStatusType(final StatusType statusType) {
         this.statusType = statusType;
+    }
+
+    public Phone getPhone() {
+        return phone;
+    }
+
+    public void setPhone(Phone phone) {
+        this.phone = phone;
     }
 
     public User getUser() {

@@ -76,6 +76,6 @@ joiner.findOne(Q.from(QGroup.group)
 ```
 <dependency>
     <groupId>cz.encircled</groupId>
-    <artifactId>joiner-eclipselink</artifactId>
+    <artifactId>joiner-eclipse</artifactId>
     <version>${joiner.version}</version>
 </depend

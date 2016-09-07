@@ -1,11 +1,20 @@
 package cz.encircled.joiner.util;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 
 /**
  * @author Vlad on 14-Aug-16.
  */
 public class ReflectionUtils {
+
+    public static Method findMethod(Class<?> clazz, String name, Class... args) {
+        try {
+            return clazz.getDeclaredMethod(name, args);
+        } catch (NoSuchMethodException e) {
+            return null;
+        }
+    }
 
     public static Field findField(Class<?> clazz, String name) {
         Assert.notNull(clazz);

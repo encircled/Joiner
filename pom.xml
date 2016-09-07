@@ -35,6 +35,7 @@
         <module>joiner-core</module>
         <module>joiner-spring</module>
         <module>joiner-test-support</module>
+        <module>joiner-eclipse</module>
     </modules>
 
     <packaging>pom</packaging>
@@ -43,7 +44,7 @@
         <querydsl.version>3.7.0</querydsl.version>
         <spring.version>4.3.2.RELEASE</spring.version>
         <hibernate.version>5.2.2.Final</hibernate.version>
-        <eclipselink.version>2.6.3</eclipselink.version>
+        <eclipselink.version>2.6.4-RC1</eclipselink.version>
         <vendor.name>hibernate</vendor.name>
         <vendor.generate>no-fresh</vendor.generate>
     </properties>
@@ -62,7 +63,6 @@
     <dependencyManagement>
         <dependencies>
             <!-- QueryDSL -->
-
             <dependency>
                 <groupId>com.mysema.querydsl</groupId>
                 <artifactId>querydsl-core</artifactId>

@@ -13,12 +13,9 @@
     </parent>
 
     <name>joiner-core</name>
-    <description>
-        The main goal of Joiner is to make QueryDSL even more useful. Joiner provides:
-        - a simple way to add joins to querydsl queries at build or runtime
-        - helps to resolve alias uniqueness in a query for complex domain models
-    </description>
     <url>https://github.com/encircled/Joiner</url>
+
+    <description>Joiner is a Java library which allows to create type-safe JPA queries.</description>
 
     <licenses>
         <license>

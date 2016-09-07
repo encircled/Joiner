@@ -1,14 +1,14 @@
 package cz.encircled.joiner.query.join;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.stream.Collectors;
-
 import com.mysema.query.JoinType;
 import com.mysema.query.types.EntityPath;
 import com.mysema.query.types.Predicate;
 import com.mysema.query.types.path.CollectionPathBase;
 import cz.encircled.joiner.util.Assert;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Represents query join.
@@ -152,6 +152,7 @@ public class JoinDescription {
         return parent;
     }
 
+    // TODO make it protected
     public List<JoinDescription> getChildren() {
         return children;
     }

@@ -1,21 +1,13 @@
 package cz.encircled.joiner.test.core.data;
 
-import java.util.Collections;
-
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-
-import cz.encircled.joiner.test.model.Address;
-import cz.encircled.joiner.test.model.Contact;
-import cz.encircled.joiner.test.model.Group;
-import cz.encircled.joiner.test.model.Key;
-import cz.encircled.joiner.test.model.NormalUser;
-import cz.encircled.joiner.test.model.Password;
-import cz.encircled.joiner.test.model.SuperUser;
-import cz.encircled.joiner.test.model.User;
+import cz.encircled.joiner.test.model.*;
 import org.springframework.stereotype.Component;
 import org.springframework.test.annotation.Commit;
 import org.springframework.transaction.annotation.Transactional;
+
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+import java.util.Collections;
 
 /**
  * @author Kisel on 26.01.2016.
@@ -68,7 +60,7 @@ public class TestData {
         superUser.setGroups(Collections.singletonList(group));
         entityManager.persist(superUser);
 
-        Contact contact = new Contact();
+        Phone contact = new Phone();
         contact.setName("PhoneNumber");
         contact.setEmploymentUser(user);
         contact.setUser(superUser);

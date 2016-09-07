@@ -1,5 +1,8 @@
 package cz.encircled.joiner.test.model;
 
+import cz.encircled.joiner.eclipse.InheritanceJoiningCustomizer;
+import org.eclipse.persistence.annotations.Customizer;
+
 import javax.persistence.Entity;
 import javax.persistence.Table;
 
@@ -8,6 +11,7 @@ import javax.persistence.Table;
  */
 @Entity
 @Table(name = "test_key")
+@Customizer(InheritanceJoiningCustomizer.class)
 public class Key extends AbstractEntity {
 
 }

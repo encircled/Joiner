@@ -1,15 +1,5 @@
 package cz.encircled.joiner.core;
 
-import java.lang.reflect.Field;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import javax.persistence.EntityManager;
-
 import com.google.common.collect.ArrayListMultimap;
 import com.mysema.query.JoinType;
 import com.mysema.query.jpa.impl.AbstractJPAQuery;
@@ -30,6 +20,10 @@ import cz.encircled.joiner.query.join.JoinGraphRegistry;
 import cz.encircled.joiner.util.Assert;
 import cz.encircled.joiner.util.ReflectionUtils;
 
+import javax.persistence.EntityManager;
+import java.lang.reflect.Field;
+import java.util.*;
+
 /**
  * @author Kisel on 26.01.2016.
  */
@@ -41,12 +35,13 @@ public class Joiner {
 
     private JoinGraphRegistry joinGraphRegistry;
 
-    private AliasResolver aliasResolver = new DefaultAliasResolver();
+    private AliasResolver aliasResolver;
 
     public Joiner(EntityManager entityManager) {
         Assert.notNull(entityManager);
 
         this.entityManager = entityManager;
+        aliasResolver = new DefaultAliasResolver(entityManager);
 
         String implName = entityManager.getDelegate().getClass().getName();
         if (implName.startsWith("org.hibernate")) {
@@ -101,7 +96,9 @@ public class Joiner {
 
         List<JoinDescription> joins = unrollChildren(request.getJoins());
         for (JoinDescription join : joins) {
-            aliasResolver.resolveJoinAlias(join, request.getFrom());
+            if (join.getCollectionPath() == null && join.getSinglePath() == null) {
+                aliasResolver.resolveJoinAlias(join, request.getFrom());
+            }
             usedAliases.add(join.getAlias());
         }
         addJoins(joins, query, request.getFrom(), request.getFrom().equals(projection));
