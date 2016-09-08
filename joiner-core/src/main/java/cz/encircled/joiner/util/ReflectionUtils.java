@@ -1,18 +1,27 @@
 package cz.encircled.joiner.util;
 
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
-import java.lang.reflect.Method;
+
+import com.mysema.query.types.EntityPath;
+import cz.encircled.joiner.exception.JoinerException;
 
 /**
  * @author Vlad on 14-Aug-16.
  */
 public class ReflectionUtils {
 
-    public static Method findMethod(Class<?> clazz, String name, Class... args) {
+    @SuppressWarnings("unchecked")
+    public static <T extends EntityPath> T instantiate(Class<? extends EntityPath> generatedClass, String alias) {
+        Assert.notNull(alias);
+
         try {
-            return clazz.getDeclaredMethod(name, args);
+            Constructor<? extends EntityPath> constructor = generatedClass.getConstructor(String.class);
+            return (T) constructor.newInstance(alias);
         } catch (NoSuchMethodException e) {
-            return null;
+            throw new JoinerException("EntityPath String constructor is missing on " + generatedClass);
+        } catch (Exception e) {
+            throw new JoinerException("Failed to create new instance of " + generatedClass, e);
         }
     }
 

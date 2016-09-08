@@ -19,6 +19,16 @@ public class J {
         return path;
     }
 
+    @SuppressWarnings("unchcecked")
+    public static <T extends EntityPath> T path(EntityPath<?> grandFather, EntityPath<?> father, T path) {
+        Assert.notNull(father);
+        Assert.notNull(grandFather);
+
+        EntityPath<?> parentPath = JoinerUtil.getAliasForChild(grandFather, father);
+
+        return JoinerUtil.getAliasForChild(parentPath, path);
+    }
+
     public static JoinDescription left(EntityPath<?> path) {
         return getBasicJoin(path).left();
     }
