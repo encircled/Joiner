@@ -76,19 +76,12 @@
             <scope>provided</scope>
         </dependency>
 
+        <!--TODO-->
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-lang3</artifactId>
             <version>3.4</version>
             <scope>provided</scope>
-        </dependency>
-
-        <!-- Joiner -->
-        <dependency>
-            <groupId>cz.encircled</groupId>
-            <artifactId>joiner-test-support</artifactId>
-            <version>${project.version}</version>
-            <scope>test</scope>
         </dependency>
 
     </dependencies>

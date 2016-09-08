@@ -4,7 +4,10 @@ import com.google.common.collect.ArrayListMultimap;
 import com.mysema.query.JoinType;
 import com.mysema.query.jpa.impl.AbstractJPAQuery;
 import com.mysema.query.jpa.impl.JPAQuery;
-import com.mysema.query.types.*;
+import com.mysema.query.types.EntityPath;
+import com.mysema.query.types.Expression;
+import com.mysema.query.types.Operation;
+import com.mysema.query.types.Path;
 import cz.encircled.joiner.core.vendor.HibernateRepository;
 import cz.encircled.joiner.core.vendor.JoinerVendorRepository;
 import cz.encircled.joiner.exception.AliasMissingException;
@@ -16,17 +19,8 @@ import cz.encircled.joiner.query.join.JoinGraphRegistry;
 import cz.encircled.joiner.util.Assert;
 import cz.encircled.joiner.util.JoinerUtil;
 import cz.encircled.joiner.util.ReflectionUtils;
-import org.eclipse.persistence.descriptors.ClassDescriptor;
-import org.eclipse.persistence.expressions.ExpressionBuilder;
-import org.eclipse.persistence.internal.jpa.EJBQueryImpl;
-import org.eclipse.persistence.internal.jpa.QueryImpl;
-import org.eclipse.persistence.internal.queries.JoinedAttributeManager;
-import org.eclipse.persistence.internal.sessions.AbstractSession;
-import org.eclipse.persistence.queries.ObjectBuildingQuery;
-import org.eclipse.persistence.queries.ObjectLevelReadQuery;
 
 import javax.persistence.EntityManager;
-import javax.persistence.Query;
 import java.lang.reflect.Field;
 import java.util.*;
 
@@ -134,43 +128,7 @@ public class Joiner {
             query = doPostProcess(request, query, feature);
         }
 
-        Query jpaQuery = query.createQuery(projection);
-
-        if (jpaQuery instanceof EJBQueryImpl) {
-            QueryImpl casted = (QueryImpl) jpaQuery;
-            if (casted.getDatabaseQuery() instanceof ObjectLevelReadQuery) {
-
-                Field f = ReflectionUtils.findField(ObjectLevelReadQuery.class, "joinedAttributeManager");
-                f.setAccessible(true);
-                JoinedAttributeManager old = (JoinedAttributeManager) ReflectionUtils.getField(f, casted.getDatabaseQuery());
-                if (old != null) {
-                    My newManager = new My(old.getDescriptor(), old.getBaseExpressionBuilder(), old.getBaseQuery());
-                    newManager.copyFrom(old);
-                    ReflectionUtils.setField(f, casted.getDatabaseQuery(), newManager);
-                }
-            }
-        }
-
-        return getResultList(jpaQuery, null);
-
-//        return query.list(projection);
-    }
-
-    private <T> List<T> getResultList(Query query, FactoryExpression<T> projection) {
-        List<?> results = query.getResultList();
-        return (List<T>) results;
-        /*List<T> rv = new ArrayList<>(results.size());
-        for (Object o : results) {
-            if (o != null) {
-                if (!o.getClass().isArray()) {
-                    o = new Object[]{o};
-                }
-                rv.add(projection.newInstance((Object[]) o));
-            } else {
-                rv.add(null);
-            }
-        }
-        return rv;*/
+        return joinerVendorRepository.getResultList(query, projection);
     }
 
     private <T> void setJoinsFromJoinsGraphs(Q<T> request) {
@@ -257,29 +215,6 @@ public class Joiner {
 
     public void setJoinGraphRegistry(JoinGraphRegistry joinGraphRegistry) {
         this.joinGraphRegistry = joinGraphRegistry;
-    }
-
-    private class My extends JoinedAttributeManager {
-
-        public My(ClassDescriptor descriptor, ExpressionBuilder baseBuilder, ObjectBuildingQuery baseQuery) {
-            super(descriptor, baseBuilder, baseQuery);
-        }
-
-        @Override
-        protected void processDataResults(AbstractSession session) {
-            int originalMax = baseQuery.getMaxRows();
-            int originalFirst = baseQuery.getFirstResult();
-
-            try {
-                baseQuery.setMaxRows(0);
-                baseQuery.setFirstResult(0);
-                super.processDataResults(session);
-            } finally {
-                baseQuery.setMaxRows(originalMax);
-                baseQuery.setFirstResult(originalFirst);
-            }
-
-        }
     }
 
 }

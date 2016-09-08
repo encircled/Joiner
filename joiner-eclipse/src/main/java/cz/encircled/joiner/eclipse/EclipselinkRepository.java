@@ -6,15 +6,26 @@ import com.mysema.query.jpa.EclipseLinkTemplates;
 import com.mysema.query.jpa.impl.AbstractJPAQuery;
 import com.mysema.query.jpa.impl.JPAQuery;
 import com.mysema.query.types.EntityPath;
+import com.mysema.query.types.Expression;
 import cz.encircled.joiner.core.vendor.AbstractVendorRepository;
 import cz.encircled.joiner.core.vendor.JoinerVendorRepository;
 import cz.encircled.joiner.exception.JoinerException;
 import cz.encircled.joiner.query.join.JoinDescription;
 import cz.encircled.joiner.util.ReflectionUtils;
+import org.eclipse.persistence.descriptors.ClassDescriptor;
+import org.eclipse.persistence.expressions.ExpressionBuilder;
+import org.eclipse.persistence.internal.jpa.EJBQueryImpl;
+import org.eclipse.persistence.internal.jpa.QueryImpl;
+import org.eclipse.persistence.internal.queries.JoinedAttributeManager;
+import org.eclipse.persistence.internal.sessions.AbstractSession;
+import org.eclipse.persistence.queries.ObjectBuildingQuery;
+import org.eclipse.persistence.queries.ObjectLevelReadQuery;
 
 import javax.persistence.EntityManager;
+import javax.persistence.Query;
 import java.lang.reflect.Field;
 import java.util.Collection;
+import java.util.List;
 
 /**
  * @author Kisel on 28.01.2016.
@@ -52,6 +63,29 @@ public class EclipselinkRepository extends AbstractVendorRepository implements J
         }
 
         super.addJoin(query, joinDescription);
+    }
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public <T> List<T> getResultList(JPAQuery query, Expression<T> projection) {
+        Query jpaQuery = query.createQuery(projection);
+
+        if (jpaQuery instanceof EJBQueryImpl) {
+            QueryImpl casted = (QueryImpl) jpaQuery;
+            if (casted.getDatabaseQuery() instanceof ObjectLevelReadQuery) {
+
+                Field f = ReflectionUtils.findField(ObjectLevelReadQuery.class, "joinedAttributeManager");
+                f.setAccessible(true);
+                JoinedAttributeManager old = (JoinedAttributeManager) ReflectionUtils.getField(f, casted.getDatabaseQuery());
+                if (old != null) {
+                    FixedJoinerAttributeManager newManager = new FixedJoinerAttributeManager(old.getDescriptor(), old.getBaseExpressionBuilder(), old.getBaseQuery());
+                    newManager.copyFrom(old);
+                    ReflectionUtils.setField(f, casted.getDatabaseQuery(), newManager);
+                }
+            }
+        }
+
+        return jpaQuery.getResultList();
     }
 
     private String resolvePathToFieldFromRoot(String rootAlias, JoinDescription targetJoinDescription, Collection<JoinDescription> joins) {
@@ -93,6 +127,29 @@ public class EclipselinkRepository extends AbstractVendorRepository implements J
             }
         }
         return result;
+    }
+
+    private class FixedJoinerAttributeManager extends JoinedAttributeManager {
+
+        FixedJoinerAttributeManager(ClassDescriptor descriptor, ExpressionBuilder baseBuilder, ObjectBuildingQuery baseQuery) {
+            super(descriptor, baseBuilder, baseQuery);
+        }
+
+        @Override
+        protected void processDataResults(AbstractSession session) {
+            int originalMax = baseQuery.getMaxRows();
+            int originalFirst = baseQuery.getFirstResult();
+
+            try {
+                baseQuery.setMaxRows(0);
+                baseQuery.setFirstResult(0);
+                super.processDataResults(session);
+            } finally {
+                baseQuery.setMaxRows(originalMax);
+                baseQuery.setFirstResult(originalFirst);
+            }
+
+        }
     }
 
 }
