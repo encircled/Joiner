@@ -12,6 +12,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 /**
+ * This customizer fixes fetch joining of nested associations, which are present on a subclass only
+ *
  * @author Vlad on 06-Sep-16.
  */
 public class InheritanceJoiningCustomizer implements DescriptorCustomizer {

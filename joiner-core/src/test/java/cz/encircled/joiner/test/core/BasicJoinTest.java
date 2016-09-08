@@ -1,6 +1,5 @@
 package cz.encircled.joiner.test.core;
 
-import cz.encircled.joiner.core.Joiner;
 import cz.encircled.joiner.exception.JoinerException;
 import cz.encircled.joiner.query.Q;
 import cz.encircled.joiner.query.join.J;
@@ -17,18 +16,6 @@ import java.util.List;
  * @author Kisel on 21.01.2016.
  */
 public class BasicJoinTest extends AbstractTest {
-
-    public static void main(String[] args) {
-        Joiner joiner = new Joiner(null);
-
-        joiner.findOne(Q.from(QGroup.group)
-                .joins(J.left(QSuperUser.superUser)
-                        .nested(
-                                J.left(QKey.key),
-                                J.left(QContact.contact)
-                        ))
-                .where(QGroup.group.id.eq(1L)));
-    }
 
     @Test
     public void noFetchJoinTest() {

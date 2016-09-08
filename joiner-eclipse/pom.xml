@@ -15,8 +15,27 @@
 
     <dependencies>
         <dependency>
+            <groupId>cz.encircled</groupId>
+            <artifactId>joiner-core</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
+        <!-- EclipseLink -->
+        <dependency>
             <groupId>org.eclipse.persistence</groupId>
             <artifactId>org.eclipse.persistence.core</artifactId>
+            <scope>provided</scope>
+        </dependency>
+
+        <!-- QueryDSL -->
+        <dependency>
+            <groupId>com.mysema.querydsl</groupId>
+            <artifactId>querydsl-core</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.mysema.querydsl</groupId>
+            <artifactId>querydsl-jpa</artifactId>
             <scope>provided</scope>
         </dependency>
     </dependencies>

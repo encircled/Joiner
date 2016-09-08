@@ -1,8 +1,5 @@
 package cz.encircled.joiner.test.model;
 
-import cz.encircled.joiner.eclipse.InheritanceJoiningCustomizer;
-import org.eclipse.persistence.annotations.Customizer;
-
 import javax.persistence.*;
 import java.util.Set;
 
@@ -11,7 +8,6 @@ import java.util.Set;
  */
 @Entity
 @DiscriminatorValue("phone")
-@Customizer(InheritanceJoiningCustomizer.class)
 public class Phone extends Contact {
 
     @Column(name = "number")

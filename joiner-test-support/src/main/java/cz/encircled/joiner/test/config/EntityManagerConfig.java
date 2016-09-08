@@ -72,6 +72,7 @@ public class EntityManagerConfig {
         properties.put(PersistenceUnitProperties.CACHE_SHARED_DEFAULT, "false");
         properties.put(PersistenceUnitProperties.WEAVING, "static");
         properties.put("eclipselink.logging.level.sql", "FINE");
+        properties.put("eclipselink.session.customizer", "cz.encircled.joiner.eclipse.InheritanceJoiningSessionCustomizer");
         if (fresh) {
             properties.put(PersistenceUnitProperties.DDL_GENERATION, "drop-and-create-tables");
         }

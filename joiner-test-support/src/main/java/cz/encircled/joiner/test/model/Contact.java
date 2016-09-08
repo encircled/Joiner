@@ -1,8 +1,5 @@
 package cz.encircled.joiner.test.model;
 
-import cz.encircled.joiner.eclipse.InheritanceJoiningCustomizer;
-import org.eclipse.persistence.annotations.Customizer;
-
 import javax.persistence.*;
 
 /**
@@ -12,7 +9,6 @@ import javax.persistence.*;
 @Entity
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
 @DiscriminatorColumn
-@Customizer(InheritanceJoiningCustomizer.class)
 public class Contact extends AbstractEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)

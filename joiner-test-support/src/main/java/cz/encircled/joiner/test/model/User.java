@@ -1,8 +1,5 @@
 package cz.encircled.joiner.test.model;
 
-import cz.encircled.joiner.eclipse.InheritanceJoiningCustomizer;
-import org.eclipse.persistence.annotations.Customizer;
-
 import javax.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -16,7 +13,6 @@ import java.util.Set;
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
 @DiscriminatorColumn
 @DiscriminatorValue("user")
-@Customizer(InheritanceJoiningCustomizer.class)
 public class User extends AbstractEntity {
 
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "user")

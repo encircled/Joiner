@@ -1,4 +1,4 @@
-package cz.encircled.joiner.core.vendor;
+package cz.encircled.joiner.eclipse;
 
 import com.google.common.collect.ArrayListMultimap;
 import com.mysema.query.JoinType;
@@ -6,6 +6,8 @@ import com.mysema.query.jpa.EclipseLinkTemplates;
 import com.mysema.query.jpa.impl.AbstractJPAQuery;
 import com.mysema.query.jpa.impl.JPAQuery;
 import com.mysema.query.types.EntityPath;
+import cz.encircled.joiner.core.vendor.AbstractVendorRepository;
+import cz.encircled.joiner.core.vendor.JoinerVendorRepository;
 import cz.encircled.joiner.exception.JoinerException;
 import cz.encircled.joiner.query.join.JoinDescription;
 import cz.encircled.joiner.util.ReflectionUtils;
@@ -39,10 +41,8 @@ public class EclipselinkRepository extends AbstractVendorRepository implements J
         String rootEntityAlias = rootPath.getMetadata().getName();
         String path = resolvePathToFieldFromRoot(rootEntityAlias, joinDescription, joins);
 
-//        if (canBeFetched(targetJoin, allJoins, path)) {
         String fetchHint = joinDescription.getJoinType().equals(com.mysema.query.JoinType.LEFTJOIN) ? "eclipselink.left-join-fetch" : "eclipselink.join-fetch";
         query.setHint(fetchHint, path);
-//        }
     }
 
     @Override
