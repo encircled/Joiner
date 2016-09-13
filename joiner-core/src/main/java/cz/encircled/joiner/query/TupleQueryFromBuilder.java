@@ -2,15 +2,16 @@ package cz.encircled.joiner.query;
 
 import com.mysema.query.Tuple;
 import com.mysema.query.types.EntityPath;
+import com.mysema.query.types.Expression;
 
 /**
  * @author Kisel on 13.9.2016.
  */
 public class TupleQueryFromBuilder implements FromBuilder<Tuple> {
 
-    private EntityPath<?>[] returnProjections;
+    private Expression<?>[] returnProjections;
 
-    TupleQueryFromBuilder(EntityPath<?>... returnProjections) {
+    TupleQueryFromBuilder(Expression<?>... returnProjections) {
         this.returnProjections = returnProjections;
     }
 

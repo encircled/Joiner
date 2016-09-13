@@ -17,9 +17,9 @@ public class TupleJoinerQuery<T> extends JoinerQueryBase<T, Tuple> {
 
     private static final Field queryMixinField = ReflectionUtils.findField(JPAQueryBase.class, "queryMixin");
 
-    private final EntityPath<?>[] returnProjections;
+    private final Expression<?>[] returnProjections;
 
-    public TupleJoinerQuery(EntityPath<T> from, EntityPath<?>... returnProjections) {
+    public TupleJoinerQuery(EntityPath<T> from, Expression<?>... returnProjections) {
         super(from);
         this.returnProjections = returnProjections;
     }

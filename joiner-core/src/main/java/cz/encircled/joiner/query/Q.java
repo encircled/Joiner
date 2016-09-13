@@ -7,7 +7,7 @@ import cz.encircled.joiner.util.Assert;
 
 public class Q {
 
-    public static FromBuilder<Tuple> select(EntityPath<?>... returnProjections) {
+    public static FromBuilder<Tuple> select(Expression<?>... returnProjections) {
         Assert.notNull(returnProjections);
         return new TupleQueryFromBuilder(returnProjections);
     }
