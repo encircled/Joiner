@@ -72,7 +72,12 @@ public class EntityManagerConfig {
         properties.put(PersistenceUnitProperties.CACHE_SHARED_DEFAULT, "false");
         properties.put(PersistenceUnitProperties.WEAVING, "static");
         properties.put("eclipselink.logging.level.sql", "FINE");
-        properties.put("eclipselink.session.customizer", "cz.encircled.joiner.eclipse.InheritanceJoiningSessionCustomizer");
+        try {
+            Class.forName("cz.encircled.joiner.eclipse.InheritanceJoiningSessionCustomizer");
+            properties.put("eclipselink.session.customizer", "cz.encircled.joiner.eclipse.InheritanceJoiningSessionCustomizer");
+        } catch (Exception e) {
+            // ignore
+        }
         if (fresh) {
             properties.put(PersistenceUnitProperties.DDL_GENERATION, "drop-and-create-tables");
         }

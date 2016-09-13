@@ -1,11 +1,11 @@
 package cz.encircled.joiner.test.core;
 
-import java.util.List;
-
 import cz.encircled.joiner.query.Q;
 import cz.encircled.joiner.test.model.QAddress;
 import org.junit.Assert;
 import org.junit.Test;
+
+import java.util.List;
 
 /**
  * @author Kisel on 28.01.2016.

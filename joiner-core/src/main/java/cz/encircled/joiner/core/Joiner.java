@@ -1,14 +1,5 @@
 package cz.encircled.joiner.core;
 
-import java.lang.reflect.Field;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import javax.persistence.EntityManager;
-
 import com.google.common.collect.ArrayListMultimap;
 import com.mysema.query.JoinType;
 import com.mysema.query.jpa.impl.AbstractJPAQuery;
@@ -17,6 +8,7 @@ import com.mysema.query.types.EntityPath;
 import com.mysema.query.types.Expression;
 import com.mysema.query.types.Operation;
 import com.mysema.query.types.Path;
+import cz.encircled.joiner.core.vendor.EclipselinkRepository;
 import cz.encircled.joiner.core.vendor.HibernateRepository;
 import cz.encircled.joiner.core.vendor.JoinerVendorRepository;
 import cz.encircled.joiner.exception.AliasMissingException;
@@ -28,6 +20,10 @@ import cz.encircled.joiner.query.join.JoinGraphRegistry;
 import cz.encircled.joiner.util.Assert;
 import cz.encircled.joiner.util.JoinerUtil;
 import cz.encircled.joiner.util.ReflectionUtils;
+
+import javax.persistence.EntityManager;
+import java.lang.reflect.Field;
+import java.util.*;
 
 /**
  * @author Kisel on 26.01.2016.
@@ -53,10 +49,11 @@ public class Joiner {
             this.joinerVendorRepository = new HibernateRepository();
         } else if (implName.startsWith("org.eclipse")) {
             try {
-                Class<?> eclipseLink = Class.forName("cz.encircled.joiner.eclipse.EclipselinkRepository");
+                Class<?> eclipseLink = Class.forName("cz.encircled.joiner.eclipse.EnchancedEclipselinkRepository");
                 this.joinerVendorRepository = (JoinerVendorRepository) eclipseLink.newInstance();
             } catch (Exception e) {
-                throw new JoinerException("EclipseLink support module is missing!", e);
+                this.joinerVendorRepository = new EclipselinkRepository();
+                // TODO log
             }
         }
     }

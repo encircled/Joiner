@@ -16,7 +16,7 @@ import javax.persistence.PersistenceContext;
  */
 @Configuration
 @Import(EntityManagerConfig.class)
-@ComponentScan(basePackages = {"cz.encircled.joiner.test.core"})
+@ComponentScan(basePackages = {"cz.encircled.joiner.test"})
 public class TestConfig {
 
     @PersistenceContext

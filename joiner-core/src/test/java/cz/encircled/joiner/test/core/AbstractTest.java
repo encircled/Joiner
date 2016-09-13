@@ -2,8 +2,8 @@ package cz.encircled.joiner.test.core;
 
 import cz.encircled.joiner.core.Joiner;
 import cz.encircled.joiner.query.join.JoinGraphRegistry;
+import cz.encircled.joiner.test.TestDataListener;
 import cz.encircled.joiner.test.config.TestConfig;
-import cz.encircled.joiner.test.core.data.TestDataListener;
 import cz.encircled.joiner.test.model.AbstractEntity;
 import org.junit.Assert;
 import org.junit.runner.RunWith;

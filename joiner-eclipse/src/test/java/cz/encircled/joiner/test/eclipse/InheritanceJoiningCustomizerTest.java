@@ -1,15 +1,12 @@
-package cz.encircled.joiner.test.core;
+package cz.encircled.joiner.test.eclipse;
 
+import cz.encircled.joiner.eclipse.FixedJoinerAttributeManager;
 import cz.encircled.joiner.test.model.Contact;
 import cz.encircled.joiner.test.model.Password;
 import cz.encircled.joiner.test.model.User;
 import org.eclipse.persistence.config.QueryHints;
-import org.eclipse.persistence.descriptors.ClassDescriptor;
-import org.eclipse.persistence.expressions.ExpressionBuilder;
 import org.eclipse.persistence.internal.jpa.EJBQueryImpl;
 import org.eclipse.persistence.internal.queries.JoinedAttributeManager;
-import org.eclipse.persistence.internal.sessions.AbstractSession;
-import org.eclipse.persistence.queries.ObjectBuildingQuery;
 import org.junit.Assert;
 import org.junit.Test;
 import org.springframework.util.ReflectionUtils;
@@ -22,7 +19,7 @@ import java.util.List;
 /**
  * @author Vlad on 06-Sep-16.
  */
-public class InheritanceJoiningCustomizerTest extends AbstractTest {
+public class InheritanceJoiningCustomizerTest extends AbstractEclipseTest {
 
     @Test
     public void test() {
@@ -32,7 +29,7 @@ public class InheritanceJoiningCustomizerTest extends AbstractTest {
         Field f = ReflectionUtils.findField(((EJBQueryImpl) query).getDatabaseQuery().getClass(), "joinedAttributeManager");
         f.setAccessible(true);
         JoinedAttributeManager old = (JoinedAttributeManager) ReflectionUtils.getField(f, ((EJBQueryImpl) query).getDatabaseQuery());
-        My newManager = new My(old.getDescriptor(), old.getBaseExpressionBuilder(), old.getBaseQuery());
+        FixedJoinerAttributeManager newManager = new FixedJoinerAttributeManager(old.getDescriptor(), old.getBaseExpressionBuilder(), old.getBaseQuery());
         newManager.copyFrom(old);
 
         ReflectionUtils.setField(f, ((EJBQueryImpl) query).getDatabaseQuery(), newManager);
@@ -61,29 +58,6 @@ public class InheritanceJoiningCustomizerTest extends AbstractTest {
             for (Contact contact : user.getContacts()) {
                 Assert.assertTrue(Persistence.getPersistenceUtil().isLoaded(contact, "statuses"));
             }
-        }
-    }
-
-    private class My extends JoinedAttributeManager {
-
-        public My(ClassDescriptor descriptor, ExpressionBuilder baseBuilder, ObjectBuildingQuery baseQuery) {
-            super(descriptor, baseBuilder, baseQuery);
-        }
-
-        @Override
-        protected void processDataResults(AbstractSession session) {
-            int originalMax = baseQuery.getMaxRows();
-            int originalFirst = baseQuery.getFirstResult();
-
-            try {
-                baseQuery.setMaxRows(0);
-                baseQuery.setFirstResult(0);
-                super.processDataResults(session);
-            } finally {
-                baseQuery.setMaxRows(originalMax);
-                baseQuery.setFirstResult(originalFirst);
-            }
-
         }
     }
 

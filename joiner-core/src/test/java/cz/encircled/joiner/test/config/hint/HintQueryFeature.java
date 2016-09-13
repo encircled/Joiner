@@ -1,8 +1,5 @@
 package cz.encircled.joiner.test.config.hint;
 
-import java.lang.reflect.Field;
-import java.util.Collection;
-
 import com.google.common.collect.Multimap;
 import com.mysema.query.jpa.impl.AbstractJPAQuery;
 import com.mysema.query.jpa.impl.JPAQuery;
@@ -10,6 +7,9 @@ import cz.encircled.joiner.query.JoinerQuery;
 import cz.encircled.joiner.query.QueryFeature;
 import cz.encircled.joiner.test.core.TestException;
 import org.springframework.util.ReflectionUtils;
+
+import java.lang.reflect.Field;
+import java.util.Collection;
 
 /**
  * @author Kisel on 04.02.2016.

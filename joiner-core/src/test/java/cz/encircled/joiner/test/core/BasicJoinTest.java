@@ -1,27 +1,17 @@
 package cz.encircled.joiner.test.core;
 
-import java.util.Collections;
-import java.util.List;
-
-import javax.persistence.Persistence;
-
 import cz.encircled.joiner.exception.JoinerException;
 import cz.encircled.joiner.query.JoinerQuery;
 import cz.encircled.joiner.query.Q;
 import cz.encircled.joiner.query.join.J;
 import cz.encircled.joiner.query.join.JoinDescription;
-import cz.encircled.joiner.test.model.Address;
-import cz.encircled.joiner.test.model.Group;
-import cz.encircled.joiner.test.model.QAddress;
-import cz.encircled.joiner.test.model.QGroup;
-import cz.encircled.joiner.test.model.QKey;
-import cz.encircled.joiner.test.model.QStatus;
-import cz.encircled.joiner.test.model.QSuperUser;
-import cz.encircled.joiner.test.model.QUser;
-import cz.encircled.joiner.test.model.SuperUser;
-import cz.encircled.joiner.test.model.User;
+import cz.encircled.joiner.test.model.*;
 import org.junit.Assert;
 import org.junit.Test;
+
+import javax.persistence.Persistence;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * @author Kisel on 21.01.2016.
@@ -42,43 +32,6 @@ public class BasicJoinTest extends AbstractTest {
         entityManager.clear();
         users = joiner.find(Q.from(QUser.user1).joins(Collections.singletonList(e)));
         Assert.assertTrue(Persistence.getPersistenceUtil().isLoaded(users.get(0), "groups"));
-    }
-
-    @Test
-    public void testFoundSubclassPredicated() {
-        List<Group> groups = joiner.find(Q.from(QGroup.group)
-                .joins(J.left(QSuperUser.superUser)
-                        .nested(J.left(QKey.key)))
-                .joins(J.left(QStatus.status))
-                .where(QSuperUser.superUser.key.name.eq("key1"))
-        );
-
-        Assert.assertFalse(groups.isEmpty());
-
-        for (Group group : groups) {
-            boolean hasKey = false;
-            for (User user : group.getUsers()) {
-                if (user instanceof SuperUser) {
-                    SuperUser superUser = (SuperUser) user;
-                    if (superUser.getKey() != null && superUser.getKey().getName().equals("key1")) {
-                        hasKey = true;
-                    }
-                }
-            }
-            Assert.assertTrue(hasKey);
-        }
-    }
-
-    @Test
-    public void testNotFoundSubclassPredicated() {
-        List<Group> groups = joiner.find(Q.from(QGroup.group)
-                .joins(J.left(QSuperUser.superUser)
-                                .nested(J.left(QKey.key)),
-                        J.left(QStatus.status))
-                .where(J.path(QSuperUser.superUser, QKey.key).name.eq("not_exists"))
-        );
-
-        Assert.assertTrue(groups.isEmpty());
     }
 
     @Test

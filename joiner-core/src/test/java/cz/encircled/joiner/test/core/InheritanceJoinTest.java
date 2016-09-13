@@ -4,13 +4,12 @@ import cz.encircled.joiner.query.Q;
 import cz.encircled.joiner.query.join.J;
 import cz.encircled.joiner.test.model.*;
 import org.junit.Assert;
+import org.junit.Assume;
 import org.junit.Before;
 import org.junit.Test;
 
 import javax.persistence.Persistence;
 import java.util.List;
-
-import static cz.encircled.joiner.test.model.QPassword.password;
 
 /**
  * Created by Kisel on 28.01.2016.
@@ -19,6 +18,8 @@ public class InheritanceJoinTest extends AbstractTest {
 
     @Before
     public void before() {
+        Assume.assumeFalse(isEclipse());
+
         entityManager.clear();
         entityManager.getEntityManagerFactory().getCache().evictAll();
     }
@@ -41,7 +42,7 @@ public class InheritanceJoinTest extends AbstractTest {
     public void testNestedManyToOne() {
         List<Contact> contacts = joiner.find(Q.from(QContact.contact)
                 .joins(
-                        J.left(new QNormalUser("employmentUser")).nested(J.left(password))
+                        J.left(new QNormalUser("employmentUser")).nested(J.left(QPassword.password))
                 ));
 
         Assert.assertFalse(contacts.isEmpty());
@@ -71,7 +72,7 @@ public class InheritanceJoinTest extends AbstractTest {
     public void testNestedManyToMany() {
         List<Group> groups = joiner.find(Q.from(QGroup.group)
                 .joins(
-                        J.left(QNormalUser.normalUser).nested(J.left(password))
+                        J.left(QNormalUser.normalUser).nested(J.left(QPassword.password))
                 ));
 
         Assert.assertFalse(groups.isEmpty());
@@ -90,7 +91,7 @@ public class InheritanceJoinTest extends AbstractTest {
                         J.left(QUser.user1)
                                 .nested(
                                         J.left(new QPhone("employmentContacts")).nested(J.left(QStatus.status)),
-                                        J.left(password).nested(J.left(QNormalUser.normalUser))
+                                        J.left(QPassword.password).nested(J.left(QNormalUser.normalUser))
                                 )
                 ));
 
@@ -128,7 +129,7 @@ public class InheritanceJoinTest extends AbstractTest {
                         .joins(J.left(QUser.user1)
                                 .nested(
                                         J.left(QKey.key),
-                                        J.left(password)
+                                        J.left(QPassword.password)
                                 ))
                         .where(J.path(QUser.user1, QKey.key).name.ne("bad_key"))
         );
@@ -139,7 +140,7 @@ public class InheritanceJoinTest extends AbstractTest {
     @Test
     public void joinCollectionOnChildTest() {
         List<Group> groups = joiner.find(Q.from(QGroup.group)
-                .joins(J.left(QUser.user1).alias(QNormalUser.normalUser._super).nested(J.left(password)))
+                .joins(J.left(QUser.user1).alias(QNormalUser.normalUser._super).nested(J.left(QPassword.password)))
         );
 
         check(groups, false, true);

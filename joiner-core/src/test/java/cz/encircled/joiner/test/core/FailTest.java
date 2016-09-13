@@ -1,7 +1,5 @@
 package cz.encircled.joiner.test.core;
 
-import java.util.List;
-
 import com.mysema.query.types.EntityPath;
 import cz.encircled.joiner.exception.AliasMissingException;
 import cz.encircled.joiner.exception.JoinerException;
@@ -12,6 +10,8 @@ import cz.encircled.joiner.test.model.QGroup;
 import cz.encircled.joiner.test.model.QUser;
 import org.junit.Assert;
 import org.junit.Test;
+
+import java.util.List;
 
 /**
  * @author Kisel on 26.01.2016.

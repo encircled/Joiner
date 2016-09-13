@@ -1,4 +1,4 @@
-package cz.encircled.joiner.test.core.data;
+package cz.encircled.joiner.test;
 
 import cz.encircled.joiner.test.model.*;
 import org.springframework.stereotype.Component;

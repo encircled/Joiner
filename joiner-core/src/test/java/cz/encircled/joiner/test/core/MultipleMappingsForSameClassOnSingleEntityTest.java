@@ -1,22 +1,16 @@
 package cz.encircled.joiner.test.core;
 
-import java.util.List;
-import java.util.Objects;
-
-import javax.persistence.Persistence;
-
 import cz.encircled.joiner.exception.JoinerException;
 import cz.encircled.joiner.query.JoinerQuery;
 import cz.encircled.joiner.query.Q;
 import cz.encircled.joiner.query.join.J;
-import cz.encircled.joiner.test.model.Contact;
-import cz.encircled.joiner.test.model.Group;
-import cz.encircled.joiner.test.model.QContact;
-import cz.encircled.joiner.test.model.QGroup;
-import cz.encircled.joiner.test.model.QUser;
-import cz.encircled.joiner.test.model.User;
+import cz.encircled.joiner.test.model.*;
 import org.junit.Assert;
 import org.junit.Test;
+
+import javax.persistence.Persistence;
+import java.util.List;
+import java.util.Objects;
 
 /**
  * Tests for cases when an entity has multiple associations with the same class type (i.e. User and Contacts in test domain model)
