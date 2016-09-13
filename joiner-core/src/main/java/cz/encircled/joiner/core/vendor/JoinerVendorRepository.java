@@ -1,13 +1,14 @@
 package cz.encircled.joiner.core.vendor;
 
+import java.util.Collection;
+import java.util.List;
+
+import javax.persistence.EntityManager;
+
 import com.mysema.query.jpa.impl.JPAQuery;
 import com.mysema.query.types.EntityPath;
 import com.mysema.query.types.Expression;
 import cz.encircled.joiner.query.join.JoinDescription;
-
-import javax.persistence.EntityManager;
-import java.util.Collection;
-import java.util.List;
 
 /**
  * Implementation is responsible for vendor-specific part of query creation logic

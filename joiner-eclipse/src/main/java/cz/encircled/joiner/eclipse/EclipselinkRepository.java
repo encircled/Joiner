@@ -1,5 +1,12 @@
 package cz.encircled.joiner.eclipse;
 
+import java.lang.reflect.Field;
+import java.util.Collection;
+import java.util.List;
+
+import javax.persistence.EntityManager;
+import javax.persistence.Query;
+
 import com.google.common.collect.ArrayListMultimap;
 import com.mysema.query.JoinType;
 import com.mysema.query.jpa.EclipseLinkTemplates;
@@ -20,12 +27,6 @@ import org.eclipse.persistence.internal.queries.JoinedAttributeManager;
 import org.eclipse.persistence.internal.sessions.AbstractSession;
 import org.eclipse.persistence.queries.ObjectBuildingQuery;
 import org.eclipse.persistence.queries.ObjectLevelReadQuery;
-
-import javax.persistence.EntityManager;
-import javax.persistence.Query;
-import java.lang.reflect.Field;
-import java.util.Collection;
-import java.util.List;
 
 /**
  * @author Kisel on 28.01.2016.

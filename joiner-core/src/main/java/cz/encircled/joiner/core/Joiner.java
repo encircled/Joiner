@@ -1,5 +1,14 @@
 package cz.encircled.joiner.core;
 
+import java.lang.reflect.Field;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import javax.persistence.EntityManager;
+
 import com.google.common.collect.ArrayListMultimap;
 import com.mysema.query.JoinType;
 import com.mysema.query.jpa.impl.AbstractJPAQuery;
@@ -12,17 +21,13 @@ import cz.encircled.joiner.core.vendor.HibernateRepository;
 import cz.encircled.joiner.core.vendor.JoinerVendorRepository;
 import cz.encircled.joiner.exception.AliasMissingException;
 import cz.encircled.joiner.exception.JoinerException;
-import cz.encircled.joiner.query.Q;
+import cz.encircled.joiner.query.JoinerQuery;
 import cz.encircled.joiner.query.QueryFeature;
 import cz.encircled.joiner.query.join.JoinDescription;
 import cz.encircled.joiner.query.join.JoinGraphRegistry;
 import cz.encircled.joiner.util.Assert;
 import cz.encircled.joiner.util.JoinerUtil;
 import cz.encircled.joiner.util.ReflectionUtils;
-
-import javax.persistence.EntityManager;
-import java.lang.reflect.Field;
-import java.util.*;
 
 /**
  * @author Kisel on 26.01.2016.
@@ -56,12 +61,8 @@ public class Joiner {
         }
     }
 
-    public <T> T findOne(Q<T> request) {
-        return findOne(request, request.getFrom());
-    }
-
-    public <T, P> P findOne(Q<T> request, Expression<P> projection) {
-        List<P> list = find(request, projection);
+    public <T, R> R findOne(JoinerQuery<T, R> request) {
+        List<R> list = find(request);
         if (list.isEmpty()) {
             return null;
         } else if (list.size() == 1) {
@@ -71,14 +72,8 @@ public class Joiner {
         }
     }
 
-    public <T> List<T> find(Q<T> request) {
+    public <T, R> List<R> find(JoinerQuery<T, R> request) {
         Assert.notNull(request);
-        return find(request, request.getFrom());
-    }
-
-    public <T, P> List<P> find(Q<T> request, Expression<P> projection) {
-        Assert.notNull(request);
-        Assert.notNull(projection);
         // TODO extract validation
         Assert.notNull(request.getFrom());
 
@@ -106,7 +101,7 @@ public class Joiner {
             }
             usedAliases.add(join.getAlias());
         }
-        addJoins(joins, query, request.getFrom(), request.getFrom().equals(projection));
+        addJoins(joins, query, request.getFrom(), request.getFrom().equals(request.getReturnProjection(query)));
 
         addHints(request, query);
 
@@ -128,10 +123,10 @@ public class Joiner {
             query = doPostProcess(request, query, feature);
         }
 
-        return joinerVendorRepository.getResultList(query, projection);
+        return joinerVendorRepository.getResultList(query, request.getReturnProjection(query));
     }
 
-    private <T> void setJoinsFromJoinsGraphs(Q<T> request) {
+    private <T, R> void setJoinsFromJoinsGraphs(JoinerQuery<T, R> request) {
         // TODO copy joins
         if (!request.getJoinGraphs().isEmpty()) {
             if (joinGraphRegistry == null) {
@@ -151,11 +146,11 @@ public class Joiner {
         }
     }
 
-    private JPAQuery doPostProcess(Q<?> request, JPAQuery query, QueryFeature feature) {
+    private JPAQuery doPostProcess(JoinerQuery<?, ?> request, JPAQuery query, QueryFeature feature) {
         return feature.after(request, query);
     }
 
-    private <T> Q<T> doPreProcess(Q<T> request, QueryFeature feature) {
+    private <T, R> JoinerQuery<T, R> doPreProcess(JoinerQuery<T, R> request, QueryFeature feature) {
         return feature.before(request);
     }
 
@@ -176,7 +171,7 @@ public class Joiner {
         }
     }
 
-    private void addHints(Q<?> request, JPAQuery query) {
+    private void addHints(JoinerQuery<?, ?> request, JPAQuery query) {
         for (Map.Entry<String, List<Object>> entry : request.getHints().entrySet()) {
             if (entry.getValue() != null) {
                 for (Object value : entry.getValue()) {

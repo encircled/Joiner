@@ -1,16 +1,27 @@
 package cz.encircled.joiner.test.core;
 
+import java.util.Collections;
+import java.util.List;
+
+import javax.persistence.Persistence;
+
 import cz.encircled.joiner.exception.JoinerException;
+import cz.encircled.joiner.query.JoinerQuery;
 import cz.encircled.joiner.query.Q;
 import cz.encircled.joiner.query.join.J;
 import cz.encircled.joiner.query.join.JoinDescription;
-import cz.encircled.joiner.test.model.*;
+import cz.encircled.joiner.test.model.Address;
+import cz.encircled.joiner.test.model.Group;
+import cz.encircled.joiner.test.model.QAddress;
+import cz.encircled.joiner.test.model.QGroup;
+import cz.encircled.joiner.test.model.QKey;
+import cz.encircled.joiner.test.model.QStatus;
+import cz.encircled.joiner.test.model.QSuperUser;
+import cz.encircled.joiner.test.model.QUser;
+import cz.encircled.joiner.test.model.SuperUser;
+import cz.encircled.joiner.test.model.User;
 import org.junit.Assert;
 import org.junit.Test;
-
-import javax.persistence.Persistence;
-import java.util.Collections;
-import java.util.List;
 
 /**
  * @author Kisel on 21.01.2016.
@@ -106,7 +117,7 @@ public class BasicJoinTest extends AbstractTest {
 
     @Test
     public void testInnerJoin() {
-        Q<User> q = Q.from(QUser.user1)
+        JoinerQuery<User, User> q = Q.from(QUser.user1)
                 .joins(J.inner(QAddress.address));
 
         Assert.assertFalse(joiner.find(q).isEmpty());
@@ -167,10 +178,12 @@ public class BasicJoinTest extends AbstractTest {
     public void testJoinOn() {
         String name = "user1";
 
-        List<User> groups = joiner.find(Q.from(QGroup.group)
-                .joins(J.inner(QUser.user1)
-                        .on(QUser.user1.name.eq(name))
-                        .fetch(false)), QUser.user1
+        List<User> groups = joiner.find(
+                Q.select(QUser.user1)
+                        .from(QGroup.group)
+                        .joins(J.inner(QUser.user1)
+                                .on(QUser.user1.name.eq(name))
+                                .fetch(false))
         );
         assertHasName(groups, name);
     }

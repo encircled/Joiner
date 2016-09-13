@@ -7,8 +7,8 @@ import com.mysema.query.jpa.impl.JPAQuery;
  */
 public interface QueryFeature {
 
-    <T> Q<T> before(Q<T> request);
+    <T, R> JoinerQuery<T, R> before(JoinerQuery<T, R> request);
 
-    JPAQuery after(Q<?> request, JPAQuery query);
+    JPAQuery after(JoinerQuery<?, ?> request, JPAQuery query);
 
 }

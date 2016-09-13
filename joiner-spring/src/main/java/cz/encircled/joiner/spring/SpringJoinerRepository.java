@@ -1,12 +1,11 @@
 package cz.encircled.joiner.spring;
 
-import com.mysema.query.types.Expression;
+import java.util.List;
+
 import cz.encircled.joiner.core.Joiner;
 import cz.encircled.joiner.core.JoinerRepository;
-import cz.encircled.joiner.query.Q;
+import cz.encircled.joiner.query.JoinerQuery;
 import org.springframework.beans.factory.annotation.Autowired;
-
-import java.util.List;
 
 /**
  * Parent class for repositories with Joiner support within spring context.
@@ -19,23 +18,13 @@ public abstract class SpringJoinerRepository<T> implements JoinerRepository<T> {
     protected Joiner delegate;
 
     @Override
-    public List<T> find(Q<T> request) {
+    public <R> List<R> find(JoinerQuery<T, R> request) {
         return delegate.find(request);
     }
 
     @Override
-    public <P> List<P> find(Q<T> request, Expression<P> projection) {
-        return delegate.find(request, projection);
-    }
-
-    @Override
-    public T findOne(Q<T> request) {
+    public <R> R findOne(JoinerQuery<T, R> request) {
         return delegate.findOne(request);
-    }
-
-    @Override
-    public <P> P findOne(Q<T> request, Expression<P> projection) {
-        return delegate.findOne(request, projection);
     }
 
 }

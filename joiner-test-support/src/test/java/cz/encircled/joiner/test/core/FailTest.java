@@ -1,5 +1,8 @@
 package cz.encircled.joiner.test.core;
 
+import java.util.List;
+
+import com.mysema.query.types.EntityPath;
 import cz.encircled.joiner.exception.AliasMissingException;
 import cz.encircled.joiner.exception.JoinerException;
 import cz.encircled.joiner.query.Q;
@@ -9,8 +12,6 @@ import cz.encircled.joiner.test.model.QGroup;
 import cz.encircled.joiner.test.model.QUser;
 import org.junit.Assert;
 import org.junit.Test;
-
-import java.util.List;
 
 /**
  * @author Kisel on 26.01.2016.
@@ -24,12 +25,12 @@ public class FailTest extends AbstractTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void testNullProjection() {
-        joiner.find(Q.from(QAddress.address), null);
+        joiner.find(Q.select((EntityPath<?>[]) null).from(QAddress.address));
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void testNullQ() {
-        joiner.find(null, QUser.user1);
+    public void testNullRequest() {
+        joiner.find(null);
     }
 
     @Test(expected = AliasMissingException.class)
@@ -45,8 +46,8 @@ public class FailTest extends AbstractTest {
     @Test(expected = AliasMissingException.class)
     public void testGroupByNoAlias() {
         List<Double> avg = joiner.find(
-                Q.from(QAddress.address).groupBy(QGroup.group.name),
-                QAddress.address.id.avg()
+                Q.select(QAddress.address.id.avg())
+                        .from(QAddress.address).groupBy(QGroup.group.name)
         );
         Assert.assertTrue(avg.size() > 0);
         Assert.assertTrue(avg.size() < joiner.find(Q.from(QAddress.address)).size());
@@ -55,10 +56,9 @@ public class FailTest extends AbstractTest {
     @Test(expected = AliasMissingException.class)
     public void testGroupByHavingNoAlias() {
         List<Double> avg = joiner.find(
-                Q.from(QAddress.address)
+                Q.select(QAddress.address.id.avg()).from(QAddress.address)
                         .groupBy(QAddress.address.user)
-                        .having(QGroup.group.id.count().gt(2)),
-                QAddress.address.id.avg()
+                        .having(QGroup.group.id.count().gt(2))
         );
         Assert.assertTrue(avg.isEmpty());
     }
