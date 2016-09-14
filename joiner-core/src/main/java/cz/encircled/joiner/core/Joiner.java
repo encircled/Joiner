@@ -15,10 +15,10 @@ import cz.encircled.joiner.exception.AliasMissingException;
 import cz.encircled.joiner.exception.JoinerException;
 import cz.encircled.joiner.query.JoinerQuery;
 import cz.encircled.joiner.query.QueryFeature;
+import cz.encircled.joiner.query.join.J;
 import cz.encircled.joiner.query.join.JoinDescription;
 import cz.encircled.joiner.query.join.JoinGraphRegistry;
 import cz.encircled.joiner.util.Assert;
-import cz.encircled.joiner.util.JoinerUtil;
 import cz.encircled.joiner.util.ReflectionUtils;
 
 import javax.persistence.EntityManager;
@@ -91,7 +91,7 @@ public class Joiner {
         Set<Path<?>> usedAliases = new HashSet<>();
         usedAliases.add(request.getFrom());
 
-        List<JoinDescription> joins = JoinerUtil.unrollChildrenJoins(request.getJoins());
+        List<JoinDescription> joins = J.unrollChildrenJoins(request.getJoins());
         for (JoinDescription join : joins) {
             if (join.getCollectionPath() == null && join.getSinglePath() == null) {
                 aliasResolver.resolveJoinAlias(join, request.getFrom());

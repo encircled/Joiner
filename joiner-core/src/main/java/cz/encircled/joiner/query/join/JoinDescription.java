@@ -1,15 +1,14 @@
 package cz.encircled.joiner.query.join;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.stream.Collectors;
-
 import com.mysema.query.JoinType;
 import com.mysema.query.types.EntityPath;
 import com.mysema.query.types.Predicate;
 import com.mysema.query.types.path.CollectionPathBase;
 import cz.encircled.joiner.util.Assert;
-import cz.encircled.joiner.util.JoinerUtil;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Represents query join.
@@ -22,14 +21,10 @@ import cz.encircled.joiner.util.JoinerUtil;
  */
 public class JoinDescription {
 
-    private CollectionPathBase<?, ?, ?> collectionPath;
-
-    private EntityPath<?> singlePath;
-
-    private EntityPath<?> alias;
-
     private final EntityPath<?> originalAlias;
-
+    private CollectionPathBase<?, ?, ?> collectionPath;
+    private EntityPath<?> singlePath;
+    private EntityPath<?> alias;
     private JoinType joinType = JoinType.LEFTJOIN;
 
     private boolean fetch = true;
@@ -95,6 +90,9 @@ public class JoinDescription {
         return originalAlias;
     }
 
+    /**
+     * Set different alias for current join
+     */
     private JoinDescription alias(EntityPath<?> alias) {
         this.alias = alias;
         return this;
@@ -140,10 +138,16 @@ public class JoinDescription {
         return joinType(JoinType.RIGHTJOIN);
     }
 
+    /**
+     * Add children joins to current join
+     *
+     * @param joins
+     * @return
+     */
     public JoinDescription nested(JoinDescription... joins) {
         for (JoinDescription join : joins) {
             join.parent = this;
-            join.alias(JoinerUtil.getAliasForChild(this.getAlias(), join.getOriginalAlias()));
+            join.alias(J.path(this.getAlias(), join.getOriginalAlias()));
             children.add(join);
         }
         return this;

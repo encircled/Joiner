@@ -9,7 +9,37 @@ Joiner offers following extra features:
 * automatic resolving of alias uniqueness in queries
 * fixed join fetching in Eclipselink (when using inheritance)
 
+
+## Nested joins
+
 Joiner represents query joins as a graph, which makes it possible to automatically resolve unique aliases for nested joins (even when there are name collisions).
+
+Aliases of nested joins are determined at runtime. To refer a nested join, `J.path(...)` util method should be used to get a correct alias.     
+For example, there is a query like:
+
+```
+Q.from(QGroup.group)
+    .joins(J.left(QPerson.person)
+                .nested(J.left(QContact.contact)))
+```
+
+To reference a `Contact` entity (in `where` clause etc), one should use `J.path(...)` like this:
+
+```
+Q.from(QGroup.group)
+    .joins(J.left(QPerson.person)
+                .nested(J.left(QContact.contact)))
+    .where(J.path(QPerson.person, QContact.contact).number.eq(12345));
+```
+
+However, `Person` is not a nested join and should be referenced directly:
+
+```
+Q.from(QGroup.group)
+    .joins(J.left(QPerson.person)
+                .nested(J.left(QContact.contact)))
+    .where(QPerson.person.name.eq('Chuck'));
+```
 
 ## Examples
 

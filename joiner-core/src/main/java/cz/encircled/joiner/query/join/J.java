@@ -2,7 +2,11 @@ package cz.encircled.joiner.query.join;
 
 import com.mysema.query.types.EntityPath;
 import cz.encircled.joiner.util.Assert;
-import cz.encircled.joiner.util.JoinerUtil;
+import cz.encircled.joiner.util.ReflectionUtils;
+
+import java.util.Collection;
+import java.util.LinkedList;
+import java.util.List;
 
 /**
  * Util class, which helps to build new {@link JoinDescription joins}
@@ -11,10 +15,25 @@ import cz.encircled.joiner.util.JoinerUtil;
  */
 public class J {
 
+    /**
+     * Aliases of nested joins are determined at runtime. To refer a nested join, this method should be used to get a correct alias.
+     * <p>
+     * For example, there is a query
+     * <br />
+     * <code>Q.from(QGroup.group).joins(J.left(QPerson.person).nested(J.left(QContact.contact)))</code>
+     * <br />
+     * To refer a contact entity for instance in the 'where' clause, one should use <code>J.path(QPerson.person, QContact.contact).number.eq(12345)</code>
+     * </p>
+     *
+     * @param parent parent join path
+     * @param path   target join path
+     * @param <T>    any entity path
+     * @return entity path with correct alias
+     */
     @SuppressWarnings("unchcecked")
     public static <T extends EntityPath> T path(EntityPath<?> parent, T path) {
         if (parent != null) {
-            return JoinerUtil.getAliasForChild(parent, path);
+            return ReflectionUtils.instantiate(path.getClass(), path.toString() + "_on_" + parent.toString());
         }
         return path;
     }
@@ -24,9 +43,9 @@ public class J {
         Assert.notNull(father);
         Assert.notNull(grandFather);
 
-        EntityPath<?> parentPath = JoinerUtil.getAliasForChild(grandFather, father);
+        EntityPath<?> parentPath = path(grandFather, father);
 
-        return JoinerUtil.getAliasForChild(parentPath, path);
+        return path(parentPath, path);
     }
 
     public static JoinDescription left(EntityPath<?> path) {
@@ -35,6 +54,28 @@ public class J {
 
     public static JoinDescription inner(EntityPath<?> path) {
         return getBasicJoin(path).inner();
+    }
+
+    /**
+     * Collect all joins and its children to single collection
+     *
+     * @param joins root joins
+     */
+    public static List<JoinDescription> unrollChildrenJoins(Collection<JoinDescription> joins) {
+        List<JoinDescription> collection = new LinkedList<>();
+
+        for (JoinDescription joinDescription : joins) {
+            unrollChildrenInternal(joinDescription, collection);
+        }
+
+        return collection;
+    }
+
+    private static void unrollChildrenInternal(JoinDescription join, List<JoinDescription> collection) {
+        collection.add(join);
+        for (JoinDescription child : join.getChildren()) {
+            unrollChildrenInternal(child, collection);
+        }
     }
 
     private static JoinDescription getBasicJoin(EntityPath<?> path) {
