@@ -1,8 +1,8 @@
 package cz.encircled.joiner.util;
 
+import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Set;
 
 import com.mysema.query.types.EntityPath;
 import cz.encircled.joiner.query.join.JoinDescription;
@@ -12,7 +12,7 @@ import cz.encircled.joiner.query.join.JoinDescription;
  */
 public class JoinerUtil {
 
-    public static List<JoinDescription> unrollChildrenJoins(Set<JoinDescription> joins) {
+    public static List<JoinDescription> unrollChildrenJoins(Collection<JoinDescription> joins) {
         List<JoinDescription> collection = new LinkedList<>();
 
         for (JoinDescription joinDescription : joins) {

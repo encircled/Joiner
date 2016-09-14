@@ -3,7 +3,6 @@ package cz.encircled.joiner.query;
 import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Set;
 
 import com.mysema.query.jpa.impl.JPAQuery;
 import com.mysema.query.types.EntityPath;
@@ -38,7 +37,9 @@ public interface JoinerQuery<T, R> {
 
     List<String> getJoinGraphs();
 
-    Set<JoinDescription> getJoins();
+    Collection<JoinDescription> getJoins();
+
+    JoinDescription getJoin(Expression<?> expression);
 
     JoinerQueryBase<T, R> joinGraphs(String... names);
 

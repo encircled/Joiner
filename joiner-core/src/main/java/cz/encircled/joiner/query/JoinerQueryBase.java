@@ -5,9 +5,8 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Set;
+import java.util.Map;
 
 import com.mysema.query.jpa.impl.JPAQuery;
 import com.mysema.query.types.EntityPath;
@@ -25,7 +24,10 @@ public class JoinerQueryBase<T, R> implements JoinerQuery<T, R> {
     private Expression<R> returnProjection;
 
     private Predicate where;
-    private Set<JoinDescription> joins = new LinkedHashSet<>();
+    /**
+     * Alias to join
+     */
+    private Map<String, JoinDescription> joins = new LinkedHashMap<>();
 
     private List<String> joinGraphs = new ArrayList<>();
 
@@ -103,8 +105,15 @@ public class JoinerQueryBase<T, R> implements JoinerQuery<T, R> {
     }
 
     @Override
-    public Set<JoinDescription> getJoins() {
-        return joins;
+    public Collection<JoinDescription> getJoins() {
+        return joins.values();
+    }
+
+    @Override
+    public JoinDescription getJoin( Expression<?> expression) {
+        Assert.notNull(expression);
+
+        return joins.get(expression.toString());
     }
 
     @Override
@@ -124,11 +133,7 @@ public class JoinerQueryBase<T, R> implements JoinerQuery<T, R> {
         Assert.notNull(joins);
 
         for (JoinDescription join : joins) {
-            if (!this.joins.add(join)) {
-                if (join.getChildren() != null) {
-                    joins(join.getChildren());
-                }
-            }
+            this.joins.put(join.getOriginalAlias().toString(), join);
         }
 
         return this;
