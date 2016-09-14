@@ -141,8 +141,8 @@ public class JoinDescription {
     /**
      * Add children joins to current join
      *
-     * @param joins
-     * @return
+     * @param joins children joins
+     * @return current join
      */
     public JoinDescription nested(JoinDescription... joins) {
         for (JoinDescription join : joins) {

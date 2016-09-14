@@ -17,13 +17,11 @@ public class J {
 
     /**
      * Aliases of nested joins are determined at runtime. To refer a nested join, this method should be used to get a correct alias.
-     * <p>
      * For example, there is a query
-     * <br />
+     * <p>
      * <code>Q.from(QGroup.group).joins(J.left(QPerson.person).nested(J.left(QContact.contact)))</code>
-     * <br />
-     * To refer a contact entity for instance in the 'where' clause, one should use <code>J.path(QPerson.person, QContact.contact).number.eq(12345)</code>
      * </p>
+     * To refer a contact entity for instance in the 'where' clause, one should use <code>J.path(QPerson.person, QContact.contact).number.eq(12345)</code>
      *
      * @param parent parent join path
      * @param path   target join path
@@ -60,6 +58,7 @@ public class J {
      * Collect all joins and its children to single collection
      *
      * @param joins root joins
+     * @return all joins, including children
      */
     public static List<JoinDescription> unrollChildrenJoins(Collection<JoinDescription> joins) {
         List<JoinDescription> collection = new LinkedList<>();
