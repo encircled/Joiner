@@ -1,5 +1,20 @@
 package cz.encircled.joiner.core;
 
+import static cz.encircled.joiner.util.ReflectionUtils.getField;
+
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
+
+import javax.persistence.EntityManager;
+import javax.persistence.metamodel.Type;
+
 import com.mysema.query.types.EntityPath;
 import com.mysema.query.types.Path;
 import com.mysema.query.types.path.BooleanPath;
@@ -7,18 +22,7 @@ import com.mysema.query.types.path.CollectionPathBase;
 import com.mysema.query.types.path.EntityPathBase;
 import cz.encircled.joiner.exception.JoinerException;
 import cz.encircled.joiner.query.join.JoinDescription;
-import cz.encircled.joiner.util.JoinerUtil;
 import cz.encircled.joiner.util.ReflectionUtils;
-
-import javax.persistence.EntityManager;
-import javax.persistence.metamodel.Type;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Field;
-import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.stream.Collectors;
-
-import static cz.encircled.joiner.util.ReflectionUtils.getField;
 
 /**
  * @author Vlad on 16-Aug-16.
@@ -44,23 +48,19 @@ public class DefaultAliasResolver implements AliasResolver {
     @SuppressWarnings("unchecked")
     public void resolveJoinAlias(JoinDescription join, EntityPath<?> root) {
         Path<?> parent = join.getParent() != null ? join.getParent().getAlias() : root;
-        Class<?> targetType = join.getAlias().getType();
 
-        Path<?> fieldOnParent = findPathOnParent(parent, targetType, join);
+        Path<?> fieldOnParent = findPathOnParent(parent, join.getAlias().getType(), join);
         if (fieldOnParent instanceof CollectionPathBase) {
             join.collectionPath((CollectionPathBase<?, ?, ?>) fieldOnParent);
         } else if (fieldOnParent instanceof EntityPath) {
             join.singlePath((EntityPath<?>) fieldOnParent);
-        }
-        if (join.getParent() != null) {
-            join.alias(JoinerUtil.getAliasForChild(join.getParent().getAlias(), join.getAlias()));
         }
     }
 
     private Path<?> findPathOnParent(Path<?> parent, Class<?> targetType, JoinDescription joinDescription) {
         while (!targetType.equals(Object.class)) {
             // TODO more efficient cache key
-            String cacheKey = parent.getClass().getName() + parent.toString() + targetType.getSimpleName() + joinDescription.getAlias().toString();
+            String cacheKey = parent.getClass().getName() + parent.toString() + targetType.getSimpleName() + joinDescription.getOriginalAlias().toString();
             Path cached = aliasCache.get(cacheKey);
             if (cached != null && !cached.equals(nullPath)) {
                 // TODO test

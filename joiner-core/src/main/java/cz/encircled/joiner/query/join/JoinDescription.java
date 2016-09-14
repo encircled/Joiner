@@ -1,14 +1,15 @@
 package cz.encircled.joiner.query.join;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
+
 import com.mysema.query.JoinType;
 import com.mysema.query.types.EntityPath;
 import com.mysema.query.types.Predicate;
 import com.mysema.query.types.path.CollectionPathBase;
 import cz.encircled.joiner.util.Assert;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.stream.Collectors;
+import cz.encircled.joiner.util.JoinerUtil;
 
 /**
  * Represents query join.
@@ -27,7 +28,7 @@ public class JoinDescription {
 
     private EntityPath<?> alias;
 
-    private EntityPath<?> originalAlias;
+    private final EntityPath<?> originalAlias;
 
     private JoinType joinType = JoinType.LEFTJOIN;
 
@@ -39,14 +40,16 @@ public class JoinDescription {
 
     private List<JoinDescription> children = new ArrayList<>();
 
-    JoinDescription(EntityPath<?> alias) {
+    public JoinDescription(EntityPath<?> alias) {
         Assert.notNull(alias);
 
+        originalAlias = alias;
         alias(alias);
     }
 
     public JoinDescription copy() {
-        JoinDescription copy = new JoinDescription(alias);
+        JoinDescription copy = new JoinDescription(originalAlias);
+        copy.alias = alias;
         copy.children = children.stream().map(JoinDescription::copy).collect(Collectors.toList());
         copy.fetch = fetch;
         copy.on = on;
@@ -92,11 +95,8 @@ public class JoinDescription {
         return originalAlias;
     }
 
-    public JoinDescription alias(EntityPath<?> alias) {
+    private JoinDescription alias(EntityPath<?> alias) {
         this.alias = alias;
-        if (this.originalAlias == null) {
-            this.originalAlias = alias;
-        }
         return this;
     }
 
@@ -143,6 +143,7 @@ public class JoinDescription {
     public JoinDescription nested(JoinDescription... joins) {
         for (JoinDescription join : joins) {
             join.parent = this;
+            join.alias(JoinerUtil.getAliasForChild(this.getAlias(), join.getOriginalAlias()));
             children.add(join);
         }
         return this;
