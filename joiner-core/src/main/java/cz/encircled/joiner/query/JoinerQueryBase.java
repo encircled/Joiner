@@ -151,7 +151,17 @@ public class JoinerQueryBase<T, R> implements JoinerQuery<T, R> {
 
     @Override
     public JoinerQueryBase<T, R> addFeatures(QueryFeature... features) {
+        Assert.notNull(features);
+
         Collections.addAll(this.features, features);
+        return this;
+    }
+
+    @Override
+    public JoinerQueryBase<T, R> addFeatures(Collection<QueryFeature> features) {
+        Assert.notNull(features);
+
+        this.features.addAll(features);
         return this;
     }
 

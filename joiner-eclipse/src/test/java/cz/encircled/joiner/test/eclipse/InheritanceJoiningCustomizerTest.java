@@ -3,6 +3,7 @@ package cz.encircled.joiner.test.eclipse;
 import cz.encircled.joiner.eclipse.FixedJoinerAttributeManager;
 import cz.encircled.joiner.test.model.Contact;
 import cz.encircled.joiner.test.model.Password;
+import cz.encircled.joiner.test.model.Phone;
 import cz.encircled.joiner.test.model.User;
 import org.eclipse.persistence.config.QueryHints;
 import org.eclipse.persistence.internal.jpa.EJBQueryImpl;
@@ -13,6 +14,7 @@ import org.springframework.util.ReflectionUtils;
 
 import javax.persistence.Persistence;
 import javax.persistence.Query;
+
 import java.lang.reflect.Field;
 import java.util.List;
 
@@ -52,13 +54,22 @@ public class InheritanceJoiningCustomizerTest extends AbstractEclipseTest {
         query.setHint(QueryHints.LEFT_FETCH, "u.contacts.statuses");
         List<User> users = query.getResultList();
 
+        boolean hasStatus = false;
+
         Assert.assertFalse(users.isEmpty());
         for (User user : users) {
             Assert.assertTrue(Persistence.getPersistenceUtil().isLoaded(user, "contacts"));
             for (Contact contact : user.getContacts()) {
                 Assert.assertTrue(Persistence.getPersistenceUtil().isLoaded(contact, "statuses"));
+                if (contact instanceof Phone) {
+                    if (!((Phone) contact).getStatuses().isEmpty()) {
+                        hasStatus = true;
+                    }
+                }
             }
         }
+
+        Assert.assertTrue(hasStatus);
     }
 
 }

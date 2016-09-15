@@ -51,6 +51,8 @@ public interface JoinerQuery<T, R> {
 
     JoinerQueryBase<T, R> addFeatures(QueryFeature... features);
 
+    JoinerQueryBase<T, R> addFeatures(Collection<QueryFeature> features);
+
     List<QueryFeature> getFeatures();
 
     LinkedHashMap<String, List<Object>> getHints();

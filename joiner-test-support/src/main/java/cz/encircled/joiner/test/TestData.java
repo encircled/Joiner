@@ -65,6 +65,11 @@ public class TestData {
         contact.setEmploymentUser(user);
         contact.setUser(superUser);
         entityManager.persist(contact);
+
+        Status phoneStatus = new Status();
+        phoneStatus.setPhone(contact);
+        phoneStatus.setName("TestStatus");
+        entityManager.persist(phoneStatus);
     }
 
     private void superUser(Group group) {
