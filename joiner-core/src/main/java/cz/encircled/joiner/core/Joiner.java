@@ -16,8 +16,6 @@ import com.mysema.query.jpa.impl.JPAQuery;
 import com.mysema.query.types.EntityPath;
 import com.mysema.query.types.Expression;
 import com.mysema.query.types.Operation;
-import com.mysema.query.types.Order;
-import com.mysema.query.types.OrderSpecifier;
 import com.mysema.query.types.Path;
 import cz.encircled.joiner.core.vendor.EclipselinkRepository;
 import cz.encircled.joiner.core.vendor.HibernateRepository;
