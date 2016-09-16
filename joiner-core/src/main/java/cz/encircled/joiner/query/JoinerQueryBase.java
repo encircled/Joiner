@@ -41,6 +41,10 @@ public class JoinerQueryBase<T, R> implements JoinerQuery<T, R> {
 
     private List<QueryFeature> features = new ArrayList<>(2);
 
+    private Long offset;
+
+    private Long limit;
+
     public JoinerQueryBase(EntityPath<T> from, Expression<R> returnProjection) {
         this.from = from;
         this.returnProjection = returnProjection;
@@ -110,7 +114,7 @@ public class JoinerQueryBase<T, R> implements JoinerQuery<T, R> {
     }
 
     @Override
-    public JoinDescription getJoin( Expression<?> expression) {
+    public JoinDescription getJoin(Expression<?> expression) {
         Assert.notNull(expression);
 
         return joins.get(expression.toString());
@@ -179,5 +183,28 @@ public class JoinerQueryBase<T, R> implements JoinerQuery<T, R> {
     public Expression<R> getReturnProjection(JPAQuery query) {
         return returnProjection;
     }
+
+    @Override
+    public JoinerQueryBase<T, R> offset(Long offset) {
+        this.offset = offset;
+        return this;
+    }
+
+    @Override
+    public Long getOffset() {
+        return offset;
+    }
+
+    @Override
+    public JoinerQueryBase<T, R> limit(Long limit) {
+        this.limit = limit;
+        return this;
+    }
+
+    @Override
+    public Long getLimit() {
+        return limit;
+    }
+
 }
 

@@ -56,4 +56,19 @@ public interface JoinerQuery<T, R> {
     List<QueryFeature> getFeatures();
 
     LinkedHashMap<String, List<Object>> getHints();
+
+    /**
+     * Offset for the query results
+     *
+     * @param offset value
+     * @return this
+     */
+    JoinerQueryBase<T, R> offset(Long offset);
+
+    Long getOffset();
+
+    JoinerQueryBase<T, R> limit(Long limit);
+
+    Long getLimit();
+
 }
