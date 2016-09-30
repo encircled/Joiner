@@ -29,7 +29,7 @@ public class JoinerQueryBase<T, R> implements JoinerQuery<T, R> {
      */
     private Map<String, JoinDescription> joins = new LinkedHashMap<>();
 
-    private List<String> joinGraphs = new ArrayList<>();
+    private List<Object> joinGraphs = new ArrayList<>();
 
     private boolean distinct = true;
 
@@ -104,7 +104,7 @@ public class JoinerQueryBase<T, R> implements JoinerQuery<T, R> {
     }
 
     @Override
-    public List<String> getJoinGraphs() {
+    public List<Object> getJoinGraphs() {
         return joinGraphs;
     }
 
@@ -121,7 +121,7 @@ public class JoinerQueryBase<T, R> implements JoinerQuery<T, R> {
     }
 
     @Override
-    public JoinerQueryBase<T, R> joinGraphs(String... names) {
+    public JoinerQueryBase<T, R> joinGraphs(Object... names) {
         Collections.addAll(joinGraphs, names);
 
         return this;

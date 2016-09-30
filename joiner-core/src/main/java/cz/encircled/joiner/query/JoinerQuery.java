@@ -15,39 +15,48 @@ import cz.encircled.joiner.query.join.JoinDescription;
  */
 public interface JoinerQuery<T, R> {
 
+    EntityPath<T> getFrom();
+
     Expression<R> getReturnProjection(JPAQuery query);
+
+    JoinerQueryBase<T, R> where(Predicate where);
 
     Predicate getWhere();
 
     JoinerQueryBase<T, R> distinct(boolean isDistinct);
 
+    boolean isDistinct();
+
     JoinerQueryBase<T, R> groupBy(Expression<?> groupBy);
 
     Expression<?> getGroupBy();
-
-    boolean isDistinct();
-
-    JoinerQueryBase<T, R> where(Predicate where);
 
     JoinerQueryBase<T, R> having(Predicate having);
 
     Predicate getHaving();
 
-    EntityPath<T> getFrom();
+    /**
+     * Add join graphs to the query.
+     *
+     * @see cz.encircled.joiner.query.join.JoinGraphRegistry
+     * @param names names of join graphs
+     * @return this
+     */
+    JoinerQueryBase<T, R> joinGraphs(Object... names);
 
-    List<String> getJoinGraphs();
-
-    Collection<JoinDescription> getJoins();
-
-    JoinDescription getJoin(Expression<?> expression);
-
-    JoinerQueryBase<T, R> joinGraphs(String... names);
+    List<Object> getJoinGraphs();
 
     JoinerQueryBase<T, R> joins(JoinDescription... joins);
 
     JoinerQueryBase<T, R> joins(Collection<JoinDescription> joins);
 
+    Collection<JoinDescription> getJoins();
+
+    JoinDescription getJoin(Expression<?> expression);
+
     JoinerQueryBase<T, R> addHint(String hint, Object value);
+
+    LinkedHashMap<String, List<Object>> getHints();
 
     JoinerQueryBase<T, R> addFeatures(QueryFeature... features);
 
@@ -55,10 +64,8 @@ public interface JoinerQuery<T, R> {
 
     List<QueryFeature> getFeatures();
 
-    LinkedHashMap<String, List<Object>> getHints();
-
     /**
-     * Offset for the query results
+     * Set offset for the query results
      *
      * @param offset value
      * @return this
@@ -67,6 +74,12 @@ public interface JoinerQuery<T, R> {
 
     Long getOffset();
 
+    /**
+     * Set max results for the query results
+     *
+     * @param limit value
+     * @return this
+     */
     JoinerQueryBase<T, R> limit(Long limit);
 
     Long getLimit();

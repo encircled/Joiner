@@ -121,10 +121,16 @@ public class Joiner {
             query.having(request.getHaving());
         }
 
+        if (request.getLimit() != null) {
+            query.limit(request.getLimit());
+        }
+        if (request.getOffset() != null) {
+            query.offset(request.getOffset());
+        }
+
         for (QueryFeature feature : request.getFeatures()) {
             query = doPostProcess(request, query, feature);
         }
-
 
         return joinerVendorRepository.getResultList(query, request.getReturnProjection(query));
     }
@@ -138,7 +144,7 @@ public class Joiner {
 
             Class<? extends T> queryRootClass = request.getFrom().getType();
 
-            for (String name : request.getJoinGraphs()) {
+            for (Object name : request.getJoinGraphs()) {
                 List<JoinDescription> joins = joinGraphRegistry.getJoinGraph(queryRootClass, name);
                 if (joins == null) {
                     throw new JoinerException(String.format("JoinGraph with name [%s] is not defined for class [%s]", name, queryRootClass));
