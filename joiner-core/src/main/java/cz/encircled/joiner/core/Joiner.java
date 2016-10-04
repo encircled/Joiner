@@ -1,14 +1,5 @@
 package cz.encircled.joiner.core;
 
-import java.lang.reflect.Field;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import javax.persistence.EntityManager;
-
 import com.google.common.collect.ArrayListMultimap;
 import com.mysema.query.JoinType;
 import com.mysema.query.jpa.impl.AbstractJPAQuery;
@@ -29,6 +20,10 @@ import cz.encircled.joiner.query.join.JoinDescription;
 import cz.encircled.joiner.query.join.JoinGraphRegistry;
 import cz.encircled.joiner.util.Assert;
 import cz.encircled.joiner.util.ReflectionUtils;
+
+import javax.persistence.EntityManager;
+import java.lang.reflect.Field;
+import java.util.*;
 
 /**
  * @author Kisel on 26.01.2016.
