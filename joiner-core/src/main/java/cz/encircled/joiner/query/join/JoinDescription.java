@@ -150,6 +150,24 @@ public class JoinDescription {
             join.alias(J.path(this.getAlias(), join.getOriginalAlias()));
             children.add(join);
         }
+
+        return this;
+    }
+
+    /**
+     * Add children joins to current join from specified paths
+     *
+     * @param paths children join paths
+     * @return current join
+     */
+    public JoinDescription nested(EntityPath<?>... paths) {
+        for (EntityPath<?> path : paths) {
+            JoinDescription join = J.left(path);
+            join.parent = this;
+            join.alias(J.path(this.getAlias(), join.getOriginalAlias()));
+            children.add(join);
+        }
+
         return this;
     }
 

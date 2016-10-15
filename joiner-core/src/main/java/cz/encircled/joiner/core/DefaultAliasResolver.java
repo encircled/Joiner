@@ -1,28 +1,24 @@
 package cz.encircled.joiner.core;
 
-import static cz.encircled.joiner.util.ReflectionUtils.getField;
-
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Field;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.stream.Collectors;
-
-import javax.persistence.EntityManager;
-import javax.persistence.metamodel.Type;
-
 import com.mysema.query.types.EntityPath;
 import com.mysema.query.types.Path;
 import com.mysema.query.types.path.BooleanPath;
 import com.mysema.query.types.path.CollectionPathBase;
 import com.mysema.query.types.path.EntityPathBase;
 import cz.encircled.joiner.exception.JoinerException;
+import cz.encircled.joiner.query.join.J;
 import cz.encircled.joiner.query.join.JoinDescription;
 import cz.encircled.joiner.util.ReflectionUtils;
+
+import javax.persistence.EntityManager;
+import javax.persistence.metamodel.Type;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
+
+import static cz.encircled.joiner.util.ReflectionUtils.getField;
 
 /**
  * @author Vlad on 16-Aug-16.
@@ -103,10 +99,8 @@ public class DefaultAliasResolver implements AliasResolver {
 
             if (candidatePaths.isEmpty()) {
                 // TODO may be exception?
-                joinDescription.fetch(false);
-                for (JoinDescription child : joinDescription.getChildren()) {
-                    child.fetch(false);
-                }
+                J.unrollChildrenJoins(Collections.singletonList(joinDescription)).forEach(j -> j.fetch(false));
+
                 aliasCache.put(cacheKey, nullPath);
                 targetType = targetType.getSuperclass();
             } else if (candidatePaths.size() == 1) {

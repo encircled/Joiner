@@ -1,7 +1,9 @@
 package cz.encircled.joiner.test.core;
 
+import com.mysema.query.JoinType;
 import cz.encircled.joiner.exception.JoinerException;
 import cz.encircled.joiner.query.JoinerQuery;
+import cz.encircled.joiner.query.JoinerQueryBase;
 import cz.encircled.joiner.query.Q;
 import cz.encircled.joiner.query.join.J;
 import cz.encircled.joiner.query.join.JoinDescription;
@@ -14,6 +16,8 @@ import java.util.Collections;
 import java.util.List;
 
 /**
+ * TODO cleanup
+ *
  * @author Kisel on 21.01.2016.
  */
 public class BasicJoinTest extends AbstractTest {
@@ -139,6 +143,24 @@ public class BasicJoinTest extends AbstractTest {
                                 .fetch(false))
         );
         assertHasName(groups, name);
+    }
+
+    @Test
+    public void testDefaultJoinFromEntityPath() {
+        JoinerQueryBase<Group, Group> query = Q.from(QGroup.group).joins(QUser.user1);
+
+        JoinDescription join = query.getJoins().iterator().next();
+        Assert.assertEquals(JoinType.LEFTJOIN, join.getJoinType());
+        Assert.assertEquals(QUser.user1, join.getAlias());
+    }
+
+    @Test
+    public void testDefaultNestedJoinFromEntityPath() {
+        JoinerQueryBase<Group, Group> query = Q.from(QGroup.group).joins(J.left(QUser.user1).nested(QStatus.status));
+
+        JoinDescription join = query.getJoins().iterator().next().getChildren().get(0);
+        Assert.assertEquals(JoinType.LEFTJOIN, join.getJoinType());
+        Assert.assertEquals(J.path(QUser.user1, QStatus.status), join.getAlias());
     }
 
 }

@@ -4,10 +4,7 @@ import com.google.common.collect.ArrayListMultimap;
 import com.mysema.query.JoinType;
 import com.mysema.query.jpa.impl.AbstractJPAQuery;
 import com.mysema.query.jpa.impl.JPAQuery;
-import com.mysema.query.types.EntityPath;
-import com.mysema.query.types.Expression;
-import com.mysema.query.types.Operation;
-import com.mysema.query.types.Path;
+import com.mysema.query.types.*;
 import cz.encircled.joiner.core.vendor.EclipselinkRepository;
 import cz.encircled.joiner.core.vendor.HibernateRepository;
 import cz.encircled.joiner.core.vendor.JoinerVendorRepository;
@@ -15,6 +12,7 @@ import cz.encircled.joiner.exception.AliasMissingException;
 import cz.encircled.joiner.exception.JoinerException;
 import cz.encircled.joiner.query.JoinerQuery;
 import cz.encircled.joiner.query.QueryFeature;
+import cz.encircled.joiner.query.QueryOrder;
 import cz.encircled.joiner.query.join.J;
 import cz.encircled.joiner.query.join.JoinDescription;
 import cz.encircled.joiner.query.join.JoinGraphRegistry;
@@ -105,6 +103,9 @@ public class Joiner {
         checkAliasesArePresent(request.getWhere(), usedAliases);
         checkAliasesArePresent(request.getHaving(), usedAliases);
         checkAliasesArePresent(request.getGroupBy(), usedAliases);
+        for (QueryOrder queryOrder : request.getOrder()) {
+            checkAliasesArePresent(queryOrder.getTarget(), usedAliases);
+        }
 
         query.where(request.getWhere());
 
@@ -123,11 +124,19 @@ public class Joiner {
             query.offset(request.getOffset());
         }
 
+        for (QueryOrder queryOrder : request.getOrder()) {
+            query.orderBy(transformOrder(queryOrder));
+        }
+
         for (QueryFeature feature : request.getFeatures()) {
             query = doPostProcess(request, query, feature);
         }
 
         return joinerVendorRepository.getResultList(query, request.getReturnProjection(query));
+    }
+
+    private <T extends Comparable> OrderSpecifier<T> transformOrder(QueryOrder<T> queryOrder) {
+        return new OrderSpecifier<>(queryOrder.isAsc() ? Order.ASC : Order.DESC, queryOrder.getTarget());
     }
 
     private <T, R> void setJoinsFromJoinsGraphs(JoinerQuery<T, R> request) {

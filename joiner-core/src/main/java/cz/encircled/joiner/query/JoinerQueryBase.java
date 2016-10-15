@@ -1,19 +1,14 @@
 package cz.encircled.joiner.query;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-
 import com.mysema.query.jpa.impl.JPAQuery;
 import com.mysema.query.types.EntityPath;
 import com.mysema.query.types.Expression;
 import com.mysema.query.types.Predicate;
+import cz.encircled.joiner.query.join.J;
 import cz.encircled.joiner.query.join.JoinDescription;
 import cz.encircled.joiner.util.Assert;
+
+import java.util.*;
 
 /**
  * @author Kisel on 13.9.2016.
@@ -44,6 +39,8 @@ public class JoinerQueryBase<T, R> implements JoinerQuery<T, R> {
     private Long offset;
 
     private Long limit;
+
+    private List<QueryOrder> orders = new ArrayList<>(2);
 
     public JoinerQueryBase(EntityPath<T> from, Expression<R> returnProjection) {
         this.from = from;
@@ -128,6 +125,15 @@ public class JoinerQueryBase<T, R> implements JoinerQuery<T, R> {
     }
 
     @Override
+    public JoinerQueryBase<T, R> joins(EntityPath<?>... paths) {
+        for (EntityPath<?> path : paths) {
+            joins(J.left(path));
+        }
+
+        return this;
+    }
+
+    @Override
     public JoinerQueryBase<T, R> joins(JoinDescription... joins) {
         return joins(Arrays.asList(joins));
     }
@@ -204,6 +210,27 @@ public class JoinerQueryBase<T, R> implements JoinerQuery<T, R> {
     @Override
     public Long getLimit() {
         return limit;
+    }
+
+    @Override
+    public JoinerQueryBase<T, R> asc(Expression<?> orderBy) {
+        Assert.notNull(orderBy);
+
+        orders.add(new QueryOrder(true, orderBy));
+        return this;
+    }
+
+    @Override
+    public JoinerQueryBase<T, R> desc(Expression<?> orderBy) {
+        Assert.notNull(orderBy);
+
+        orders.add(new QueryOrder(false, orderBy));
+        return this;
+    }
+
+    @Override
+    public List<QueryOrder> getOrder() {
+        return orders;
     }
 
 }
