@@ -13,7 +13,7 @@ import java.util.*;
 /**
  * @author Kisel on 13.9.2016.
  */
-public class JoinerQueryBase<T, R> implements JoinerQuery<T, R> {
+public class JoinerQueryBase<T, R> implements JoinerQuery<T, R>, JoinRoot {
 
     private final EntityPath<T> from;
     private Expression<R> returnProjection;
@@ -22,7 +22,7 @@ public class JoinerQueryBase<T, R> implements JoinerQuery<T, R> {
     /**
      * Alias to join
      */
-    private Map<String, JoinDescription> joins = new LinkedHashMap<>();
+    private Map<String, JoinDescription> joins = new LinkedHashMap<>(8);
 
     private List<Object> joinGraphs = new ArrayList<>();
 
@@ -106,6 +106,11 @@ public class JoinerQueryBase<T, R> implements JoinerQuery<T, R> {
     }
 
     @Override
+    public Map<String, JoinDescription> getAllJoins() {
+        return joins;
+    }
+
+    @Override
     public Collection<JoinDescription> getJoins() {
         return joins.values();
     }
@@ -127,7 +132,9 @@ public class JoinerQueryBase<T, R> implements JoinerQuery<T, R> {
     @Override
     public JoinerQueryBase<T, R> joins(EntityPath<?>... paths) {
         for (EntityPath<?> path : paths) {
-            joins(J.left(path));
+            Assert.notNull(path);
+
+            addJoin(J.left(path));
         }
 
         return this;
@@ -135,7 +142,13 @@ public class JoinerQueryBase<T, R> implements JoinerQuery<T, R> {
 
     @Override
     public JoinerQueryBase<T, R> joins(JoinDescription... joins) {
-        return joins(Arrays.asList(joins));
+        for (JoinDescription join : joins) {
+            Assert.notNull(join);
+
+            addJoin(join);
+        }
+
+        return this;
     }
 
     @Override
@@ -143,7 +156,7 @@ public class JoinerQueryBase<T, R> implements JoinerQuery<T, R> {
         Assert.notNull(joins);
 
         for (JoinDescription join : joins) {
-            this.joins.put(join.getOriginalAlias().toString(), join);
+            addJoin(join);
         }
 
         return this;

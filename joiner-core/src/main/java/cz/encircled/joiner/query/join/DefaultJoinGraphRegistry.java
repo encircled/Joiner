@@ -1,15 +1,14 @@
 package cz.encircled.joiner.query.join;
 
+import cz.encircled.joiner.exception.JoinerException;
+import cz.encircled.joiner.util.Assert;
+
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
-
-import cz.encircled.joiner.exception.JoinerException;
-import cz.encircled.joiner.util.Assert;
 
 /**
  * ConcurrentHashMap-based implementation of {@link JoinGraphRegistry}
@@ -49,7 +48,7 @@ public class DefaultJoinGraphRegistry implements JoinGraphRegistry {
             }
         }
 
-        return Collections.emptyList();
+        throw new JoinerException(String.format("JoinGraph with name [%s] is not defined for class [%s]", name, clazz));
     }
 
 }

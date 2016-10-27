@@ -85,7 +85,6 @@ public class PaginationAndOrderTest extends AbstractTest {
     }
 
     public boolean isSorted(List<User> users, boolean isDesc) {
-        boolean sorted = true;
         for (int i = 1; i < users.size(); i++) {
             if (isDesc) {
                 if (Objects.compare(users.get(i), users.get(i - 1), (o1, o2) -> o1.getName().compareTo(o2.getName())) > 0) {
@@ -98,7 +97,7 @@ public class PaginationAndOrderTest extends AbstractTest {
             }
         }
 
-        return sorted;
+        return true;
     }
 
 }

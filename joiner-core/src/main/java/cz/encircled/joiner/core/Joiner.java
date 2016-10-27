@@ -149,12 +149,7 @@ public class Joiner {
             Class<? extends T> queryRootClass = request.getFrom().getType();
 
             for (Object name : request.getJoinGraphs()) {
-                List<JoinDescription> joins = joinGraphRegistry.getJoinGraph(queryRootClass, name);
-                if (joins == null) {
-                    throw new JoinerException(String.format("JoinGraph with name [%s] is not defined for class [%s]", name, queryRootClass));
-                } else {
-                    request.joins(joins);
-                }
+                request.joins(joinGraphRegistry.getJoinGraph(queryRootClass, name));
             }
         }
     }

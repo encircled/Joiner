@@ -4,11 +4,13 @@ import com.mysema.query.JoinType;
 import com.mysema.query.types.EntityPath;
 import com.mysema.query.types.Predicate;
 import com.mysema.query.types.path.CollectionPathBase;
+import cz.encircled.joiner.query.JoinRoot;
 import cz.encircled.joiner.util.Assert;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.stream.Collectors;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 /**
  * Represents query join.
@@ -19,7 +21,7 @@ import java.util.stream.Collectors;
  *
  * @author Kisel on 21.01.2016.
  */
-public class JoinDescription {
+public class JoinDescription implements JoinRoot {
 
     private final EntityPath<?> originalAlias;
     private CollectionPathBase<?, ?, ?> collectionPath;
@@ -33,7 +35,7 @@ public class JoinDescription {
 
     private JoinDescription parent;
 
-    private List<JoinDescription> children = new ArrayList<>();
+    private Map<String, JoinDescription> children = new LinkedHashMap<>(4);
 
     public JoinDescription(EntityPath<?> alias) {
         Assert.notNull(alias);
@@ -45,7 +47,10 @@ public class JoinDescription {
     public JoinDescription copy() {
         JoinDescription copy = new JoinDescription(originalAlias);
         copy.alias = alias;
-        copy.children = children.stream().map(JoinDescription::copy).collect(Collectors.toList());
+
+        copy.children = new HashMap<>(children.size());
+        children.forEach((k, v) -> copy.children.put(k, v.copy()));
+
         copy.fetch = fetch;
         copy.on = on;
         copy.parent = parent;
@@ -148,7 +153,7 @@ public class JoinDescription {
         for (JoinDescription join : joins) {
             join.parent = this;
             join.alias(J.path(this.getAlias(), join.getOriginalAlias()));
-            children.add(join);
+            addJoin(join);
         }
 
         return this;
@@ -165,7 +170,7 @@ public class JoinDescription {
             JoinDescription join = J.left(path);
             join.parent = this;
             join.alias(J.path(this.getAlias(), join.getOriginalAlias()));
-            children.add(join);
+            addJoin(join);
         }
 
         return this;
@@ -176,7 +181,12 @@ public class JoinDescription {
     }
 
     // TODO make it protected
-    public List<JoinDescription> getChildren() {
+    public Collection<JoinDescription> getChildren() {
+        return children.values();
+    }
+
+    @Override
+    public Map<String, JoinDescription> getAllJoins() {
         return children;
     }
 

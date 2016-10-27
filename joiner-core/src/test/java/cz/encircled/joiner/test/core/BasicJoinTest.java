@@ -158,7 +158,7 @@ public class BasicJoinTest extends AbstractTest {
     public void testDefaultNestedJoinFromEntityPath() {
         JoinerQueryBase<Group, Group> query = Q.from(QGroup.group).joins(J.left(QUser.user1).nested(QStatus.status));
 
-        JoinDescription join = query.getJoins().iterator().next().getChildren().get(0);
+        JoinDescription join = query.getJoins().iterator().next().getChildren().iterator().next();
         Assert.assertEquals(JoinType.LEFTJOIN, join.getJoinType());
         Assert.assertEquals(J.path(QUser.user1, QStatus.status), join.getAlias());
     }
