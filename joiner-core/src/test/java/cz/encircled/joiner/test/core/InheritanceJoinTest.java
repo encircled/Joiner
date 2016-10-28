@@ -150,7 +150,7 @@ public class InheritanceJoinTest extends AbstractTest {
                         .where(J.path(QUser.user1, QKey.key).name.ne("bad_key"))
         );
 
-        check(groups, true, false);
+        check(groups, true, true);
     }
 
     @Test

@@ -141,7 +141,7 @@ public class InheritanceJoinTest extends AbstractEclipseTest {
                         .where(J.path(QUser.user1, QKey.key).name.ne("bad_key"))
         );
 
-        check(groups, true, false);
+        check(groups, true, true);
     }
 
     @Test
@@ -151,6 +151,50 @@ public class InheritanceJoinTest extends AbstractEclipseTest {
         );
 
         check(groups, false, true);
+    }
+
+    @Test
+    public void testNotFoundSubclassPredicated() {
+        List<Group> groups = joiner.find(Q.from(QGroup.group)
+                .joins(J.left(QSuperUser.superUser)
+                                .nested(J.left(QKey.key)),
+                        J.left(QStatus.status))
+                .where(J.path(QSuperUser.superUser, QKey.key).name.eq("not_exists"))
+        );
+
+        Assert.assertTrue(groups.isEmpty());
+    }
+
+    @Test
+    public void testSubclassInCollectionJoined() {
+        joiner.find(Q.from(QGroup.group)
+                .joins(J.left(QSuperUser.superUser)
+                        .nested(QKey.key)));
+    }
+
+    @Test
+    public void testFoundSubclassPredicated() {
+        List<Group> groups = joiner.find(Q.from(QGroup.group)
+                .joins(J.left(QSuperUser.superUser)
+                        .nested(J.left(QKey.key)))
+                .joins(J.left(QStatus.status))
+                .where(QSuperUser.superUser.key.name.eq("key1"))
+        );
+
+        Assert.assertFalse(groups.isEmpty());
+
+        for (Group group : groups) {
+            boolean hasKey = false;
+            for (User user : group.getUsers()) {
+                if (user instanceof SuperUser) {
+                    SuperUser superUser = (SuperUser) user;
+                    if (superUser.getKey() != null && superUser.getKey().getName().equals("key1")) {
+                        hasKey = true;
+                    }
+                }
+            }
+            Assert.assertTrue(hasKey);
+        }
     }
 
     private void check(List<Group> groups, boolean key, boolean password) {
@@ -180,43 +224,6 @@ public class InheritanceJoinTest extends AbstractEclipseTest {
         }
         if (password) {
             Assert.assertTrue(hasPassword);
-        }
-    }
-
-    @Test
-    public void testNotFoundSubclassPredicated() {
-        List<Group> groups = joiner.find(Q.from(QGroup.group)
-                .joins(J.left(QSuperUser.superUser)
-                                .nested(J.left(QKey.key)),
-                        J.left(QStatus.status))
-                .where(J.path(QSuperUser.superUser, QKey.key).name.eq("not_exists"))
-        );
-
-        Assert.assertTrue(groups.isEmpty());
-    }
-
-    @Test
-    public void testFoundSubclassPredicated() {
-        List<Group> groups = joiner.find(Q.from(QGroup.group)
-                .joins(J.left(QSuperUser.superUser)
-                        .nested(J.left(QKey.key)))
-                .joins(J.left(QStatus.status))
-                .where(QSuperUser.superUser.key.name.eq("key1"))
-        );
-
-        Assert.assertFalse(groups.isEmpty());
-
-        for (Group group : groups) {
-            boolean hasKey = false;
-            for (User user : group.getUsers()) {
-                if (user instanceof SuperUser) {
-                    SuperUser superUser = (SuperUser) user;
-                    if (superUser.getKey() != null && superUser.getKey().getName().equals("key1")) {
-                        hasKey = true;
-                    }
-                }
-            }
-            Assert.assertTrue(hasKey);
         }
     }
 

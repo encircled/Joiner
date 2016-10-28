@@ -1,5 +1,14 @@
 package cz.encircled.joiner.query;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
 import com.mysema.query.jpa.impl.JPAQuery;
 import com.mysema.query.types.EntityPath;
 import com.mysema.query.types.Expression;
@@ -7,8 +16,6 @@ import com.mysema.query.types.Predicate;
 import cz.encircled.joiner.query.join.J;
 import cz.encircled.joiner.query.join.JoinDescription;
 import cz.encircled.joiner.util.Assert;
-
-import java.util.*;
 
 /**
  * @author Kisel on 13.9.2016.
@@ -24,7 +31,7 @@ public class JoinerQueryBase<T, R> implements JoinerQuery<T, R>, JoinRoot {
      */
     private Map<String, JoinDescription> joins = new LinkedHashMap<>(8);
 
-    private List<Object> joinGraphs = new ArrayList<>();
+    private Set<Object> joinGraphs = new LinkedHashSet<>();
 
     private boolean distinct = true;
 
@@ -101,7 +108,7 @@ public class JoinerQueryBase<T, R> implements JoinerQuery<T, R>, JoinRoot {
     }
 
     @Override
-    public List<Object> getJoinGraphs() {
+    public Set<Object> getJoinGraphs() {
         return joinGraphs;
     }
 
@@ -125,6 +132,15 @@ public class JoinerQueryBase<T, R> implements JoinerQuery<T, R>, JoinRoot {
     @Override
     public JoinerQueryBase<T, R> joinGraphs(Object... names) {
         Collections.addAll(joinGraphs, names);
+
+        return this;
+    }
+
+    @Override
+    public JoinerQueryBase<T, R> joinGraphs(Collection<Object> names) {
+        Assert.notNull(names);
+
+        joinGraphs.addAll(names);
 
         return this;
     }

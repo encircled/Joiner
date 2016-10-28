@@ -1,14 +1,15 @@
 package cz.encircled.joiner.query;
 
+import java.util.Collection;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Set;
+
 import com.mysema.query.jpa.impl.JPAQuery;
 import com.mysema.query.types.EntityPath;
 import com.mysema.query.types.Expression;
 import com.mysema.query.types.Predicate;
 import cz.encircled.joiner.query.join.JoinDescription;
-
-import java.util.Collection;
-import java.util.LinkedHashMap;
-import java.util.List;
 
 /**
  * @author Vlad on 04-Sep-16.
@@ -44,7 +45,16 @@ public interface JoinerQuery<T, R> {
      */
     JoinerQueryBase<T, R> joinGraphs(Object... names);
 
-    List<Object> getJoinGraphs();
+    /**
+     * Add join graphs to the query.
+     *
+     * @see cz.encircled.joiner.query.join.JoinGraphRegistry
+     * @param names names of join graphs
+     * @return this
+     */
+    JoinerQueryBase<T, R> joinGraphs(Collection<Object> names);
+
+    Set<Object> getJoinGraphs();
 
     /**
      * Add <b>left</b> joins for specified paths
