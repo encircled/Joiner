@@ -2,10 +2,7 @@ package cz.encircled.joiner.test.core;
 
 import cz.encircled.joiner.exception.AliasMissingException;
 import cz.encircled.joiner.query.Q;
-import cz.encircled.joiner.test.model.QAddress;
-import cz.encircled.joiner.test.model.QStatus;
-import cz.encircled.joiner.test.model.QUser;
-import cz.encircled.joiner.test.model.User;
+import cz.encircled.joiner.test.model.*;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -77,6 +74,14 @@ public class PaginationAndOrderTest extends AbstractTest {
 
         Assert.assertTrue(isSorted(users, true));
         Assert.assertTrue(users.get(0).getId() > users.get(1).getId());
+    }
+
+    @Test
+    public void testNestedPropertyOrdering() {
+        List<Group> groups = joiner.find(Q.from(QGroup.group)
+                .joins(QUser.user1)
+                .asc(QGroup.group.users.any().name)
+        );
     }
 
     @Test(expected = AliasMissingException.class)
