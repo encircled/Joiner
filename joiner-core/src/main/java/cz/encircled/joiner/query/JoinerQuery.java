@@ -43,7 +43,7 @@ public interface JoinerQuery<T, R> {
      * @param names names of join graphs
      * @return this
      */
-    JoinerQueryBase<T, R> joinGraphs(Object... names);
+    JoinerQueryBase<T, R> joinGraphs(String... names);
 
     /**
      * Add join graphs to the query.
@@ -52,7 +52,16 @@ public interface JoinerQuery<T, R> {
      * @param names names of join graphs
      * @return this
      */
-    JoinerQueryBase<T, R> joinGraphs(Collection<Object> names);
+    JoinerQueryBase<T, R> joinGraphs(Enum... names);
+
+    /**
+     * Add join graphs to the query.
+     *
+     * @see cz.encircled.joiner.query.join.JoinGraphRegistry
+     * @param names names of join graphs
+     * @return this
+     */
+    JoinerQueryBase<T, R> joinGraphs(Collection<?> names);
 
     Set<Object> getJoinGraphs();
 

@@ -5,6 +5,7 @@ import cz.encircled.joiner.query.join.J;
 import cz.encircled.joiner.test.config.TestConfig;
 import cz.encircled.joiner.test.core.AbstractTest;
 import cz.encircled.joiner.test.model.QGroup;
+import cz.encircled.joiner.test.model.QPhone;
 import cz.encircled.joiner.test.model.QStatus;
 import cz.encircled.joiner.test.model.QUser;
 import org.junit.Test;
@@ -22,16 +23,10 @@ public class CollisionAliasJoinTest extends AbstractTest {
                 .joins(J.left(QStatus.status), J.left(QUser.user1).nested(J.left(QStatus.status))));
     }
 
+
     @Test
-    public void nestedCollisionAliasCollectionAndSingleJoinTest() {
-        // TODO
-        /*groupRepository.find(Q.from(QGroup.group)
-                .joins(J.joins(QGroup.group.statuses,
-                        TestAliasResolver.STATUS_ON_GROUP.statusType,
-                        QGroup.group.users,
-                        QUser.user1.statuses,
-                        TestAliasResolver.STATUS_ON_USER.statusType))
-        );*/
+    public void testTransientFieldIgnored() {
+        joiner.find(Q.from(QUser.user1).joins(QPhone.phone));
     }
 
 }

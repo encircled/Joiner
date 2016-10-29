@@ -16,6 +16,7 @@ import javax.persistence.ManyToMany;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
+import javax.persistence.Transient;
 
 /**
  * @author Kisel on 21.01.2016.
@@ -32,6 +33,9 @@ public class User extends AbstractEntity {
 
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "user")
     private Set<Contact> contacts;
+
+    @Transient
+    private Set<Phone> phones;
 
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "employmentUser")
     private Set<Contact> employmentContacts;

@@ -98,6 +98,7 @@ public class DefaultAliasResolver implements AliasResolver {
                         throw new RuntimeException();
                     }
                     for (Field field : real.getFields()) {
+
                         Object candidate = getField(field, childInstance);
 
                         testAliasCandidate(targetType, candidatePaths, candidate);

@@ -130,14 +130,21 @@ public class JoinerQueryBase<T, R> implements JoinerQuery<T, R>, JoinRoot {
     }
 
     @Override
-    public JoinerQueryBase<T, R> joinGraphs(Object... names) {
+    public JoinerQueryBase<T, R> joinGraphs(final String... names) {
         Collections.addAll(joinGraphs, names);
 
         return this;
     }
 
     @Override
-    public JoinerQueryBase<T, R> joinGraphs(Collection<Object> names) {
+    public JoinerQueryBase<T, R> joinGraphs(final Enum... names) {
+        Collections.addAll(joinGraphs, names);
+
+        return this;
+    }
+
+    @Override
+    public JoinerQueryBase<T, R> joinGraphs(Collection<?> names) {
         Assert.notNull(names);
 
         joinGraphs.addAll(names);
