@@ -13,6 +13,8 @@ public interface QueryFeature {
      * This method is called before JPA query creation and allows request modification
      *
      * @param request initial joiner request
+     * @param <T> query from
+     * @param <R> query return type
      * @return modified request
      */
     <T, R> JoinerQuery<T, R> before(JoinerQuery<T, R> request);
