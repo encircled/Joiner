@@ -43,6 +43,8 @@ Q.from(QGroup.group)
 
 ## Examples
 
+### Query joins
+
 Basic select query
 ```
 joiner.findOne(Q.from(QGroup.group)
@@ -80,6 +82,22 @@ joiner.findOne(Q.from(QGroup.group)
                                 J.left(QContact.contact)
                         ))
                 .where(QGroup.group.id.eq(1L)));
+```
+### Result projection
+By defaut, list or single result of `from` clause is returned (for `find` and `findOne` respectively).   
+Next example shows how to return another projection:   
+```
+joiner.find(Q.select(QPhone.phone.number)
+                .from(QUser.user)
+                .joins(QPhone.phone));
+```
+
+`Q.select` can be used for tuples as well:
+
+```
+joiner.find(Q.select(QUser.user.id, QPhone.phone.number)
+                .from(QUser.user)
+                .joins(QPhone.phone));
 ```
 
 ## Maven dependencies  
