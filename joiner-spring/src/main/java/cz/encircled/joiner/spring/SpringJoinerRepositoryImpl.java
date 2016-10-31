@@ -5,6 +5,7 @@ import java.util.List;
 import cz.encircled.joiner.core.Joiner;
 import cz.encircled.joiner.query.JoinerQuery;
 import cz.encircled.joiner.query.JoinerQueryBase;
+import cz.encircled.joiner.query.join.J;
 import cz.encircled.joiner.util.Assert;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -46,6 +47,10 @@ public abstract class SpringJoinerRepositoryImpl<T> implements SpringJoinerRepos
     private <R> Long getTotalCount(JoinerQuery<T, R> request) {
         JoinerQueryBase<?, Long> countRequest = (JoinerQueryBase) request.copy();
         countRequest.count();
+
+        // Fetch is not allowed for count queries
+        J.unrollChildrenJoins(countRequest.getJoins()).forEach(j -> j.fetch(false));
+
         return delegate.findOne(countRequest);
     }
 

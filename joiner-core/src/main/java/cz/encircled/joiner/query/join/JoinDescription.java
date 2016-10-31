@@ -1,16 +1,16 @@
 package cz.encircled.joiner.query.join;
 
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.Map;
+
 import com.mysema.query.JoinType;
 import com.mysema.query.types.EntityPath;
 import com.mysema.query.types.Predicate;
 import com.mysema.query.types.path.CollectionPathBase;
 import cz.encircled.joiner.query.JoinRoot;
 import cz.encircled.joiner.util.Assert;
-
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.Map;
 
 /**
  * Represents query join.
@@ -64,7 +64,7 @@ public class JoinDescription implements JoinRoot {
         return fetch;
     }
 
-    public JoinDescription fetch(final boolean fetch) {
+    public JoinDescription fetch(boolean fetch) {
         this.fetch = fetch;
         return this;
     }

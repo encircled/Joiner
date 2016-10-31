@@ -8,6 +8,7 @@ import javax.persistence.PersistenceContext;
 import cz.encircled.joiner.query.Q;
 import cz.encircled.joiner.spring.PageableFeature;
 import cz.encircled.joiner.test.config.SpringTestConfig;
+import cz.encircled.joiner.test.model.QGroup;
 import cz.encircled.joiner.test.model.QStatus;
 import cz.encircled.joiner.test.model.QUser;
 import cz.encircled.joiner.test.model.User;
@@ -67,7 +68,7 @@ public class SpringRepositoryTest extends AbstractTransactionalJUnit4SpringConte
 
     @Test
     public void testFindPage() {
-        Page<User> page = userRepository.findPage(Q.from(QUser.user1), new PageRequest(0, 1));
+        Page<User> page = userRepository.findPage(Q.from(QUser.user1).joins(QGroup.group), new PageRequest(0, 1));
         Assert.assertNotNull(page.getContent());
         Assert.assertEquals(1, page.getContent().size());
         Assert.assertEquals(entityManager.createQuery("select count(u) from User u").getSingleResult(), page.getTotalElements());
