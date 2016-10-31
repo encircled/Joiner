@@ -67,8 +67,16 @@ public class SpringRepositoryTest extends AbstractTransactionalJUnit4SpringConte
     }
 
     @Test
-    public void testFindPage() {
+    public void testFindPageWithFetchJoin() {
         Page<User> page = userRepository.findPage(Q.from(QUser.user1).joins(QGroup.group), new PageRequest(0, 1));
+        Assert.assertNotNull(page.getContent());
+        Assert.assertEquals(1, page.getContent().size());
+        Assert.assertEquals(entityManager.createQuery("select count(u) from User u").getSingleResult(), page.getTotalElements());
+    }
+
+    @Test
+    public void testFindPageWithFetchJoinGraph() {
+        Page<User> page = userRepository.findPage(Q.from(QUser.user1).joinGraphs("userGroups"), new PageRequest(0, 1));
         Assert.assertNotNull(page.getContent());
         Assert.assertEquals(1, page.getContent().size());
         Assert.assertEquals(entityManager.createQuery("select count(u) from User u").getSingleResult(), page.getTotalElements());

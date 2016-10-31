@@ -164,7 +164,14 @@ public class Joiner {
             Class<? extends T> queryRootClass = request.getFrom().getType();
 
             for (Object name : request.getJoinGraphs()) {
-                request.joins(joinGraphRegistry.getJoinGraph(queryRootClass, name));
+                List<JoinDescription> joins = joinGraphRegistry.getJoinGraph(queryRootClass, name);
+
+                // Fetch is not allowed in count queries
+                if (request.isCount()) {
+                    J.unrollChildrenJoins(joins).forEach(j -> j.fetch(false));
+                }
+
+                request.joins(joins);
             }
         }
     }
