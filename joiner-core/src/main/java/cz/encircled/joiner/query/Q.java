@@ -20,4 +20,10 @@ public class Q {
         return new JoinerQueryBase<>(from, from);
     }
 
+    public static <T> JoinerQuery<T, Long> count(EntityPath<T> from) {
+        JoinerQueryBase<T, Long> request = new JoinerQueryBase<>(from, true);
+        request.distinct(false);
+        return request;
+    }
+
 }

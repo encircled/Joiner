@@ -9,8 +9,8 @@ import org.springframework.context.annotation.Import;
  * @author Kisel on 21.01.2016.
  */
 @Configuration
-@Import({EntityManagerConfig.class, JoinerConfiguration.class})
-@ComponentScan("cz.encircled.joiner.test.repository")
+@Import({ EntityManagerConfig.class, JoinerConfiguration.class })
+@ComponentScan(basePackages = { "cz.encircled.joiner.test" })
 public class SpringTestConfig {
 
 }

@@ -1,30 +1,21 @@
 package cz.encircled.joiner.spring;
 
-import java.util.List;
-
-import cz.encircled.joiner.core.Joiner;
 import cz.encircled.joiner.core.JoinerRepository;
 import cz.encircled.joiner.query.JoinerQuery;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 /**
- * Parent class for repositories with Joiner support within spring context.
- *
- * @author Vlad on 14-Aug-16.
+ * @author Kisel on 31.10.2016.
  */
-public abstract class SpringJoinerRepository<T> implements JoinerRepository<T> {
+public interface SpringJoinerRepository<T> extends JoinerRepository<T> {
 
-    @Autowired
-    protected Joiner delegate;
-
-    @Override
-    public <R> List<R> find(JoinerQuery<T, R> request) {
-        return delegate.find(request);
-    }
-
-    @Override
-    public <R> R findOne(JoinerQuery<T, R> request) {
-        return delegate.findOne(request);
-    }
+    /**
+     *
+     * @param request query request
+     * @param <R> return type
+     * @return spring pageable result
+     */
+    <R> Page<R> findPage(JoinerQuery<T, R> request, Pageable pageable);
 
 }

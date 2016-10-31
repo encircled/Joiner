@@ -117,4 +117,8 @@ public interface JoinerQuery<T, R> {
 
     List<QueryOrder> getOrder();
 
+    JoinerQuery<T, R> copy();
+
+    boolean isCount();
+
 }

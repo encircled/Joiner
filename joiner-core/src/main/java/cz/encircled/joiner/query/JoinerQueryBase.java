@@ -8,6 +8,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import com.mysema.query.jpa.impl.JPAQuery;
 import com.mysema.query.types.EntityPath;
@@ -26,6 +27,7 @@ public class JoinerQueryBase<T, R> implements JoinerQuery<T, R>, JoinRoot {
     private Expression<R> returnProjection;
 
     private Predicate where;
+
     /**
      * Alias to join
      */
@@ -49,13 +51,20 @@ public class JoinerQueryBase<T, R> implements JoinerQuery<T, R>, JoinRoot {
 
     private List<QueryOrder> orders = new ArrayList<>(2);
 
-    public JoinerQueryBase(EntityPath<T> from, Expression<R> returnProjection) {
+    private boolean isCount;
+
+    JoinerQueryBase(EntityPath<T> from) {
         this.from = from;
-        this.returnProjection = returnProjection;
     }
 
-    protected JoinerQueryBase(EntityPath<T> from) {
+    JoinerQueryBase(EntityPath<T> from, boolean isCount) {
         this.from = from;
+        this.isCount = isCount;
+    }
+
+    JoinerQueryBase(EntityPath<T> from, Expression<R> returnProjection) {
+        this.from = from;
+        this.returnProjection = returnProjection;
     }
 
     @Override
@@ -178,9 +187,7 @@ public class JoinerQueryBase<T, R> implements JoinerQuery<T, R>, JoinRoot {
     public JoinerQueryBase<T, R> joins(Collection<JoinDescription> joins) {
         Assert.notNull(joins);
 
-        for (JoinDescription join : joins) {
-            addJoin(join);
-        }
+        joins.forEach(this::addJoin);
 
         return this;
     }
@@ -252,7 +259,7 @@ public class JoinerQueryBase<T, R> implements JoinerQuery<T, R>, JoinRoot {
     public JoinerQueryBase<T, R> asc(Expression<?> orderBy) {
         Assert.notNull(orderBy);
 
-        orders.add(new QueryOrder(true, orderBy));
+        orders.add(new QueryOrder<>(true, orderBy));
         return this;
     }
 
@@ -260,13 +267,44 @@ public class JoinerQueryBase<T, R> implements JoinerQuery<T, R>, JoinRoot {
     public JoinerQueryBase<T, R> desc(Expression<?> orderBy) {
         Assert.notNull(orderBy);
 
-        orders.add(new QueryOrder(false, orderBy));
+        orders.add(new QueryOrder<>(false, orderBy));
         return this;
     }
 
     @Override
     public List<QueryOrder> getOrder() {
         return orders;
+    }
+
+    @Override
+    public JoinerQuery<T, R> copy() {
+        JoinerQueryBase<T, R> copy = Q.select(returnProjection)
+                .from(from)
+                .joinGraphs(new LinkedHashSet<>(joinGraphs))
+                .joins(getJoins().stream().map(JoinDescription::copy).collect(Collectors.toList()))
+                .addFeatures(new ArrayList<>(getFeatures()))
+                .where(where)
+                .offset(offset)
+                .limit(limit)
+                .groupBy(groupBy)
+                .having(this.having);
+
+        copy.isCount = isCount;
+        copy.orders = new ArrayList<>(orders);
+
+        // TODO deep-deep copy?
+        copy.hints = new LinkedHashMap<>(hints);
+
+        return copy;
+    }
+
+    @Override
+    public boolean isCount() {
+        return isCount;
+    }
+
+    public void count() {
+        isCount = true;
     }
 
 }
