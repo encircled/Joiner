@@ -1,21 +1,5 @@
 package cz.encircled.joiner.core;
 
-import static cz.encircled.joiner.util.ReflectionUtils.getField;
-
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Field;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.stream.Collectors;
-
-import javax.persistence.EntityManager;
-import javax.persistence.metamodel.Type;
-
 import com.mysema.query.types.EntityPath;
 import com.mysema.query.types.Path;
 import com.mysema.query.types.path.BooleanPath;
@@ -26,24 +10,30 @@ import cz.encircled.joiner.query.join.J;
 import cz.encircled.joiner.query.join.JoinDescription;
 import cz.encircled.joiner.util.ReflectionUtils;
 
+import javax.persistence.EntityManager;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+
+import static cz.encircled.joiner.util.ReflectionUtils.getField;
+
 /**
  * @author Vlad on 16-Aug-16.
  */
 public class DefaultAliasResolver implements AliasResolver {
 
     private static final Path<?> nullPath = new BooleanPath("");
+
     private final EntityManager entityManager;
+
     private final Map<String, Path> aliasCache = new ConcurrentHashMap<>();
 
     public DefaultAliasResolver(EntityManager entityManager) {
         this.entityManager = entityManager;
-    }
-
-    private Set<Class> getSubclasses(Class<?> parent) {
-        return entityManager.getMetamodel().getEntities().stream()
-                .filter(entityType -> parent.isAssignableFrom(entityType.getJavaType()))
-                .map(Type::getJavaType)
-                .collect(Collectors.toCollection(HashSet::new));
     }
 
     @Override
@@ -81,7 +71,7 @@ public class DefaultAliasResolver implements AliasResolver {
             }
 
             if (candidatePaths.isEmpty()) {
-                for (Class child : getSubclasses(parent.getType())) {
+                for (Class child : ReflectionUtils.getSubclasses(parent.getType(), entityManager)) {
                     Class<?> real;
                     Constructor<?> constructor;
                     try {

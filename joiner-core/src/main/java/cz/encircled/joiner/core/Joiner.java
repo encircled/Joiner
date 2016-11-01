@@ -1,25 +1,10 @@
 package cz.encircled.joiner.core;
 
-import java.lang.reflect.Field;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import javax.persistence.EntityManager;
-
 import com.google.common.collect.ArrayListMultimap;
 import com.mysema.query.JoinType;
 import com.mysema.query.jpa.impl.AbstractJPAQuery;
 import com.mysema.query.jpa.impl.JPAQuery;
-import com.mysema.query.types.EntityPath;
-import com.mysema.query.types.Expression;
-import com.mysema.query.types.Operation;
-import com.mysema.query.types.Order;
-import com.mysema.query.types.OrderSpecifier;
-import com.mysema.query.types.Path;
+import com.mysema.query.types.*;
 import cz.encircled.joiner.core.vendor.EclipselinkRepository;
 import cz.encircled.joiner.core.vendor.HibernateRepository;
 import cz.encircled.joiner.core.vendor.JoinerVendorRepository;
@@ -33,6 +18,10 @@ import cz.encircled.joiner.query.join.JoinDescription;
 import cz.encircled.joiner.query.join.JoinGraphRegistry;
 import cz.encircled.joiner.util.Assert;
 import cz.encircled.joiner.util.ReflectionUtils;
+
+import javax.persistence.EntityManager;
+import java.lang.reflect.Field;
+import java.util.*;
 
 /**
  * @author Kisel on 26.01.2016.
@@ -68,7 +57,7 @@ public class Joiner {
     }
 
     public <T, R> R findOne(JoinerQuery<T, R> request) {
-        List<R> list = find(request);
+        List<R> list = find(request.limit(2L));
         if (list.isEmpty()) {
             return null;
         } else if (list.size() == 1) {
