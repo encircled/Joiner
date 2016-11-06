@@ -6,12 +6,7 @@ import cz.encircled.joiner.exception.JoinerException;
 import cz.encircled.joiner.query.join.J;
 import cz.encircled.joiner.query.join.JoinDescription;
 import cz.encircled.joiner.test.core.AbstractTest;
-import cz.encircled.joiner.test.model.QAddress;
-import cz.encircled.joiner.test.model.QGroup;
-import cz.encircled.joiner.test.model.QNormalUser;
-import cz.encircled.joiner.test.model.QPassword;
-import cz.encircled.joiner.test.model.QSuperUser;
-import cz.encircled.joiner.test.model.QUser;
+import cz.encircled.joiner.test.model.*;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -46,6 +41,21 @@ public class AliasResolverUnitTest extends AbstractTest {
         AliasResolver resolver = new DefaultAliasResolver(entityManager);
 
         resolver.resolveJoinAlias(J.left(QPassword.password), QGroup.group);
+    }
+
+    @Test
+    public void testAmbiguousAliasExceptionMessage() {
+        AliasResolver resolver = new DefaultAliasResolver(entityManager);
+
+        try {
+            resolver.resolveJoinAlias(J.left(QUser.user1), QContact.contact);
+        } catch (JoinerException e) {
+            e.printStackTrace();
+            Assert.assertTrue(e.getMessage().contains("Multiple mappings found: [contact.employmentUser, contact.user]"));
+            return;
+        }
+
+        Assert.fail();
     }
 
 }

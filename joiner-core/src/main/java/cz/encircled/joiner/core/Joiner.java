@@ -57,7 +57,7 @@ public class Joiner {
     }
 
     public <T, R> R findOne(JoinerQuery<T, R> request) {
-        List<R> list = find(request.limit(2L));
+        List<R> list = find(request);
         if (list.isEmpty()) {
             return null;
         } else if (list.size() == 1) {

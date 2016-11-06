@@ -163,4 +163,10 @@ public class BasicJoinTest extends AbstractTest {
         Assert.assertEquals(J.path(QUser.user1, QStatus.status), join.getAlias());
     }
 
+    @Test
+    public void collisionAliasCollectionJoinTest() {
+        joiner.find(Q.from(QGroup.group)
+                .joins(J.left(QStatus.status), J.left(QUser.user1).nested(J.left(QStatus.status))));
+    }
+
 }
