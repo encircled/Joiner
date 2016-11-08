@@ -1,17 +1,5 @@
 package cz.encircled.joiner.core;
 
-import static cz.encircled.joiner.util.ReflectionUtils.getField;
-
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Field;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-
-import javax.persistence.EntityManager;
-
 import com.mysema.query.types.EntityPath;
 import com.mysema.query.types.Path;
 import com.mysema.query.types.path.BooleanPath;
@@ -21,6 +9,17 @@ import cz.encircled.joiner.exception.JoinerException;
 import cz.encircled.joiner.query.join.J;
 import cz.encircled.joiner.query.join.JoinDescription;
 import cz.encircled.joiner.util.ReflectionUtils;
+
+import javax.persistence.EntityManager;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+
+import static cz.encircled.joiner.util.ReflectionUtils.getField;
 
 /**
  * @author Vlad on 16-Aug-16.
@@ -117,7 +116,7 @@ public class DefaultAliasResolver implements AliasResolver {
                     }
                 }
                 // TODO add candidates to exception
-                throw new JoinerException("Join with ambiguous alias : " + joinDescription + ". Multiple mappings found");
+                throw new JoinerException("Join with ambiguous alias : " + joinDescription + ". Multiple mappings found: " + candidatePaths);
             }
         }
 
