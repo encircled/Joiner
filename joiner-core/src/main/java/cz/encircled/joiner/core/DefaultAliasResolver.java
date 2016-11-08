@@ -86,6 +86,7 @@ public class DefaultAliasResolver implements AliasResolver {
                     try {
                         childInstance = constructor.newInstance(parent.getMetadata().getElement());
                     } catch (Exception e) {
+                        // TODO when in subpackage
                         throw new RuntimeException();
                     }
                     for (Field field : real.getFields()) {
