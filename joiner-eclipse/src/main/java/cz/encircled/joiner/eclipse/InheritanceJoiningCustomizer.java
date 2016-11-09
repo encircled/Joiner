@@ -61,6 +61,7 @@ public class InheritanceJoiningCustomizer implements DescriptorCustomizer {
                 InheritancePolicy policy = this.descriptor.getInheritancePolicyOrNull();
                 if (policy != null) {
                     for (ClassDescriptor child : policy.getChildDescriptors()) {
+                        // TODO multiple children has the same attr
                         DatabaseMapping childMapping = child.getObjectBuilder().getMappingForAttributeName(name);
                         if (childMapping != null) {
                             return childMapping;
