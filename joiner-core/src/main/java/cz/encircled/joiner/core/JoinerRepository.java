@@ -9,8 +9,8 @@ import cz.encircled.joiner.query.JoinerQuery;
  */
 public interface JoinerRepository<T> {
 
-    <R> List<R> find(JoinerQuery<T, R> request);
+    <R, U extends T> List<R> find(JoinerQuery<U, R> request);
 
-    <R> R findOne(JoinerQuery<T, R> request);
+    <R, U extends T> R findOne(JoinerQuery<U, R> request);
 
 }

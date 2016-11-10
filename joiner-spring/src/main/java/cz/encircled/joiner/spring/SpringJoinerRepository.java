@@ -16,6 +16,6 @@ public interface SpringJoinerRepository<T> extends JoinerRepository<T> {
      * @param <R> return type
      * @return spring pageable result
      */
-    <R> Page<R> findPage(JoinerQuery<T, R> request, Pageable pageable);
+    <R, U extends T> Page<R> findPage(JoinerQuery<U, R> request, Pageable pageable);
 
 }

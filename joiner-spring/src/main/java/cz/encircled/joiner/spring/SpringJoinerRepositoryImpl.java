@@ -23,12 +23,12 @@ public abstract class SpringJoinerRepositoryImpl<T> implements SpringJoinerRepos
     protected Joiner delegate;
 
     @Override
-    public <R> List<R> find(JoinerQuery<T, R> request) {
+    public <R, U extends T> List<R> find(JoinerQuery<U, R> request) {
         return delegate.find(request);
     }
 
     @Override
-    public <R> Page<R> findPage(JoinerQuery<T, R> request, Pageable pageable) {
+    public <R, U extends T> Page<R> findPage(JoinerQuery<U, R> request, Pageable pageable) {
         Assert.notNull(request);
         Assert.notNull(pageable);
 
@@ -40,11 +40,11 @@ public abstract class SpringJoinerRepositoryImpl<T> implements SpringJoinerRepos
     }
 
     @Override
-    public <R> R findOne(JoinerQuery<T, R> request) {
+    public <R, U extends T> R findOne(JoinerQuery<U, R> request) {
         return delegate.findOne(request);
     }
 
-    private <R> Long getTotalCount(JoinerQuery<T, R> request) {
+    private <R, U extends T> Long getTotalCount(JoinerQuery<U, R> request) {
         JoinerQueryBase<?, Long> countRequest = (JoinerQueryBase) request.copy();
         countRequest.count();
 
