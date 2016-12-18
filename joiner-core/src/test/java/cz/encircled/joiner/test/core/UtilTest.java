@@ -16,13 +16,11 @@ public class UtilTest {
     @Test
     public void testJPath() {
         Assert.assertEquals("user1_on_group1", J.path(QGroup.group, QUser.user1).toString());
-        ;
     }
 
     @Test
     public void testNestedJPath() {
         Assert.assertEquals("phone_on_user1_on_group1", J.path(QGroup.group, QUser.user1, QPhone.phone).toString());
-        ;
     }
 
     @Test

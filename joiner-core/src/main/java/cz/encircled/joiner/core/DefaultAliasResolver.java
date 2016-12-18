@@ -11,7 +11,6 @@ import cz.encircled.joiner.query.join.JoinDescription;
 import cz.encircled.joiner.util.ReflectionUtils;
 
 import javax.persistence.EntityManager;
-import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -52,74 +51,54 @@ public class DefaultAliasResolver implements AliasResolver {
     }
 
     private Path<?> findPathOnParent(Path<?> parent, Class<?> targetType, JoinDescription joinDescription) {
-        while (!targetType.equals(Object.class)) {
-            // TODO more efficient cache key
-            String cacheKey = parent.getClass().getName() + parent.toString() + targetType.getSimpleName() + joinDescription.getOriginalAlias().toString();
-            Path cached = aliasCache.get(cacheKey);
-            if (cached != null && !cached.equals(nullPath)) {
-                // TODO test
-                // TODO optimize inheritance cases
-                return cached;
-            }
+        // TODO more efficient cache key
+        String cacheKey = parent.getClass().getName() + parent.toString() + targetType.getSimpleName() + joinDescription.getOriginalAlias().toString();
+        if (aliasCache.containsKey(cacheKey)) {
+            return aliasCache.get(cacheKey);
+        }
 
-            List<Path<?>> candidatePaths = new ArrayList<>();
+        Path<?> result = doFindPathOnParent(parent, targetType, joinDescription);
+        aliasCache.put(cacheKey, result);
+        return result;
+    }
 
-            for (Field field : parent.getClass().getFields()) {
-                Object candidate = getField(field, parent);
+    protected Path<?> doFindPathOnParent(Path<?> parent, Class<?> targetType, JoinDescription joinDescription) {
+        List<Path<?>> candidatePaths = new ArrayList<>();
 
-                testAliasCandidate(targetType, candidatePaths, candidate);
-            }
+        for (Field field : parent.getClass().getFields()) {
+            testAliasCandidate(targetType, candidatePaths, getField(field, parent));
+        }
 
-            if (candidatePaths.isEmpty()) {
-                for (Class child : ReflectionUtils.getSubclasses(parent.getType(), entityManager)) {
-                    Class<?> real;
-                    Constructor<?> constructor;
-                    try {
-                        real = Class.forName(child.getPackage().getName() + ".Q" + child.getSimpleName());
-                        constructor = real.getConstructor(String.class);
-                    } catch (Exception e) {
-                        throw new RuntimeException();
+        if (candidatePaths.isEmpty()) {
+            for (Class child : ReflectionUtils.getSubclasses(parent.getType(), entityManager)) {
+                try {
+                    Class clazz = Class.forName(child.getPackage().getName() + ".Q" + child.getSimpleName());
+                    Object childInstance = ReflectionUtils.instantiate(clazz, (String) parent.getMetadata().getElement());
+                    for (Field field : clazz.getFields()) {
+                        testAliasCandidate(targetType, candidatePaths, getField(field, childInstance));
                     }
-
-                    Object childInstance;
-                    try {
-                        childInstance = constructor.newInstance(parent.getMetadata().getElement());
-                    } catch (Exception e) {
-                        throw new RuntimeException();
-                    }
-                    for (Field field : real.getFields()) {
-
-                        Object candidate = getField(field, childInstance);
-
-                        testAliasCandidate(targetType, candidatePaths, candidate);
-                    }
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
                 }
-            }
-
-            if (candidatePaths.isEmpty()) {
-                // TODO may be exception?
-                J.unrollChildrenJoins(Collections.singletonList(joinDescription)).forEach(j -> j.fetch(false));
-
-                aliasCache.put(cacheKey, nullPath);
-                targetType = targetType.getSuperclass();
-            } else if (candidatePaths.size() == 1) {
-                aliasCache.put(cacheKey, candidatePaths.get(0));
-                return candidatePaths.get(0);
-            } else {
-                // Multiple associations on parent, try find by specified alias
-                String targetFieldName = joinDescription.getOriginalAlias().toString();
-                for (Path<?> candidatePath : candidatePaths) {
-                    if (targetFieldName.equals(candidatePath.getMetadata().getElement())) {
-                        aliasCache.put(cacheKey, candidatePath);
-                        return candidatePath;
-                    }
-                }
-                // TODO add candidates to exception
-                throw new JoinerException("Join with ambiguous alias : " + joinDescription + ". Multiple mappings found: " + candidatePaths);
             }
         }
 
-        return null;
+        if (candidatePaths.isEmpty()) {
+            J.unrollChildrenJoins(Collections.singletonList(joinDescription)).forEach(j -> j.fetch(false));
+            return nullPath;
+        } else if (candidatePaths.size() == 1) {
+            return candidatePaths.get(0);
+        } else {
+            // Multiple associations on parent, try find by specified alias
+            String targetFieldName = joinDescription.getOriginalAlias().toString();
+            for (Path<?> candidatePath : candidatePaths) {
+                if (targetFieldName.equals(candidatePath.getMetadata().getElement())) {
+                    return candidatePath;
+                }
+            }
+            // TODO add candidates to exception
+            throw new JoinerException("Join with ambiguous alias : " + joinDescription + ". Multiple mappings found: " + candidatePaths);
+        }
     }
 
     private void testAliasCandidate(Class<?> targetType, List<Path<?>> candidatePaths, Object candidate) {

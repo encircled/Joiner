@@ -1,5 +1,6 @@
 package cz.encircled.joiner.eclipse;
 
+import cz.encircled.joiner.exception.JoinerException;
 import org.eclipse.persistence.config.DescriptorCustomizer;
 import org.eclipse.persistence.descriptors.ClassDescriptor;
 import org.eclipse.persistence.descriptors.InheritancePolicy;
@@ -60,17 +61,31 @@ public class InheritanceJoiningCustomizer implements DescriptorCustomizer {
             if (mapping == null && !name.contains(SPACE)) {
                 InheritancePolicy policy = this.descriptor.getInheritancePolicyOrNull();
                 if (policy != null) {
-                    for (ClassDescriptor child : policy.getChildDescriptors()) {
-                        // TODO multiple children has the same attr
-                        DatabaseMapping childMapping = child.getObjectBuilder().getMappingForAttributeName(name);
-                        if (childMapping != null) {
-                            return childMapping;
-                        }
-                    }
+                    mapping = findMappingOnChildren(policy, name);
                 }
             }
 
             return mapping;
+        }
+
+        private DatabaseMapping findMappingOnChildren(InheritancePolicy policy, String name) {
+            ArrayList<DatabaseMapping> found = new ArrayList<>();
+
+            for (ClassDescriptor child : policy.getChildDescriptors()) {
+                DatabaseMapping childMapping = child.getObjectBuilder().getMappingForAttributeName(name);
+                if (childMapping != null) {
+                    found.add(childMapping);
+                }
+            }
+
+            switch (found.size()) {
+                case 0:
+                    return null;
+                case 1:
+                    return found.get(0);
+                default:
+                    throw new JoinerException("Multiple mappings found for name " + name);
+            }
         }
 
         @SuppressWarnings("unchecked")

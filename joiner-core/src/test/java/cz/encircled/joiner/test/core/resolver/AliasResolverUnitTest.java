@@ -36,6 +36,16 @@ public class AliasResolverUnitTest extends AbstractTest {
         Assert.assertEquals(new QUser(QSuperUser.superUser.toString()).addresses, left.getCollectionPath());
     }
 
+    @Test
+    public void testSubtypeFound() {
+        AliasResolver resolver = new DefaultAliasResolver(entityManager);
+
+        JoinDescription left = J.left(QSuperUser.superUser);
+        resolver.resolveJoinAlias(left, QAddress.address);
+
+        Assert.assertEquals(QAddress.address.user, left.getSinglePath());
+    }
+
     @Test(expected = JoinerException.class)
     public void testFieldNotFound() {
         AliasResolver resolver = new DefaultAliasResolver(entityManager);
