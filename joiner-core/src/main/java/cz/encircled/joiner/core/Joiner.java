@@ -18,6 +18,8 @@ import cz.encircled.joiner.query.join.JoinDescription;
 import cz.encircled.joiner.query.join.JoinGraphRegistry;
 import cz.encircled.joiner.util.Assert;
 import cz.encircled.joiner.util.ReflectionUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.persistence.EntityManager;
 import java.lang.reflect.Field;
@@ -27,6 +29,8 @@ import java.util.*;
  * @author Kisel on 26.01.2016.
  */
 public class Joiner {
+
+    private Logger log = LoggerFactory.getLogger(Joiner.class);
 
     private EntityManager entityManager;
 
@@ -49,9 +53,10 @@ public class Joiner {
             try {
                 Class<?> eclipseLink = Class.forName("cz.encircled.joiner.eclipse.EnchancedEclipselinkRepository");
                 this.joinerVendorRepository = (JoinerVendorRepository) eclipseLink.newInstance();
+                log.info("Joiner is using EnchancedEclipselinkRepository");
             } catch (Exception e) {
                 this.joinerVendorRepository = new EclipselinkRepository();
-                // TODO log
+                log.info("Joiner is using non-enchanced EclipselinkRepository, consider adding joiner-eclipse module to the classpath");
             }
         }
     }
@@ -69,7 +74,6 @@ public class Joiner {
 
     public <T, R> List<R> find(JoinerQuery<T, R> request) {
         Assert.notNull(request);
-        // TODO extract validation
         Assert.notNull(request.getFrom());
 
         setJoinsFromJoinsGraphs(request);

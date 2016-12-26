@@ -46,10 +46,10 @@ public class MultipleMappingsForSameClassOnSingleEntityTest extends AbstractTest
         }
     }
 
-    /* TODO should throw an exception
-                    List<Contact> result = joiner.find(Q.from(QContact.contact)
-                            .joins(J.left(new QContact("user")), J.left(new QContact("employmentUser"))));
-     */
+    @Test(expected = JoinerException.class)
+    public void testWrongAttributeNotMatchedByAlias() {
+        joiner.find(Q.from(QContact.contact).joins(new QContact("user")));
+    }
 
     @Test
     public void testManyToOneMapping() {
