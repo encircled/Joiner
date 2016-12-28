@@ -1,6 +1,8 @@
 package cz.encircled.joiner.query;
 
+import com.mysema.query.types.Expression;
 import cz.encircled.joiner.query.join.JoinDescription;
+import cz.encircled.joiner.util.Assert;
 
 import java.util.Map;
 
@@ -10,6 +12,12 @@ import java.util.Map;
  * @author Vlad on 27-Oct-16.
  */
 public interface JoinRoot {
+
+    default JoinDescription getJoin(Expression<?> expression) {
+        Assert.notNull(expression);
+
+        return getAllJoins().get(expression.toString());
+    }
 
     Map<String, JoinDescription> getAllJoins();
 

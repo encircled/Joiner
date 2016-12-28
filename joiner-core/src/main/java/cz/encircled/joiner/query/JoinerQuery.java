@@ -1,15 +1,15 @@
 package cz.encircled.joiner.query;
 
-import java.util.Collection;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Set;
-
 import com.mysema.query.jpa.impl.JPAQuery;
 import com.mysema.query.types.EntityPath;
 import com.mysema.query.types.Expression;
 import com.mysema.query.types.Predicate;
 import cz.encircled.joiner.query.join.JoinDescription;
+
+import java.util.Collection;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Set;
 
 /**
  * @author Vlad on 04-Sep-16.
@@ -78,8 +78,6 @@ public interface JoinerQuery<T, R> {
     JoinerQueryBase<T, R> joins(Collection<JoinDescription> joins);
 
     Collection<JoinDescription> getJoins();
-
-    JoinDescription getJoin(Expression<?> expression);
 
     JoinerQueryBase<T, R> addHint(String hint, Object value);
 
