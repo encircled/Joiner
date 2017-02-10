@@ -82,6 +82,11 @@ public class TestData {
         superUser.setGroups(Collections.singletonList(group));
         superUser.setKey(key);
         entityManager.persist(superUser);
+
+        Status superUserStatus = new Status();
+        superUserStatus.setUser(superUser);
+        superUserStatus.setName("SuperUserTestStatus");
+        entityManager.persist(superUserStatus);
     }
 
     private void baseUserCreate(Group group, int index, boolean withAddresses) {

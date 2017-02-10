@@ -3,6 +3,7 @@ package cz.encircled.joiner.query;
 import com.mysema.query.jpa.impl.JPAQuery;
 import com.mysema.query.types.EntityPath;
 import com.mysema.query.types.Expression;
+import com.mysema.query.types.Path;
 import com.mysema.query.types.Predicate;
 import cz.encircled.joiner.query.join.JoinDescription;
 
@@ -14,7 +15,7 @@ import java.util.Set;
 /**
  * @author Vlad on 04-Sep-16.
  */
-public interface JoinerQuery<T, R> {
+public interface JoinerQuery<T, R> extends JoinRoot {
 
     EntityPath<T> getFrom();
 
@@ -28,9 +29,9 @@ public interface JoinerQuery<T, R> {
 
     boolean isDistinct();
 
-    JoinerQueryBase<T, R> groupBy(Expression<?> groupBy);
+    JoinerQueryBase<T, R> groupBy(Path<?> groupBy);
 
-    Expression<?> getGroupBy();
+    Path<?> getGroupBy();
 
     JoinerQueryBase<T, R> having(Predicate having);
 
@@ -39,27 +40,27 @@ public interface JoinerQuery<T, R> {
     /**
      * Add join graphs to the query.
      *
-     * @see cz.encircled.joiner.query.join.JoinGraphRegistry
      * @param names names of join graphs
      * @return this
+     * @see cz.encircled.joiner.query.join.JoinGraphRegistry
      */
     JoinerQueryBase<T, R> joinGraphs(String... names);
 
     /**
      * Add join graphs to the query.
      *
-     * @see cz.encircled.joiner.query.join.JoinGraphRegistry
      * @param names names of join graphs
      * @return this
+     * @see cz.encircled.joiner.query.join.JoinGraphRegistry
      */
     JoinerQueryBase<T, R> joinGraphs(Enum... names);
 
     /**
      * Add join graphs to the query.
      *
-     * @see cz.encircled.joiner.query.join.JoinGraphRegistry
      * @param names names of join graphs
      * @return this
+     * @see cz.encircled.joiner.query.join.JoinGraphRegistry
      */
     JoinerQueryBase<T, R> joinGraphs(Collection<?> names);
 

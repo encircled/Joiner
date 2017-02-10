@@ -6,6 +6,7 @@ import cz.encircled.joiner.test.model.*;
 import org.junit.Assert;
 import org.junit.Test;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 
@@ -92,11 +93,11 @@ public class PaginationAndOrderTest extends AbstractTest {
     public boolean isSorted(List<User> users, boolean isDesc) {
         for (int i = 1; i < users.size(); i++) {
             if (isDesc) {
-                if (Objects.compare(users.get(i), users.get(i - 1), (o1, o2) -> o1.getName().compareTo(o2.getName())) > 0) {
+                if (Objects.compare(users.get(i), users.get(i - 1), Comparator.comparing(AbstractEntity::getName)) > 0) {
                     return false;
                 }
             } else {
-                if (Objects.compare(users.get(i - 1), users.get(i), (o1, o2) -> o1.getName().compareTo(o2.getName())) > 0) {
+                if (Objects.compare(users.get(i - 1), users.get(i), Comparator.comparing(AbstractEntity::getName)) > 0) {
                     return false;
                 }
             }

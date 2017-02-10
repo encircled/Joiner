@@ -17,13 +17,16 @@ import cz.encircled.joiner.query.join.J;
 import cz.encircled.joiner.query.join.JoinDescription;
 import cz.encircled.joiner.query.join.JoinGraphRegistry;
 import cz.encircled.joiner.util.Assert;
+import cz.encircled.joiner.util.JoinerUtils;
 import cz.encircled.joiner.util.ReflectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.persistence.EntityManager;
+import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Field;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * @author Kisel on 26.01.2016.
@@ -40,11 +43,14 @@ public class Joiner {
 
     private AliasResolver aliasResolver;
 
+    private PredicateAliasResolver predicateAliasResolver;
+
     public Joiner(EntityManager entityManager) {
         Assert.notNull(entityManager);
 
         this.entityManager = entityManager;
         aliasResolver = new DefaultAliasResolver(entityManager);
+        predicateAliasResolver = new DefaultPredicateAliasResolver();
 
         String implName = entityManager.getDelegate().getClass().getName();
         if (implName.startsWith("org.hibernate")) {
@@ -104,33 +110,11 @@ public class Joiner {
 
         addHints(request, query);
 
-        checkAliasesArePresent(request.getWhere(), usedAliases);
-        checkAliasesArePresent(request.getHaving(), usedAliases);
-        checkAliasesArePresent(request.getGroupBy(), usedAliases);
-        for (QueryOrder queryOrder : request.getOrder()) {
-            checkAliasesArePresent(queryOrder.getTarget(), usedAliases);
-        }
+        validateAllAliases(request, usedAliases);
 
-        query.where(request.getWhere());
+        applyPredicates(request, query, usedAliases, joins);
 
-        if (request.getGroupBy() != null) {
-            query.groupBy(request.getGroupBy());
-        }
-
-        if (request.getHaving() != null) {
-            query.having(request.getHaving());
-        }
-
-        if (request.getLimit() != null) {
-            query.limit(request.getLimit());
-        }
-        if (request.getOffset() != null) {
-            query.offset(request.getOffset());
-        }
-
-        for (QueryOrder queryOrder : request.getOrder()) {
-            query.orderBy(transformOrder(queryOrder));
-        }
+        applyPaging(request, query);
 
         for (QueryFeature feature : request.getFeatures()) {
             query = doPostProcess(request, query, feature);
@@ -144,7 +128,58 @@ public class Joiner {
         }
     }
 
+    private <T, R> void validateAllAliases(JoinerQuery<T, R> request, Set<Path<?>> usedAliases) {
+        for (QueryOrder queryOrder : request.getOrder()) {
+            checkAliasesArePresent(queryOrder.getTarget(), usedAliases);
+        }
+    }
+
+    /**
+     * Apply "where", "groupBy" and "having"
+     *
+     * @param request
+     * @param query
+     * @param usedAliases
+     * @param joins
+     * @param <T>
+     * @param <R>
+     */
+    private <T, R> void applyPredicates(JoinerQuery<T, R> request, JPAQuery query, Set<Path<?>> usedAliases, List<JoinDescription> joins) {
+        if (request.getWhere() != null) {
+            Predicate where = predicateAliasResolver.resolvePredicate(request.getWhere(), joins, usedAliases);
+            checkAliasesArePresent(where, usedAliases);
+            query.where(where);
+        }
+        if (request.getGroupBy() != null) {
+            Map<AnnotatedElement, List<JoinDescription>> grouped = joins.stream().collect(Collectors.groupingBy(j -> j.getOriginalAlias().getAnnotatedElement()));
+            Path<?> grouping = predicateAliasResolver.resolvePath(request.getGroupBy(), grouped, usedAliases);
+            checkAliasesArePresent(grouping, usedAliases);
+            query.groupBy(grouping);
+        }
+        if (request.getHaving() != null) {
+            Predicate having = predicateAliasResolver.resolvePredicate(request.getHaving(), joins, usedAliases);
+            checkAliasesArePresent(having, usedAliases);
+            query.having(having);
+        }
+    }
+
+    private <T, R> void applyPaging(JoinerQuery<T, R> request, JPAQuery query) {
+        if (request.getLimit() != null) {
+            query.limit(request.getLimit());
+        }
+        if (request.getOffset() != null) {
+            query.offset(request.getOffset());
+        }
+
+        for (QueryOrder queryOrder : request.getOrder()) {
+            // TODO apply predicate resolver as well
+            query.orderBy(transformOrder(queryOrder));
+        }
+    }
+
+
     private <T extends Comparable> OrderSpecifier<T> transformOrder(QueryOrder<T> queryOrder) {
+        // TODO
         return new OrderSpecifier<>(queryOrder.isAsc() ? Order.ASC : Order.DESC, queryOrder.getTarget());
     }
 
@@ -205,7 +240,7 @@ public class Joiner {
     }
 
     private void checkAliasesArePresent(Expression<?> expression, Set<Path<?>> usedAliases) {
-        for (Path<?> path : collectPredicatePaths(expression)) {
+        for (Path<?> path : JoinerUtils.collectPredicatePaths(expression)) {
             Path predicatePath = path.getRoot();
             if (!predicatePath.toString().startsWith("any(")) {
                 if (!usedAliases.contains(predicatePath)) {
@@ -215,21 +250,6 @@ public class Joiner {
         }
     }
 
-    private List<Path<?>> collectPredicatePaths(Expression<?> expression) {
-        List<Path<?>> result = new ArrayList<>();
-        collectPredicatePathsInternal(expression, result);
-        return result;
-    }
-
-    private void collectPredicatePathsInternal(Expression<?> expression, List<Path<?>> paths) {
-        if (expression instanceof Path) {
-            paths.add((Path<?>) expression);
-        } else if (expression instanceof Operation) {
-            for (Expression exp : ((Operation<?>) expression).getArgs()) {
-                collectPredicatePathsInternal(exp, paths);
-            }
-        }
-    }
 
     public void setJoinGraphRegistry(JoinGraphRegistry joinGraphRegistry) {
         this.joinGraphRegistry = joinGraphRegistry;

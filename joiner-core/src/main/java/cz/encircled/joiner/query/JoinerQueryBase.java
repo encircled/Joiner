@@ -3,6 +3,7 @@ package cz.encircled.joiner.query;
 import com.mysema.query.jpa.impl.JPAQuery;
 import com.mysema.query.types.EntityPath;
 import com.mysema.query.types.Expression;
+import com.mysema.query.types.Path;
 import com.mysema.query.types.Predicate;
 import cz.encircled.joiner.query.join.J;
 import cz.encircled.joiner.query.join.JoinDescription;
@@ -30,7 +31,7 @@ public class JoinerQueryBase<T, R> implements JoinerQuery<T, R>, JoinRoot {
 
     private boolean distinct = true;
 
-    private Expression<?> groupBy;
+    private Path<?> groupBy;
 
     private Predicate having;
 
@@ -72,13 +73,13 @@ public class JoinerQueryBase<T, R> implements JoinerQuery<T, R>, JoinRoot {
     }
 
     @Override
-    public JoinerQueryBase<T, R> groupBy(Expression<?> groupBy) {
+    public JoinerQueryBase<T, R> groupBy(Path<?> groupBy) {
         this.groupBy = groupBy;
         return this;
     }
 
     @Override
-    public Expression<?> getGroupBy() {
+    public Path<?> getGroupBy() {
         return groupBy;
     }
 

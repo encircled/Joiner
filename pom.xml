@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/POM/4.0.0"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>cz.encircled</groupId>
@@ -40,10 +41,10 @@
     <packaging>pom</packaging>
 
     <properties>
-        <querydsl.version>3.7.0</querydsl.version>
-        <spring.version>4.3.2.RELEASE</spring.version>
+        <querydsl.version>3.7.4</querydsl.version>
+        <spring.version>4.3.6.RELEASE</spring.version>
         <hibernate.version>5.2.2.Final</hibernate.version>
-        <eclipselink.version>2.6.4-RC1</eclipselink.version>
+        <eclipselink.version>2.6.4</eclipselink.version>
         <vendor.name>hibernate</vendor.name>
         <vendor.generate>no-fresh</vendor.generate>
     </properties>

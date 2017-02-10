@@ -1,31 +1,15 @@
 package cz.encircled.joiner.test.core;
 
-import java.util.List;
-
-import javax.persistence.Persistence;
-
 import cz.encircled.joiner.query.Q;
 import cz.encircled.joiner.query.join.J;
-import cz.encircled.joiner.query.join.JoinDescription;
-import cz.encircled.joiner.test.model.Contact;
-import cz.encircled.joiner.test.model.Group;
-import cz.encircled.joiner.test.model.NormalUser;
-import cz.encircled.joiner.test.model.Password;
-import cz.encircled.joiner.test.model.Phone;
-import cz.encircled.joiner.test.model.QContact;
-import cz.encircled.joiner.test.model.QGroup;
-import cz.encircled.joiner.test.model.QKey;
-import cz.encircled.joiner.test.model.QNormalUser;
-import cz.encircled.joiner.test.model.QPassword;
-import cz.encircled.joiner.test.model.QPhone;
-import cz.encircled.joiner.test.model.QStatus;
-import cz.encircled.joiner.test.model.QUser;
-import cz.encircled.joiner.test.model.SuperUser;
-import cz.encircled.joiner.test.model.User;
+import cz.encircled.joiner.test.model.*;
 import org.junit.Assert;
 import org.junit.Assume;
 import org.junit.Before;
 import org.junit.Test;
+
+import javax.persistence.Persistence;
+import java.util.List;
 
 /**
  * Created by Kisel on 28.01.2016.
@@ -147,7 +131,7 @@ public class InheritanceJoinTest extends AbstractTest {
                                         J.left(QKey.key),
                                         J.left(QPassword.password)
                                 ))
-                        .where(J.path(QUser.user1, QKey.key).name.ne("bad_key"))
+                        .where(QKey.key.name.ne("bad_key").or(QPassword.password.name.ne("bad_password")))
         );
 
         check(groups, true, true);
@@ -156,7 +140,7 @@ public class InheritanceJoinTest extends AbstractTest {
     @Test
     public void joinCollectionOnChildTest() {
         List<Group> groups = joiner.find(Q.from(QGroup.group)
-                .joins(new JoinDescription(QNormalUser.normalUser._super).nested(J.left(QPassword.password)))
+                .joins(J.left(QNormalUser.normalUser).nested(J.left(QPassword.password)))
         );
 
         check(groups, false, true);
