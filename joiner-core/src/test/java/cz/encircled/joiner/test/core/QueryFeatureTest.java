@@ -10,6 +10,8 @@ import cz.encircled.joiner.test.model.User;
 import org.junit.Test;
 import org.springframework.test.context.ContextConfiguration;
 
+import java.util.Collections;
+
 /**
  * @author Kisel on 01.02.2016.
  */
@@ -30,6 +32,23 @@ public class QueryFeatureTest extends AbstractTest {
                 return query;
             }
         });
+        joiner.find(request);
+    }
+
+    @Test(expected = TestException.class)
+    public void testQueryFeatureCollectionBefore() {
+        JoinerQuery<User, User> request = Q.from(QUser.user1);
+        request.addFeatures(Collections.singletonList(new QueryFeature() {
+            @Override
+            public <T, R> JoinerQuery<T, R> before(final JoinerQuery<T, R> request) {
+                throw new TestException();
+            }
+
+            @Override
+            public JPAQuery after(final JoinerQuery<?, ?> request, final JPAQuery query) {
+                return query;
+            }
+        }));
         joiner.find(request);
     }
 

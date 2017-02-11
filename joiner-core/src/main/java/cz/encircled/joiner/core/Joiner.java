@@ -179,7 +179,6 @@ public class Joiner {
 
 
     private <T extends Comparable> OrderSpecifier<T> transformOrder(QueryOrder<T> queryOrder) {
-        // TODO
         return new OrderSpecifier<>(queryOrder.isAsc() ? Order.ASC : Order.DESC, queryOrder.getTarget());
     }
 

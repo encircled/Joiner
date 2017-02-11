@@ -18,13 +18,11 @@ public class ReflectionUtils {
 
     @SuppressWarnings("unchecked")
     public static <T extends EntityPath> T instantiate(Class<? extends EntityPath> generatedClass, String alias) {
-        Assert.notNull(alias);
+        Assert.notNull(generatedClass);
 
         try {
             Constructor<? extends EntityPath> constructor = generatedClass.getConstructor(String.class);
             return (T) constructor.newInstance(alias);
-        } catch (NoSuchMethodException e) {
-            throw new JoinerException("EntityPath String constructor is missing on " + generatedClass);
         } catch (Exception e) {
             throw new JoinerException("Failed to create new instance of " + generatedClass, e);
         }

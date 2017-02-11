@@ -9,6 +9,7 @@ import cz.encircled.joiner.query.join.J;
 import cz.encircled.joiner.query.join.JoinDescription;
 import cz.encircled.joiner.test.model.*;
 import org.junit.Assert;
+import org.junit.Assume;
 import org.junit.Test;
 
 import javax.persistence.Persistence;
@@ -21,6 +22,23 @@ import java.util.List;
  * @author Kisel on 21.01.2016.
  */
 public class BasicJoinTest extends AbstractTest {
+
+    @Test
+    public void testRightJoinSingleAssociation() {
+        Assume.assumeFalse(isEclipse());
+        List<User> users = joiner.find(Q.from(QUser.user1).joins(new JoinDescription(QGroup.group).right().fetch(false)));
+
+        Assert.assertFalse(users.isEmpty());
+        Assert.assertFalse(Persistence.getPersistenceUtil().isLoaded(users.get(0), "groups"));
+    }
+
+    @Test
+    public void testInnerJoinSingleAssociation() {
+        List<User> users = joiner.find(Q.from(QUser.user1).joins(J.inner(QGroup.group)));
+
+        Assert.assertFalse(users.isEmpty());
+        Assert.assertTrue(Persistence.getPersistenceUtil().isLoaded(users.get(0), "groups"));
+    }
 
     @Test
     public void noFetchJoinTest() {

@@ -12,6 +12,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
@@ -101,6 +102,13 @@ public class JoinGraphTest extends AbstractTest {
     @Test
     public void testQueryWithMultipleJoinGraph() {
         List<Group> groups = joiner.find(Q.from(QGroup.group).joinGraphs("statuses", "users", "userStatuses"));
+
+        assertUserAndStatusesFetched(groups, true);
+    }
+
+    @Test
+    public void testQueryWithCollectionJoinGraph() {
+        List<Group> groups = joiner.find(Q.from(QGroup.group).joinGraphs(Arrays.asList("statuses", "users", "userStatuses")));
 
         assertUserAndStatusesFetched(groups, true);
     }

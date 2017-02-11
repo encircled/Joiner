@@ -1,6 +1,7 @@
 package cz.encircled.joiner.test;
 
 import com.mysema.query.types.EntityPath;
+import cz.encircled.joiner.exception.JoinerException;
 import cz.encircled.joiner.test.core.AbstractTest;
 import cz.encircled.joiner.test.model.NormalUser;
 import cz.encircled.joiner.test.model.QSuperUser;
@@ -27,6 +28,16 @@ public class ReflectionUtilsTest extends AbstractTest {
         EntityPath user = ReflectionUtils.instantiate(QSuperUser.class, "testAlias");
         Assert.assertEquals(QSuperUser.class, user.getClass());
         Assert.assertEquals("testAlias", user.toString());
+    }
+
+    @Test(expected = JoinerException.class)
+    public void testInstantiateQException() {
+        ReflectionUtils.instantiate(QSuperUser.class, null);
+    }
+
+    @Test
+    public void testFindFieldException() {
+        Assert.assertNull(ReflectionUtils.findField(QSuperUser.class, "notExists"));
     }
 
     @Test
