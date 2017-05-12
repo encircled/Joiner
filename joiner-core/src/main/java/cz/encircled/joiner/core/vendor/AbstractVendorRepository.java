@@ -8,6 +8,8 @@ import cz.encircled.joiner.exception.JoinerException;
 import cz.encircled.joiner.query.join.JoinDescription;
 
 /**
+ * Common parent for implementations of vendor-specific repositories
+ *
  * @author Kisel on 28.01.2016.
  */
 public abstract class AbstractVendorRepository implements JoinerVendorRepository {

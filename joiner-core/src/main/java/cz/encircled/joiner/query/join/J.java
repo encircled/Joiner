@@ -9,7 +9,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 /**
- * Util class, which helps to build new {@link JoinDescription joins}
+ * This class contains helper methods for {@link JoinDescription joins} building
  *
  * @author Kisel on 26.01.2016.
  */
@@ -21,7 +21,7 @@ public class J {
      * <p>
      * <code>Q.from(QGroup.group).joins(J.left(QPerson.person).nested(J.left(QContact.contact)))</code>
      * </p>
-     * To refer a contact entity for instance in the 'where' clause, one should use <code>J.path(QPerson.person, QContact.contact).number.eq(12345)</code>
+     * To refer a <code>Contact</code> entity in the 'where' clause, one should use <code>J.path(QPerson.person, QContact.contact).number.eq(12345)</code>
      *
      * @param parent parent join path
      * @param path   target join path
@@ -36,6 +36,20 @@ public class J {
         return path;
     }
 
+    /**
+     * Aliases of nested joins are determined at runtime. To refer a nested join, this method should be used to get a correct alias.
+     * For example, there is a query
+     * <p>
+     * <code>Q.from(QGroup.group).joins(J.left(QPerson.person).nested(J.left(QContact.contact).nested(QStatus.status)))</code>
+     * </p>
+     * To refer a <code>Status</code> entity in the 'where' clause, one should use <code>J.path(QPerson.person, QContact.contact. QStatus.status).state.eq("active")</code>
+     *
+     * @param grandFather parent of parent join path
+     * @param father      parent join path
+     * @param path        target join path
+     * @param <T>         any entity path
+     * @return entity path with correct alias
+     */
     @SuppressWarnings("unchcecked")
     public static <T extends EntityPath> T path(EntityPath<?> grandFather, EntityPath<?> father, T path) {
         Assert.notNull(father);
@@ -46,10 +60,22 @@ public class J {
         return path(parentPath, path);
     }
 
+    /**
+     * Add <b>left</b> join for given <code>path</code>
+     *
+     * @param path alias of object to be joined
+     * @return join description
+     */
     public static JoinDescription left(EntityPath<?> path) {
         return getBasicJoin(path).left();
     }
 
+    /**
+     * Add <b>inner</b> join for given <code>path</code>
+     *
+     * @param path alias of object to be joined
+     * @return join description
+     */
     public static JoinDescription inner(EntityPath<?> path) {
         return getBasicJoin(path).inner();
     }

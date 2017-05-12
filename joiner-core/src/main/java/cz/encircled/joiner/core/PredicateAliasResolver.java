@@ -11,6 +11,8 @@ import java.util.Map;
 import java.util.Set;
 
 /**
+ * Implementation is responsible for predicate aliases lookup in a query
+ *
  * @author Vlad on 10-Feb-17.
  */
 public interface PredicateAliasResolver {

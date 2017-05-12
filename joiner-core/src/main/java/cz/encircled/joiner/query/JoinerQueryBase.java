@@ -13,6 +13,8 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 /**
+ * Implementation of joiner query with {@link com.mysema.query.Tuple non-tuple} result
+ *
  * @author Kisel on 13.9.2016.
  */
 public class JoinerQueryBase<T, R> implements JoinerQuery<T, R>, JoinRoot {

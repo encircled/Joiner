@@ -7,7 +7,7 @@ import cz.encircled.joiner.util.Assert;
 import java.util.Map;
 
 /**
- * Indicates that an object contains joins
+ * Indicates that an object may contain joins
  *
  * @author Vlad on 27-Oct-16.
  */

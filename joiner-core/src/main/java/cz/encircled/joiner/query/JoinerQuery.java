@@ -13,6 +13,8 @@ import java.util.List;
 import java.util.Set;
 
 /**
+ * Base interface which defines possible parameters of joiner query
+ *
  * @author Vlad on 04-Sep-16.
  */
 public interface JoinerQuery<T, R> extends JoinRoot {

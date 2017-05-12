@@ -21,6 +21,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import static cz.encircled.joiner.util.ReflectionUtils.getField;
 
 /**
+ * @see AliasResolver
  * @author Vlad on 16-Aug-16.
  */
 public class DefaultAliasResolver implements AliasResolver {

@@ -1,7 +1,5 @@
 package cz.encircled.joiner.spring;
 
-import java.util.List;
-
 import cz.encircled.joiner.core.Joiner;
 import cz.encircled.joiner.query.JoinerQuery;
 import cz.encircled.joiner.query.JoinerQueryBase;
@@ -12,8 +10,13 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 
+import java.util.List;
+
 /**
- * Parent class for repositories with Joiner support within spring context.
+ * Parent class for entity repositories with Joiner support within spring context.
+ * <p>
+ *  Instance of {@link Joiner} must be available in context. {@link JoinerConfiguration} can be used
+ * </p>
  *
  * @author Vlad on 14-Aug-16.
  */

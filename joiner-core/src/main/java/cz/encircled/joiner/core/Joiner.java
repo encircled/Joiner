@@ -22,6 +22,7 @@ import cz.encircled.joiner.util.ReflectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.annotation.concurrent.ThreadSafe;
 import javax.persistence.EntityManager;
 import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Field;
@@ -29,11 +30,20 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 /**
+ * Base class of Joiner. Contains basic database operations.
+ * <p>
+ *     In spring-based environment can be instantiated using spring JoinerConfiguration.
+ * </p>
+ * <p>
+ *     For repository-per-entity approach this class should not be accessed directly. Instead repositories can implement {@link JoinerRepository}.
+ * </p>
+ *
  * @author Kisel on 26.01.2016.
  */
+@ThreadSafe
 public class Joiner {
 
-    private Logger log = LoggerFactory.getLogger(Joiner.class);
+    private static final Logger log = LoggerFactory.getLogger(Joiner.class);
 
     private EntityManager entityManager;
 

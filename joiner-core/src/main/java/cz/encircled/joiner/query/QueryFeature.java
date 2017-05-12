@@ -3,7 +3,7 @@ package cz.encircled.joiner.query;
 import com.mysema.query.jpa.impl.JPAQuery;
 
 /**
- * Query features allows to consumer to modify the request/query before executing
+ * Query features allows to modify the request/query before executing
  *
  * @author Vlad on 27-Jul-16.
  */

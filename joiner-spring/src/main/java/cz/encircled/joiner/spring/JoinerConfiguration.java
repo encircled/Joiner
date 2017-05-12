@@ -10,6 +10,8 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 
 /**
+ * Default configuration of joiner for Spring environment. Instance of shared spring-manager EntityManager must be available
+ *
  * @author Vlad on 14-Aug-16.
  */
 @Configuration

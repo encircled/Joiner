@@ -1,7 +1,5 @@
 package cz.encircled.joiner.query;
 
-import java.lang.reflect.Field;
-
 import com.mysema.query.Tuple;
 import com.mysema.query.jpa.JPAQueryBase;
 import com.mysema.query.jpa.JPAQueryMixin;
@@ -10,7 +8,11 @@ import com.mysema.query.types.EntityPath;
 import com.mysema.query.types.Expression;
 import cz.encircled.joiner.util.ReflectionUtils;
 
+import java.lang.reflect.Field;
+
 /**
+ * Implementation of joiner query with {@link Tuple} result
+ *
  * @author Kisel on 13.9.2016.
  */
 public class TupleJoinerQuery<T> extends JoinerQueryBase<T, Tuple> {

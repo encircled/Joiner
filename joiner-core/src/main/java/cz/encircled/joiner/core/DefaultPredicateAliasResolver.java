@@ -1,5 +1,10 @@
 package cz.encircled.joiner.core;
 
+import com.mysema.query.BooleanBuilder;
+import com.mysema.query.types.*;
+import com.mysema.query.types.expr.BooleanOperation;
+import cz.encircled.joiner.query.join.JoinDescription;
+
 import java.lang.reflect.AnnotatedElement;
 import java.util.ArrayList;
 import java.util.List;
@@ -7,18 +12,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import com.mysema.query.BooleanBuilder;
-import com.mysema.query.types.Expression;
-import com.mysema.query.types.Operation;
-import com.mysema.query.types.Operator;
-import com.mysema.query.types.Path;
-import com.mysema.query.types.PathImpl;
-import com.mysema.query.types.Predicate;
-import com.mysema.query.types.PredicateOperation;
-import com.mysema.query.types.expr.BooleanOperation;
-import cz.encircled.joiner.query.join.JoinDescription;
-
 /**
+ * @see PredicateAliasResolver
  * @author Vlad on 10-Feb-17.
  */
 public class DefaultPredicateAliasResolver implements PredicateAliasResolver {

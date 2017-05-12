@@ -14,6 +14,8 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.mapping.PropertyPath;
 
 /**
+ * This feature allows applying spring {@link Pageable} criteria (limit, offset, sort) to the query
+ *
  * @author Kisel on 29.10.2016.
  */
 public class PageableFeature implements QueryFeature {
