@@ -1,10 +1,27 @@
 package cz.encircled.joiner.core;
 
+import java.lang.reflect.AnnotatedElement;
+import java.lang.reflect.Field;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import javax.annotation.concurrent.ThreadSafe;
+import javax.persistence.EntityManager;
+
 import com.google.common.collect.ArrayListMultimap;
 import com.mysema.query.JoinType;
 import com.mysema.query.jpa.impl.AbstractJPAQuery;
 import com.mysema.query.jpa.impl.JPAQuery;
-import com.mysema.query.types.*;
+import com.mysema.query.types.EntityPath;
+import com.mysema.query.types.Expression;
+import com.mysema.query.types.Order;
+import com.mysema.query.types.OrderSpecifier;
+import com.mysema.query.types.Path;
+import com.mysema.query.types.Predicate;
 import cz.encircled.joiner.core.vendor.EclipselinkRepository;
 import cz.encircled.joiner.core.vendor.HibernateRepository;
 import cz.encircled.joiner.core.vendor.JoinerVendorRepository;
@@ -21,13 +38,6 @@ import cz.encircled.joiner.util.JoinerUtils;
 import cz.encircled.joiner.util.ReflectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import javax.annotation.concurrent.ThreadSafe;
-import javax.persistence.EntityManager;
-import java.lang.reflect.AnnotatedElement;
-import java.lang.reflect.Field;
-import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * Base class of Joiner. Contains basic database operations.
@@ -89,6 +99,18 @@ public class Joiner {
     }
 
     public <T, R> List<R> find(JoinerQuery<T, R> request) {
+
+        JPAQuery query = toJPAQuery(request);
+
+        if (request.isCount()) {
+            List res = Collections.singletonList(query.count());
+            return res;
+        } else {
+            return joinerVendorRepository.getResultList(query, request.getReturnProjection(query));
+        }
+    }
+
+    public <T, R> JPAQuery toJPAQuery(JoinerQuery<T, R> request) {
         Assert.notNull(request);
         Assert.notNull(request.getFrom());
 
@@ -129,13 +151,7 @@ public class Joiner {
         for (QueryFeature feature : request.getFeatures()) {
             query = doPostProcess(request, query, feature);
         }
-
-        if (request.isCount()) {
-            List res = Collections.singletonList(query.count());
-            return res;
-        } else {
-            return joinerVendorRepository.getResultList(query, request.getReturnProjection(query));
-        }
+        return query;
     }
 
     private <T, R> void validateAllAliases(JoinerQuery<T, R> request, Set<Path<?>> usedAliases) {
@@ -161,7 +177,8 @@ public class Joiner {
             query.where(where);
         }
         if (request.getGroupBy() != null) {
-            Map<AnnotatedElement, List<JoinDescription>> grouped = joins.stream().collect(Collectors.groupingBy(j -> j.getOriginalAlias().getAnnotatedElement()));
+            Map<AnnotatedElement, List<JoinDescription>> grouped = joins.stream()
+                    .collect(Collectors.groupingBy(j -> j.getOriginalAlias().getAnnotatedElement()));
             Path<?> grouping = predicateAliasResolver.resolvePath(request.getGroupBy(), grouped, usedAliases);
             checkAliasesArePresent(grouping, usedAliases);
             query.groupBy(grouping);
