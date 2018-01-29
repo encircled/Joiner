@@ -1,8 +1,8 @@
 package cz.encircled.joiner.test.config.hint;
 
 import com.google.common.collect.Multimap;
-import com.mysema.query.jpa.impl.AbstractJPAQuery;
-import com.mysema.query.jpa.impl.JPAQuery;
+import com.querydsl.jpa.impl.AbstractJPAQuery;
+import com.querydsl.jpa.impl.JPAQuery;
 import cz.encircled.joiner.query.JoinerQuery;
 import cz.encircled.joiner.query.QueryFeature;
 import cz.encircled.joiner.test.core.TestException;

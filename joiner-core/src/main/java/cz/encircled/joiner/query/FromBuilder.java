@@ -1,6 +1,6 @@
 package cz.encircled.joiner.query;
 
-import com.mysema.query.types.EntityPath;
+import com.querydsl.core.types.EntityPath;
 
 /**
  * @author Kisel on 13.9.2016.

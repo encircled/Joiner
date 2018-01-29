@@ -1,19 +1,25 @@
 package cz.encircled.joiner.query;
 
-import com.mysema.query.jpa.impl.JPAQuery;
-import com.mysema.query.types.EntityPath;
-import com.mysema.query.types.Expression;
-import com.mysema.query.types.Path;
-import com.mysema.query.types.Predicate;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import com.querydsl.core.types.EntityPath;
+import com.querydsl.core.types.Expression;
+import com.querydsl.core.types.Path;
+import com.querydsl.core.types.Predicate;
 import cz.encircled.joiner.query.join.J;
 import cz.encircled.joiner.query.join.JoinDescription;
 import cz.encircled.joiner.util.Assert;
 
-import java.util.*;
-import java.util.stream.Collectors;
-
 /**
- * Implementation of joiner query with {@link com.mysema.query.Tuple non-tuple} result
+ * Implementation of joiner query with {@link com.querydsl.core.Tuple non-tuple} result
  *
  * @author Kisel on 13.9.2016.
  */
@@ -218,7 +224,7 @@ public class JoinerQueryBase<T, R> implements JoinerQuery<T, R>, JoinRoot {
     }
 
     @Override
-    public Expression<R> getReturnProjection(JPAQuery query) {
+    public Expression<R> getReturnProjection() {
         return returnProjection;
     }
 

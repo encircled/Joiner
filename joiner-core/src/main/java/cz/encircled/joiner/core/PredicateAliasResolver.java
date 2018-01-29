@@ -1,8 +1,8 @@
 package cz.encircled.joiner.core;
 
-import com.mysema.query.types.Operation;
-import com.mysema.query.types.Path;
-import com.mysema.query.types.Predicate;
+import com.querydsl.core.types.Operation;
+import com.querydsl.core.types.Path;
+import com.querydsl.core.types.Predicate;
 import cz.encircled.joiner.query.join.JoinDescription;
 
 import java.lang.reflect.AnnotatedElement;

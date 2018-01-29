@@ -1,19 +1,20 @@
 package cz.encircled.joiner.eclipse;
 
-import com.mysema.query.jpa.impl.JPAQuery;
-import com.mysema.query.types.Expression;
-import com.mysema.query.types.FactoryExpression;
+import java.lang.reflect.Field;
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.persistence.Query;
+
+import com.querydsl.core.types.Expression;
+import com.querydsl.core.types.FactoryExpression;
+import com.querydsl.jpa.impl.JPAQuery;
 import cz.encircled.joiner.core.vendor.EclipselinkRepository;
 import cz.encircled.joiner.core.vendor.JoinerVendorRepository;
 import cz.encircled.joiner.util.ReflectionUtils;
 import org.eclipse.persistence.internal.jpa.QueryImpl;
 import org.eclipse.persistence.internal.queries.JoinedAttributeManager;
 import org.eclipse.persistence.queries.ObjectLevelReadQuery;
-
-import javax.persistence.Query;
-import java.lang.reflect.Field;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * @author Kisel on 28.01.2016.
@@ -23,7 +24,7 @@ public class EnchancedEclipselinkRepository extends EclipselinkRepository implem
     @Override
     @SuppressWarnings("unchecked")
     public <T> List<T> getResultList(JPAQuery query, Expression<T> projection) {
-        Query jpaQuery = query.createQuery(projection);
+        Query jpaQuery = query.createQuery();
 
         if (jpaQuery instanceof QueryImpl) {
             QueryImpl casted = (QueryImpl) jpaQuery;

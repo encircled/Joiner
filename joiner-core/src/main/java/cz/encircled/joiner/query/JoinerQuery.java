@@ -1,10 +1,10 @@
 package cz.encircled.joiner.query;
 
-import com.mysema.query.jpa.impl.JPAQuery;
-import com.mysema.query.types.EntityPath;
-import com.mysema.query.types.Expression;
-import com.mysema.query.types.Path;
-import com.mysema.query.types.Predicate;
+import com.querydsl.core.types.EntityPath;
+import com.querydsl.core.types.Expression;
+import com.querydsl.core.types.Path;
+import com.querydsl.core.types.Predicate;
+import com.querydsl.jpa.impl.JPAQuery;
 import cz.encircled.joiner.query.join.JoinDescription;
 
 import java.util.Collection;
@@ -21,7 +21,7 @@ public interface JoinerQuery<T, R> extends JoinRoot {
 
     EntityPath<T> getFrom();
 
-    Expression<R> getReturnProjection(JPAQuery query);
+    Expression<R> getReturnProjection();
 
     JoinerQueryBase<T, R> where(Predicate where);
 

@@ -1,6 +1,6 @@
 package cz.encircled.joiner.query;
 
-import com.mysema.query.types.Expression;
+import com.querydsl.core.types.Expression;
 
 /**
  * Definition of result set order

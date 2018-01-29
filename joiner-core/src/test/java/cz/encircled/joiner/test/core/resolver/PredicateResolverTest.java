@@ -1,7 +1,7 @@
 package cz.encircled.joiner.test.core.resolver;
 
-import com.mysema.query.types.Path;
-import com.mysema.query.types.Predicate;
+import com.querydsl.core.types.Path;
+import com.querydsl.core.types.Predicate;
 import cz.encircled.joiner.core.DefaultPredicateAliasResolver;
 import cz.encircled.joiner.core.PredicateAliasResolver;
 import cz.encircled.joiner.query.Q;

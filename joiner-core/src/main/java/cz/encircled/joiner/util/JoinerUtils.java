@@ -1,8 +1,8 @@
 package cz.encircled.joiner.util;
 
-import com.mysema.query.types.Expression;
-import com.mysema.query.types.Operation;
-import com.mysema.query.types.Path;
+import com.querydsl.core.types.Expression;
+import com.querydsl.core.types.Operation;
+import com.querydsl.core.types.Path;
 
 import java.util.ArrayList;
 import java.util.List;

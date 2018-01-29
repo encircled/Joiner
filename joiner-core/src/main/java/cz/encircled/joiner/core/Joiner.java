@@ -13,15 +13,15 @@ import javax.annotation.concurrent.ThreadSafe;
 import javax.persistence.EntityManager;
 
 import com.google.common.collect.ArrayListMultimap;
-import com.mysema.query.JoinType;
-import com.mysema.query.jpa.impl.AbstractJPAQuery;
-import com.mysema.query.jpa.impl.JPAQuery;
-import com.mysema.query.types.EntityPath;
-import com.mysema.query.types.Expression;
-import com.mysema.query.types.Order;
-import com.mysema.query.types.OrderSpecifier;
-import com.mysema.query.types.Path;
-import com.mysema.query.types.Predicate;
+import com.querydsl.core.JoinType;
+import com.querydsl.core.types.EntityPath;
+import com.querydsl.core.types.Expression;
+import com.querydsl.core.types.Order;
+import com.querydsl.core.types.OrderSpecifier;
+import com.querydsl.core.types.Path;
+import com.querydsl.core.types.Predicate;
+import com.querydsl.jpa.impl.AbstractJPAQuery;
+import com.querydsl.jpa.impl.JPAQuery;
 import cz.encircled.joiner.core.vendor.EclipselinkRepository;
 import cz.encircled.joiner.core.vendor.HibernateRepository;
 import cz.encircled.joiner.core.vendor.JoinerVendorRepository;
@@ -103,10 +103,10 @@ public class Joiner {
         JPAQuery query = toJPAQuery(request);
 
         if (request.isCount()) {
-            List res = Collections.singletonList(query.count());
+            List res = Collections.singletonList(query.fetchCount());
             return res;
         } else {
-            return joinerVendorRepository.getResultList(query, request.getReturnProjection(query));
+            return query.fetch();
         }
     }
 
@@ -124,6 +124,9 @@ public class Joiner {
         makeInsertionOrderHints(query);
 
         query.from(request.getFrom());
+        if (request.getReturnProjection() != null) {
+            query.getMetadata().setProjection(request.getReturnProjection());
+        }
         if (request.isDistinct()) {
             query.distinct();
         }
@@ -138,7 +141,7 @@ public class Joiner {
             }
             usedAliases.add(join.getAlias());
         }
-        addJoins(joins, query, request.getFrom(), request.getFrom().equals(request.getReturnProjection(query)));
+        addJoins(joins, query, request.getFrom(), request.getFrom().equals(request.getReturnProjection()));
 
         addHints(request, query);
 
@@ -238,7 +241,7 @@ public class Joiner {
         return feature.before(request);
     }
 
-    private void makeInsertionOrderHints(AbstractJPAQuery<JPAQuery> sourceQuery) {
+    private void makeInsertionOrderHints(AbstractJPAQuery<?, ?> sourceQuery) {
         Field f = ReflectionUtils.findField(AbstractJPAQuery.class, "hints");
         ReflectionUtils.setField(f, sourceQuery, ArrayListMultimap.create());
     }

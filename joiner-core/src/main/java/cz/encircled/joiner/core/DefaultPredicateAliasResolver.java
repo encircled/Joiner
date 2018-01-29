@@ -1,9 +1,16 @@
 package cz.encircled.joiner.core;
 
-import com.mysema.query.BooleanBuilder;
-import com.mysema.query.types.*;
-import com.mysema.query.types.expr.BooleanOperation;
+import com.google.common.collect.ImmutableList;
+import com.querydsl.core.BooleanBuilder;
+import com.querydsl.core.types.Expression;
+import com.querydsl.core.types.Operation;
+import com.querydsl.core.types.Operator;
+import com.querydsl.core.types.Path;
+import com.querydsl.core.types.PathImpl;
+import com.querydsl.core.types.Predicate;
+import com.querydsl.core.types.PredicateOperation;
 import cz.encircled.joiner.query.join.JoinDescription;
+import cz.encircled.joiner.util.ReflectionUtils;
 
 import java.lang.reflect.AnnotatedElement;
 import java.util.ArrayList;
@@ -35,9 +42,9 @@ public class DefaultPredicateAliasResolver implements PredicateAliasResolver {
         PredicateHolder result = rebuildPredicate(new PredicateHolder(operation.getArgs(), operation.getOperator()), collect, usedAliases);
 
         if (result.args.size() == 2) {
-            return BooleanOperation.create(result.operator, result.args.get(0), result.args.get(1));
+            return ReflectionUtils.instantiate(PredicateOperation.class, result.operator, ImmutableList.of(result.args.get(0), result.args.get(1)));
         } else {
-            return BooleanOperation.create(result.operator, result.args.get(0));
+            return ReflectionUtils.instantiate(PredicateOperation.class, result.operator, ImmutableList.of(result.args.get(0)));
         }
     }
 
@@ -46,8 +53,8 @@ public class DefaultPredicateAliasResolver implements PredicateAliasResolver {
         if (!usedAliases.contains(path.getRoot())) {
             List<JoinDescription> candidates = classToJoin.get(path.getRoot().getAnnotatedElement());
             if (candidates != null && candidates.size() == 1) {
-                PathImpl<?> resolvedRoot = new PathImpl<>(candidates.get(0).getClass(), candidates.get(0).getAlias().getMetadata());
-                return new PathImpl<>(path.getType(), resolvedRoot, (String) path.getMetadata().getElement());
+                PathImpl<?> resolvedRoot = ReflectionUtils.instantiate(PathImpl.class, candidates.get(0).getClass(), candidates.get(0).getAlias().getMetadata());
+                return ReflectionUtils.instantiate(PathImpl.class, path.getType(), resolvedRoot, path.getMetadata().getElement());
             }
         }
         return path;
@@ -66,9 +73,10 @@ public class DefaultPredicateAliasResolver implements PredicateAliasResolver {
                 PredicateHolder nestedResult = rebuildPredicate(nestedParams, classToJoin, usedAliases);
 
                 if (nestedResult.args.size() == 2) {
-                    newArg = PredicateOperation.create(nestedResult.operator, nestedResult.args.get(0), nestedResult.args.get(1));
+                    newArg = ReflectionUtils
+                            .instantiate(PredicateOperation.class, nestedResult.operator, ImmutableList.of(nestedResult.args.get(0), nestedResult.args.get(1)));
                 } else {
-                    newArg = PredicateOperation.create(nestedResult.operator, nestedResult.args.get(0));
+                    newArg = ReflectionUtils.instantiate(PredicateOperation.class, nestedResult.operator, ImmutableList.of(nestedResult.args.get(0)));
                 }
             } else if (arg instanceof Path) {
                 newArg = resolvePath((Path<?>) arg, classToJoin, usedAliases);
@@ -82,11 +90,11 @@ public class DefaultPredicateAliasResolver implements PredicateAliasResolver {
 
     private static class PredicateHolder {
         List<Expression<?>> args;
-        Operator<Boolean> operator;
+        Operator operator;
 
-        PredicateHolder(List<Expression<?>> args, Operator<?> operator) {
+        PredicateHolder(List<Expression<?>> args, Operator operator) {
             this.args = args;
-            this.operator = (Operator<Boolean>) operator;
+            this.operator = operator;
         }
     }
 

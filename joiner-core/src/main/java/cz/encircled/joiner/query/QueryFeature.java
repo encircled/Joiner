@@ -1,6 +1,6 @@
 package cz.encircled.joiner.query;
 
-import com.mysema.query.jpa.impl.JPAQuery;
+import com.querydsl.jpa.impl.JPAQuery;
 
 /**
  * Query features allows to modify the request/query before executing
