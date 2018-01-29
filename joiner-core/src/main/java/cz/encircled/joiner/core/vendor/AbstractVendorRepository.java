@@ -1,7 +1,5 @@
 package cz.encircled.joiner.core.vendor;
 
-import java.util.List;
-
 import com.querydsl.core.types.CollectionExpression;
 import com.querydsl.core.types.EntityPath;
 import com.querydsl.core.types.Expression;
@@ -9,6 +7,8 @@ import com.querydsl.core.types.Path;
 import com.querydsl.jpa.impl.JPAQuery;
 import cz.encircled.joiner.exception.JoinerException;
 import cz.encircled.joiner.query.join.JoinDescription;
+
+import java.util.List;
 
 /**
  * Common parent for implementations of vendor-specific repositories
@@ -52,10 +52,6 @@ public abstract class AbstractVendorRepository implements JoinerVendorRepository
                 break;
             default:
                 throw new JoinerException("Join type " + joinDescription.getJoinType() + " is not supported!");
-        }
-
-        if (joinDescription.isFetch()) {
-            query.fetchJoin();
         }
 
         if (joinDescription.getOn() != null) {
