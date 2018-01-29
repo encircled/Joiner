@@ -1,12 +1,14 @@
 package cz.encircled.joiner.util;
 
-import com.mysema.query.types.EntityPath;
+import com.querydsl.core.types.EntityPath;
 import cz.encircled.joiner.exception.JoinerException;
 
 import javax.persistence.EntityManager;
 import javax.persistence.metamodel.Type;
+
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -17,15 +19,41 @@ import java.util.stream.Collectors;
 public class ReflectionUtils {
 
     @SuppressWarnings("unchecked")
-    public static <T extends EntityPath> T instantiate(Class<? extends EntityPath> generatedClass, String alias) {
+    public static <T> T instantiate(Class<?> generatedClass, Object... arguments) {
         Assert.notNull(generatedClass);
 
         try {
-            Constructor<? extends EntityPath> constructor = generatedClass.getConstructor(String.class);
-            return (T) constructor.newInstance(alias);
+            // TODO nulls?
+            Class[] classesOfArgs = new Class[arguments.length];
+            for (int i = 0; i < arguments.length; i++) {
+                classesOfArgs[i] = arguments[i].getClass();
+            }
+
+            Constructor<?> constructor = findConstructor(generatedClass, classesOfArgs);
+            if (!constructor.isAccessible()) {
+                constructor.setAccessible(true);
+            }
+            return (T) constructor.newInstance(arguments);
         } catch (Exception e) {
             throw new JoinerException("Failed to create new instance of " + generatedClass, e);
         }
+    }
+
+    public static Constructor<?> findConstructor(Class<?> clazz, Class[] argumentClasses) {
+        outer:
+        for (Constructor<?> constructor : clazz.getDeclaredConstructors()) {
+            final Class<?>[] params = constructor.getParameterTypes();
+            if (params.length == argumentClasses.length) {
+                for (int i = 0; i < argumentClasses.length; i++) {
+                    if (!params[i].isAssignableFrom(argumentClasses[i])) {
+                        continue outer;
+                    }
+                }
+                return constructor;
+            }
+        }
+
+        throw new RuntimeException("Constructor with params [" + Arrays.toString(argumentClasses) + "] is not found in [" + clazz + "]");
     }
 
     public static Field findField(Class<?> clazz, String name) {

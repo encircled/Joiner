@@ -1,6 +1,6 @@
 package cz.encircled.joiner.test.core;
 
-import com.mysema.query.types.EntityPath;
+import com.querydsl.core.types.EntityPath;
 import cz.encircled.joiner.exception.AliasMissingException;
 import cz.encircled.joiner.exception.JoinerException;
 import cz.encircled.joiner.query.Q;

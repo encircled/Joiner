@@ -1,6 +1,6 @@
 package cz.encircled.joiner.test.core;
 
-import com.mysema.query.JoinType;
+import com.querydsl.core.JoinType;
 import cz.encircled.joiner.exception.JoinerException;
 import cz.encircled.joiner.query.JoinerQuery;
 import cz.encircled.joiner.query.JoinerQueryBase;

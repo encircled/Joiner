@@ -1,5 +1,7 @@
 package cz.encircled.joiner.test.core;
 
+import java.util.List;
+
 import cz.encircled.joiner.query.Q;
 import cz.encircled.joiner.query.join.J;
 import cz.encircled.joiner.test.model.Address;
@@ -7,8 +9,6 @@ import cz.encircled.joiner.test.model.QAddress;
 import cz.encircled.joiner.test.model.QUser;
 import cz.encircled.joiner.test.model.User;
 import org.junit.Test;
-
-import java.util.List;
 
 /**
  * @author Kisel on 26.01.2016.
@@ -26,10 +26,13 @@ public class PredicateTest extends AbstractTest {
     public void predicateInCollectionTest() {
         String name = "user1street1";
         List<User> result = joiner.find(Q.from(QUser.user1)
-                .joins(J.left(QAddress.address))
+                .joins(J.inner(QAddress.address))
                 .where(QAddress.address.name.eq(name)));
         assertHasName(result, "user1");
-        assertHasName(result.get(0).getAddresses(), name);
+        // Hibernate fetches all entities in a collection ()
+        if (isEclipse()) {
+            assertHasName(result.get(0).getAddresses(), name);
+        }
     }
 
     @Test

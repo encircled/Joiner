@@ -1,14 +1,10 @@
 package cz.encircled.joiner.query;
 
-import com.mysema.query.Tuple;
-import com.mysema.query.jpa.JPAQueryBase;
-import com.mysema.query.jpa.JPAQueryMixin;
-import com.mysema.query.jpa.impl.JPAQuery;
-import com.mysema.query.types.EntityPath;
-import com.mysema.query.types.Expression;
+import com.querydsl.core.Tuple;
+import com.querydsl.core.types.EntityPath;
+import com.querydsl.core.types.Expression;
+import com.querydsl.core.types.QTuple;
 import cz.encircled.joiner.util.ReflectionUtils;
-
-import java.lang.reflect.Field;
 
 /**
  * Implementation of joiner query with {@link Tuple} result
@@ -16,8 +12,6 @@ import java.lang.reflect.Field;
  * @author Kisel on 13.9.2016.
  */
 public class TupleJoinerQuery<T> extends JoinerQueryBase<T, Tuple> {
-
-    private static final Field queryMixinField = ReflectionUtils.findField(JPAQueryBase.class, "queryMixin");
 
     private final Expression<?>[] returnProjections;
 
@@ -28,8 +22,8 @@ public class TupleJoinerQuery<T> extends JoinerQueryBase<T, Tuple> {
 
     @Override
     @SuppressWarnings("unchecked")
-    public Expression<Tuple> getReturnProjection(final JPAQuery query) {
-        return ((JPAQueryMixin) ReflectionUtils.getField(queryMixinField, query)).createProjection(returnProjections);
+    public Expression<Tuple> getReturnProjection() {
+        return ReflectionUtils.instantiate(QTuple.class, (Object) returnProjections);
     }
 
 }

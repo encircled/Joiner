@@ -1,6 +1,6 @@
 package cz.encircled.joiner.test.core;
 
-import com.mysema.query.Tuple;
+import com.querydsl.core.Tuple;
 import cz.encircled.joiner.query.Q;
 import cz.encircled.joiner.test.model.QUser;
 import org.junit.Assert;

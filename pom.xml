@@ -40,10 +40,10 @@
     <packaging>pom</packaging>
 
     <properties>
-        <querydsl.version>3.7.4</querydsl.version>
+        <querydsl.version>4.1.4</querydsl.version>
         <spring.version>4.3.6.RELEASE</spring.version>
-        <hibernate.version>5.2.2.Final</hibernate.version>
-        <eclipselink.version>2.6.4</eclipselink.version>
+        <hibernate.version>5.2.12.Final</hibernate.version>
+        <eclipselink.version>2.7.1</eclipselink.version>
         <vendor.name>hibernate</vendor.name>
         <vendor.generate>no-fresh</vendor.generate>
     </properties>
@@ -63,19 +63,19 @@
         <dependencies>
             <!-- QueryDSL -->
             <dependency>
-                <groupId>com.mysema.querydsl</groupId>
+                <groupId>com.querydsl</groupId>
                 <artifactId>querydsl-core</artifactId>
                 <version>${querydsl.version}</version>
             </dependency>
 
             <dependency>
-                <groupId>com.mysema.querydsl</groupId>
+                <groupId>com.querydsl</groupId>
                 <artifactId>querydsl-jpa</artifactId>
                 <version>${querydsl.version}</version>
             </dependency>
 
             <dependency>
-                <groupId>com.mysema.querydsl</groupId>
+                <groupId>com.querydsl</groupId>
                 <artifactId>querydsl-apt</artifactId>
                 <version>${querydsl.version}</version>
             </dependency>

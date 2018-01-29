@@ -1,20 +1,19 @@
 package cz.encircled.joiner.core.vendor;
 
+import java.lang.reflect.Field;
+import java.util.Collection;
+
+import javax.persistence.EntityManager;
+
 import com.google.common.collect.ArrayListMultimap;
-import com.mysema.query.JoinType;
-import com.mysema.query.jpa.EclipseLinkTemplates;
-import com.mysema.query.jpa.impl.AbstractJPAQuery;
-import com.mysema.query.jpa.impl.JPAQuery;
-import com.mysema.query.types.EntityPath;
-import com.mysema.query.types.Expression;
+import com.querydsl.core.JoinType;
+import com.querydsl.core.types.EntityPath;
+import com.querydsl.jpa.EclipseLinkTemplates;
+import com.querydsl.jpa.impl.AbstractJPAQuery;
+import com.querydsl.jpa.impl.JPAQuery;
 import cz.encircled.joiner.exception.JoinerException;
 import cz.encircled.joiner.query.join.JoinDescription;
 import cz.encircled.joiner.util.ReflectionUtils;
-
-import javax.persistence.EntityManager;
-import java.lang.reflect.Field;
-import java.util.Collection;
-import java.util.List;
 
 /**
  * @author Vlad on 13-Sep-16.
@@ -31,7 +30,7 @@ public class EclipselinkRepository extends AbstractVendorRepository implements J
         return query;
     }
 
-    private void makeInsertionOrderHints(AbstractJPAQuery<JPAQuery> sourceQuery) {
+    private void makeInsertionOrderHints(AbstractJPAQuery<?, ?> sourceQuery) {
         Field f = ReflectionUtils.findField(AbstractJPAQuery.class, "hints");
         ReflectionUtils.setField(f, sourceQuery, ArrayListMultimap.create());
     }
@@ -41,7 +40,7 @@ public class EclipselinkRepository extends AbstractVendorRepository implements J
         String rootEntityAlias = rootPath.getMetadata().getName();
         String path = resolvePathToFieldFromRoot(rootEntityAlias, joinDescription, joins);
 
-        String fetchHint = joinDescription.getJoinType().equals(com.mysema.query.JoinType.LEFTJOIN) ? "eclipselink.left-join-fetch" : "eclipselink.join-fetch";
+        String fetchHint = joinDescription.getJoinType().equals(JoinType.LEFTJOIN) ? "eclipselink.left-join-fetch" : "eclipselink.join-fetch";
         query.setHint(fetchHint, path);
     }
 
@@ -52,12 +51,6 @@ public class EclipselinkRepository extends AbstractVendorRepository implements J
         }
 
         super.addJoin(query, joinDescription);
-    }
-
-    @Override
-    @SuppressWarnings("unchecked")
-    public <T> List<T> getResultList(JPAQuery query, Expression<T> projection) {
-        return query.list(projection);
     }
 
     private String resolvePathToFieldFromRoot(String rootAlias, JoinDescription targetJoinDescription, Collection<JoinDescription> joins) {

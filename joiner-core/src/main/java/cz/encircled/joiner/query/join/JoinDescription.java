@@ -1,9 +1,9 @@
 package cz.encircled.joiner.query.join;
 
-import com.mysema.query.JoinType;
-import com.mysema.query.types.EntityPath;
-import com.mysema.query.types.Predicate;
-import com.mysema.query.types.path.CollectionPathBase;
+import com.querydsl.core.JoinType;
+import com.querydsl.core.types.EntityPath;
+import com.querydsl.core.types.Predicate;
+import com.querydsl.core.types.dsl.CollectionPathBase;
 import cz.encircled.joiner.query.JoinRoot;
 import cz.encircled.joiner.util.Assert;
 

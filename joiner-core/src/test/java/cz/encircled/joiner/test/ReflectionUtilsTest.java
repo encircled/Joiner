@@ -1,6 +1,6 @@
 package cz.encircled.joiner.test;
 
-import com.mysema.query.types.EntityPath;
+import com.querydsl.core.types.EntityPath;
 import cz.encircled.joiner.exception.JoinerException;
 import cz.encircled.joiner.test.core.AbstractTest;
 import cz.encircled.joiner.test.model.NormalUser;

@@ -1,9 +1,12 @@
 package cz.encircled.joiner.core.vendor;
 
-import com.mysema.query.jpa.impl.JPAQuery;
-import com.mysema.query.types.CollectionExpression;
-import com.mysema.query.types.EntityPath;
-import com.mysema.query.types.Path;
+import java.util.List;
+
+import com.querydsl.core.types.CollectionExpression;
+import com.querydsl.core.types.EntityPath;
+import com.querydsl.core.types.Expression;
+import com.querydsl.core.types.Path;
+import com.querydsl.jpa.impl.JPAQuery;
 import cz.encircled.joiner.exception.JoinerException;
 import cz.encircled.joiner.query.join.JoinDescription;
 
@@ -51,9 +54,17 @@ public abstract class AbstractVendorRepository implements JoinerVendorRepository
                 throw new JoinerException("Join type " + joinDescription.getJoinType() + " is not supported!");
         }
 
+        if (joinDescription.isFetch()) {
+            query.fetchJoin();
+        }
+
         if (joinDescription.getOn() != null) {
             query.on(joinDescription.getOn());
         }
     }
 
+    @Override
+    public <T> List<T> getResultList(JPAQuery query, Expression<T> projection) {
+        return query.fetch();
+    }
 }

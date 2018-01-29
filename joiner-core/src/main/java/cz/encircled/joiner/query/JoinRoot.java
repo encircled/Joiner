@@ -1,6 +1,6 @@
 package cz.encircled.joiner.query;
 
-import com.mysema.query.types.Expression;
+import com.querydsl.core.types.Expression;
 import cz.encircled.joiner.query.join.JoinDescription;
 import cz.encircled.joiner.util.Assert;
 

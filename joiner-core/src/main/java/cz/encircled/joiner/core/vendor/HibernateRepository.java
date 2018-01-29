@@ -1,14 +1,12 @@
 package cz.encircled.joiner.core.vendor;
 
 import java.util.Collection;
-import java.util.List;
 
 import javax.persistence.EntityManager;
 
-import com.mysema.query.jpa.HQLTemplates;
-import com.mysema.query.jpa.impl.JPAQuery;
-import com.mysema.query.types.EntityPath;
-import com.mysema.query.types.Expression;
+import com.querydsl.core.types.EntityPath;
+import com.querydsl.jpa.HQLTemplates;
+import com.querydsl.jpa.impl.JPAQuery;
 import cz.encircled.joiner.query.join.JoinDescription;
 
 /**
@@ -26,8 +24,4 @@ public class HibernateRepository extends AbstractVendorRepository implements Joi
         query.fetch();
     }
 
-    @Override
-    public <T> List<T> getResultList(JPAQuery query, Expression<T> projection) {
-        return query.list(projection);
-    }
 }

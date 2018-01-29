@@ -1,10 +1,10 @@
 package cz.encircled.joiner.core;
 
-import com.mysema.query.types.EntityPath;
-import com.mysema.query.types.Path;
-import com.mysema.query.types.path.BooleanPath;
-import com.mysema.query.types.path.CollectionPathBase;
-import com.mysema.query.types.path.EntityPathBase;
+import com.querydsl.core.types.EntityPath;
+import com.querydsl.core.types.Path;
+import com.querydsl.core.types.dsl.BooleanPath;
+import com.querydsl.core.types.dsl.CollectionPathBase;
+import com.querydsl.core.types.dsl.EntityPathBase;
 import cz.encircled.joiner.exception.JoinerException;
 import cz.encircled.joiner.query.join.J;
 import cz.encircled.joiner.query.join.JoinDescription;
@@ -26,7 +26,7 @@ import static cz.encircled.joiner.util.ReflectionUtils.getField;
  */
 public class DefaultAliasResolver implements AliasResolver {
 
-    private static final Path<?> nullPath = new BooleanPath("");
+    private static final BooleanPath nullPath = ReflectionUtils.instantiate(BooleanPath.class, "");
 
     private final EntityManager entityManager;
 
