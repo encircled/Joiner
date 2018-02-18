@@ -31,9 +31,9 @@ public class PageableFeature implements QueryFeature {
     public <T, R> JoinerQuery<T, R> before(JoinerQuery<T, R> joinerQuery) {
         if (pageable != null) {
             joinerQuery.limit((long) pageable.getPageSize());
-            joinerQuery.offset((long) pageable.getOffset());
+            joinerQuery.offset(pageable.getOffset());
             Sort sort = pageable.getSort();
-            if (sort != null) {
+            if (!sort.equals(Sort.unsorted())) {
                 sort.forEach(order -> {
                     if (order.getDirection().equals(Sort.Direction.ASC)) {
                         joinerQuery.asc(buildOrderPropertyPathFrom(joinerQuery, order));
