@@ -106,7 +106,7 @@ public class Joiner {
             List res = Collections.singletonList(query.fetchCount());
             return res;
         } else {
-            return query.fetch();
+            return joinerVendorRepository.getResultList(query, request.getReturnProjection());
         }
     }
 
@@ -120,7 +120,7 @@ public class Joiner {
             request = doPreProcess(request, feature);
         }
 
-        JPAQuery query = joinerVendorRepository.createQuery(entityManager);
+        JPAQuery<?> query = joinerVendorRepository.createQuery(entityManager);
         makeInsertionOrderHints(query);
 
         query.from(request.getFrom());

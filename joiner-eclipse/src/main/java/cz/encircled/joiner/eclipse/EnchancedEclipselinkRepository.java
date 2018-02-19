@@ -21,6 +21,7 @@ import org.eclipse.persistence.queries.ObjectLevelReadQuery;
  */
 public class EnchancedEclipselinkRepository extends EclipselinkRepository implements JoinerVendorRepository {
 
+    // TODO test for fixed joinedAttributeManager is missing
     @Override
     @SuppressWarnings("unchecked")
     public <T> List<T> getResultList(JPAQuery query, Expression<T> projection) {
