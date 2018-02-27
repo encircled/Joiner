@@ -1,25 +1,8 @@
 package cz.encircled.joiner.core;
 
-import java.lang.reflect.AnnotatedElement;
-import java.lang.reflect.Field;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
-
-import javax.annotation.concurrent.ThreadSafe;
-import javax.persistence.EntityManager;
-
 import com.google.common.collect.ArrayListMultimap;
 import com.querydsl.core.JoinType;
-import com.querydsl.core.types.EntityPath;
-import com.querydsl.core.types.Expression;
-import com.querydsl.core.types.Order;
-import com.querydsl.core.types.OrderSpecifier;
-import com.querydsl.core.types.Path;
-import com.querydsl.core.types.Predicate;
+import com.querydsl.core.types.*;
 import com.querydsl.jpa.impl.AbstractJPAQuery;
 import com.querydsl.jpa.impl.JPAQuery;
 import cz.encircled.joiner.core.vendor.EclipselinkRepository;
@@ -38,6 +21,13 @@ import cz.encircled.joiner.util.JoinerUtils;
 import cz.encircled.joiner.util.ReflectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import javax.annotation.concurrent.ThreadSafe;
+import javax.persistence.EntityManager;
+import java.lang.reflect.AnnotatedElement;
+import java.lang.reflect.Field;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Base class of Joiner. Contains basic database operations.
@@ -100,17 +90,16 @@ public class Joiner {
 
     public <T, R> List<R> find(JoinerQuery<T, R> request) {
 
-        JPAQuery query = toJPAQuery(request);
+        JPAQuery<R> query = toJPAQuery(request);
 
         if (request.isCount()) {
-            List res = Collections.singletonList(query.fetchCount());
-            return res;
+            return (List) Collections.singletonList(query.fetchCount());
         } else {
             return joinerVendorRepository.getResultList(query, request.getReturnProjection());
         }
     }
 
-    public <T, R> JPAQuery toJPAQuery(JoinerQuery<T, R> request) {
+    public <T, R> JPAQuery<R> toJPAQuery(JoinerQuery<T, R> request) {
         Assert.notNull(request);
         Assert.notNull(request.getFrom());
 
@@ -120,7 +109,7 @@ public class Joiner {
             request = doPreProcess(request, feature);
         }
 
-        JPAQuery<?> query = joinerVendorRepository.createQuery(entityManager);
+        JPAQuery<R> query = joinerVendorRepository.createQuery(entityManager);
         makeInsertionOrderHints(query);
 
         query.from(request.getFrom());
@@ -233,7 +222,7 @@ public class Joiner {
         }
     }
 
-    private JPAQuery doPostProcess(JoinerQuery<?, ?> request, JPAQuery query, QueryFeature feature) {
+    private <T, R> JPAQuery<R> doPostProcess(JoinerQuery<T, R> request, JPAQuery query, QueryFeature feature) {
         return feature.after(request, query);
     }
 

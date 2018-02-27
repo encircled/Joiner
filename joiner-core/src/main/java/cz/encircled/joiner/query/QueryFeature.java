@@ -26,6 +26,6 @@ public interface QueryFeature {
      * @param query JPA query
      * @return modified JPA query to be executed
      */
-    JPAQuery after(JoinerQuery<?, ?> request, JPAQuery query);
+    <T, R> JPAQuery<R> after(JoinerQuery<T, R> request, JPAQuery<R> query);
 
 }

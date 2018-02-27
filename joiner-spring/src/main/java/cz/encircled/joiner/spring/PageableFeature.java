@@ -47,8 +47,8 @@ public class PageableFeature implements QueryFeature {
     }
 
     @Override
-    public JPAQuery after(JoinerQuery<?, ?> joinerQuery, JPAQuery jpaQuery) {
-        return jpaQuery;
+    public <T, R> JPAQuery<R> after(JoinerQuery<T, R> request, JPAQuery<R> query) {
+        return query;
     }
 
     private Expression<?> buildOrderPropertyPathFrom(JoinerQuery<?, ?> joinerQuery, Sort.Order order) {
@@ -58,7 +58,6 @@ public class PageableFeature implements QueryFeature {
         Expression<?> sortPropertyExpression = builder;
 
         while (path != null) {
-
             if (!path.hasNext() && order.isIgnoreCase()) {
                 // if order is ignore-case we have to treat the last path segment as a String.
                 sortPropertyExpression = Expressions.stringPath((Path<?>) sortPropertyExpression, path.getSegment()).lower();

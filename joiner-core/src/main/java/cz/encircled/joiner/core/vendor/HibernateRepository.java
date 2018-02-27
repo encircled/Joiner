@@ -19,7 +19,7 @@ public class HibernateRepository extends AbstractVendorRepository implements Joi
     }
 
     @Override
-    public void addFetch(JPAQuery query, JoinDescription joinDescription, Collection<JoinDescription> joins, EntityPath<?> rootPath) {
+    public void addFetch(JPAQuery<?> query, JoinDescription joinDescription, Collection<JoinDescription> joins, EntityPath<?> rootPath) {
         query.fetchJoin();
     }
 

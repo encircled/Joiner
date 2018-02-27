@@ -1,11 +1,5 @@
 package cz.encircled.joiner.eclipse;
 
-import java.lang.reflect.Field;
-import java.util.ArrayList;
-import java.util.List;
-
-import javax.persistence.Query;
-
 import com.querydsl.core.types.Expression;
 import com.querydsl.core.types.FactoryExpression;
 import com.querydsl.jpa.impl.JPAQuery;
@@ -16,6 +10,11 @@ import org.eclipse.persistence.internal.jpa.QueryImpl;
 import org.eclipse.persistence.internal.queries.JoinedAttributeManager;
 import org.eclipse.persistence.queries.ObjectLevelReadQuery;
 
+import javax.persistence.Query;
+import java.lang.reflect.Field;
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * @author Kisel on 28.01.2016.
  */
@@ -24,7 +23,7 @@ public class EnchancedEclipselinkRepository extends EclipselinkRepository implem
     // TODO test for fixed joinedAttributeManager is missing
     @Override
     @SuppressWarnings("unchecked")
-    public <T> List<T> getResultList(JPAQuery query, Expression<T> projection) {
+    public <T> List<T> getResultList(JPAQuery<T> query, Expression<T> projection) {
         Query jpaQuery = query.createQuery();
 
         if (jpaQuery instanceof QueryImpl) {

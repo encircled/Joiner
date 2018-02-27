@@ -1,10 +1,5 @@
 package cz.encircled.joiner.core.vendor;
 
-import java.lang.reflect.Field;
-import java.util.Collection;
-
-import javax.persistence.EntityManager;
-
 import com.google.common.collect.ArrayListMultimap;
 import com.querydsl.core.JoinType;
 import com.querydsl.core.types.EntityPath;
@@ -14,6 +9,10 @@ import com.querydsl.jpa.impl.JPAQuery;
 import cz.encircled.joiner.exception.JoinerException;
 import cz.encircled.joiner.query.join.JoinDescription;
 import cz.encircled.joiner.util.ReflectionUtils;
+
+import javax.persistence.EntityManager;
+import java.lang.reflect.Field;
+import java.util.Collection;
 
 /**
  * @author Vlad on 13-Sep-16.
@@ -36,7 +35,7 @@ public class EclipselinkRepository extends AbstractVendorRepository implements J
     }
 
     @Override
-    public void addFetch(JPAQuery query, JoinDescription joinDescription, Collection<JoinDescription> joins, EntityPath<?> rootPath) {
+    public void addFetch(JPAQuery<?> query, JoinDescription joinDescription, Collection<JoinDescription> joins, EntityPath<?> rootPath) {
         String rootEntityAlias = rootPath.getMetadata().getName();
         String path = resolvePathToFieldFromRoot(rootEntityAlias, joinDescription, joins);
 

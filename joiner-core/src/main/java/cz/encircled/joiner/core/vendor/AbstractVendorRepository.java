@@ -19,7 +19,7 @@ public abstract class AbstractVendorRepository implements JoinerVendorRepository
 
     @Override
     @SuppressWarnings("unchecked")
-    public void addJoin(JPAQuery query, JoinDescription joinDescription) {
+    public void addJoin(JPAQuery<?> query, JoinDescription joinDescription) {
         Path<Object> alias = (Path<Object>) joinDescription.getAlias();
 
         switch (joinDescription.getJoinType()) {
@@ -60,7 +60,7 @@ public abstract class AbstractVendorRepository implements JoinerVendorRepository
     }
 
     @Override
-    public <T> List<T> getResultList(JPAQuery query, Expression<T> projection) {
+    public <T> List<T> getResultList(JPAQuery<T> query, Expression<T> projection) {
         return query.fetch();
     }
 }
