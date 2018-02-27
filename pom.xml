@@ -31,9 +31,9 @@
     </developers>
 
     <modules>
+        <module>joiner-test-support</module>
         <module>joiner-core</module>
         <module>joiner-spring</module>
-        <module>joiner-test-support</module>
         <module>joiner-eclipse</module>
     </modules>
 
