@@ -22,7 +22,7 @@ public class HintQueryFeature implements QueryFeature {
     }
 
     @Override
-    public JPAQuery after(final JoinerQuery<?, ?> request, final JPAQuery query) {
+    public <T, R> JPAQuery<R> after(JoinerQuery<T, R> request, JPAQuery<R> query) {
         Field f = ReflectionUtils.findField(AbstractJPAQuery.class, "hints");
         ReflectionUtils.makeAccessible(f);
         Multimap<String, Object> field = (Multimap<String, Object>) ReflectionUtils.getField(f, query);

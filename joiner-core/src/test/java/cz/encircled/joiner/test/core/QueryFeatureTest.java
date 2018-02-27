@@ -28,7 +28,7 @@ public class QueryFeatureTest extends AbstractTest {
             }
 
             @Override
-            public JPAQuery after(final JoinerQuery<?, ?> request, final JPAQuery query) {
+            public <T, R> JPAQuery<R> after(JoinerQuery<T, R> request, JPAQuery<R> query) {
                 return query;
             }
         });
@@ -45,7 +45,7 @@ public class QueryFeatureTest extends AbstractTest {
             }
 
             @Override
-            public JPAQuery after(final JoinerQuery<?, ?> request, final JPAQuery query) {
+            public <T, R> JPAQuery<R> after(JoinerQuery<T, R> request, JPAQuery<R> query) {
                 return query;
             }
         }));
@@ -62,7 +62,7 @@ public class QueryFeatureTest extends AbstractTest {
             }
 
             @Override
-            public JPAQuery after(final JoinerQuery<?, ?> request, final JPAQuery query) {
+            public <T, R> JPAQuery<R> after(JoinerQuery<T, R> request, JPAQuery<R> query) {
                 throw new TestException();
             }
         });
