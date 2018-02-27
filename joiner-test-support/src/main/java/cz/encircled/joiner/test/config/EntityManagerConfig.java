@@ -40,16 +40,14 @@ public class EntityManagerConfig {
         em.setDataSource(dataSource);
         em.setPackagesToScan("cz.encircled");
 
-        boolean fresh = environment.acceptsProfiles("fresh");
-
         if (environment.acceptsProfiles("eclipse")) {
             AbstractJpaVendorAdapter vendorAdapter = new EclipseLinkJpaVendorAdapter();
             em.setJpaVendorAdapter(vendorAdapter);
-            em.setJpaProperties(eclipseProperties(fresh));
+            em.setJpaProperties(eclipseProperties(true));
         } else {
             HibernateJpaVendorAdapter vendorAdapter = new HibernateJpaVendorAdapter();
             em.setJpaVendorAdapter(vendorAdapter);
-            em.setJpaProperties(hibernateProperties(fresh));
+            em.setJpaProperties(hibernateProperties(true));
         }
         return em;
     }

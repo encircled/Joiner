@@ -45,7 +45,6 @@
         <hibernate.version>5.2.12.Final</hibernate.version>
         <eclipselink.version>2.7.1</eclipselink.version>
         <vendor.name>hibernate</vendor.name>
-        <vendor.generate>no-fresh</vendor.generate>
     </properties>
 
     <distributionManagement>
@@ -252,12 +251,6 @@
                 <vendor.name>eclipse</vendor.name>
             </properties>
         </profile>
-        <profile>
-            <id>fresh</id>
-            <properties>
-                <vendor.generate>fresh</vendor.generate>
-            </properties>
-        </profile>
     </profiles>
 
     <build>
@@ -307,7 +300,7 @@
                 <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>
                     <systemPropertyVariables>
-                        <spring.profiles.active>${vendor.name},${vendor.generate}</spring.profiles.active>
+                        <spring.profiles.active>${vendor.name}</spring.profiles.active>
                     </systemPropertyVariables>
                 </configuration>
             </plugin>
