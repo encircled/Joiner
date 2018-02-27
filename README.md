@@ -1,3 +1,6 @@
+[![Build Status](https://travis-ci.org/encircled/Joiner.svg?branch=master)](https://travis-ci.org/encircled/Joiner)
+[![codecov](https://codecov.io/gh/encircled/Joiner/branch/master/graph/badge.svg)](https://codecov.io/gh/encircled/Joiner)
+
 # Overview
 
 Joiner is a Java library which allows to create type-safe JPA queries. It is focused on applications with complex domain model, which require a lot of work with query joins.   
