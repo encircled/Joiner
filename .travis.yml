@@ -1,0 +1,7 @@
+language: java
+sudo: false # faster builds
+install: mvn clean dependency:resolve
+script: mvn test
+
+after_success:
+  - bash <(curl -s https://codecov.io/bash) -t 096c9f99-8956-4429-84af-c12f09980218
