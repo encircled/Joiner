@@ -1,6 +1,5 @@
 language: java
 sudo: false # faster builds
-install: mvn clean dependency:resolve
 script: mvn install -P eclipse,fresch
 
 after_success:
