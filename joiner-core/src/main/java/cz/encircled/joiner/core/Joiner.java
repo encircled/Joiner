@@ -106,7 +106,7 @@ public class Joiner {
             List res = Collections.singletonList(query.fetchCount());
             return res;
         } else {
-            return query.fetch();
+            return joinerVendorRepository.getResultList(query, request.getReturnProjection());
         }
     }
 
