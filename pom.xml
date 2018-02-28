@@ -8,7 +8,7 @@
     <name>joiner</name>
     <description>Joiner parent module</description>
 
-    <url>https://github.com/encircled/Joiner</url>
+    <url>git@github.com:encircled/Joiner.git</url>
     <scm>
         <connection>scm:git:git@github.com:encircled/Joiner.git</connection>
         <url>git@github.com:encircled/Joiner.git</url>
