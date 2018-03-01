@@ -1,6 +1,8 @@
 package cz.encircled.joiner.spring;
 
 
+import java.util.Optional;
+
 import com.querydsl.core.types.Expression;
 import com.querydsl.core.types.Path;
 import com.querydsl.core.types.dsl.Expressions;
@@ -32,7 +34,7 @@ public class PageableFeature implements QueryFeature {
         if (pageable != null) {
             joinerQuery.limit((long) pageable.getPageSize());
             joinerQuery.offset(pageable.getOffset());
-            Sort sort = pageable.getSort();
+            Sort sort = Optional.ofNullable(pageable.getSort()).orElse(Sort.unsorted());
             if (!sort.equals(Sort.unsorted())) {
                 sort.forEach(order -> {
                     if (order.getDirection().equals(Sort.Direction.ASC)) {
