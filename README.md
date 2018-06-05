@@ -15,11 +15,12 @@ Joiner offers following extra features:
 # Example setup
 
 ## Non-spring environment
+All you need is entity manager instance, setup of Joiner itself is as simple as:
 
 ```java
 Joiner joiner = new Joiner(getEntityManager());
-joiner.find(Q.from(QUser.user1)
-                .where(QUser.user1.isNotNull()));
+joiner.find(Q.from(QUser.user)
+                .where(QUser.user.isNotNull()));
 ```
 
 # Features
