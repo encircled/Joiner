@@ -154,9 +154,21 @@ public class JoinDescription implements JoinRoot {
             join.parent = this;
             join.alias(J.path(this.getAlias(), join.getOriginalAlias()));
             addJoin(join);
+
+            reAliasChildren(join);
         }
 
         return this;
+    }
+
+    /**
+     * Re-alias due to order of 'nested' method execution (the very last nested is executed first and it's parent is not re-aliased yet)
+     */
+    private void reAliasChildren(JoinDescription join) {
+        for (JoinDescription child : join.children.values()) {
+            child.alias(J.path(join.getAlias(), child.getOriginalAlias()));
+            reAliasChildren(child);
+        }
     }
 
     /**
@@ -167,10 +179,7 @@ public class JoinDescription implements JoinRoot {
      */
     public JoinDescription nested(EntityPath<?>... paths) {
         for (EntityPath<?> path : paths) {
-            JoinDescription join = J.left(path);
-            join.parent = this;
-            join.alias(J.path(this.getAlias(), join.getOriginalAlias()));
-            addJoin(join);
+            nested(J.left(path));
         }
 
         return this;

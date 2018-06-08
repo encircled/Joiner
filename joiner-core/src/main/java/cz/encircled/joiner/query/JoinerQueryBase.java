@@ -1,15 +1,5 @@
 package cz.encircled.joiner.query;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
-
 import com.querydsl.core.types.EntityPath;
 import com.querydsl.core.types.Expression;
 import com.querydsl.core.types.Path;
@@ -17,6 +7,9 @@ import com.querydsl.core.types.Predicate;
 import cz.encircled.joiner.query.join.J;
 import cz.encircled.joiner.query.join.JoinDescription;
 import cz.encircled.joiner.util.Assert;
+
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Implementation of joiner query with {@link com.querydsl.core.Tuple non-tuple} result
@@ -55,7 +48,7 @@ public class JoinerQueryBase<T, R> implements JoinerQuery<T, R>, JoinRoot {
 
     private boolean isCount;
 
-    JoinerQueryBase(EntityPath<T> from) {
+    public JoinerQueryBase(EntityPath<T> from) {
         this.from = from;
     }
 
@@ -64,7 +57,7 @@ public class JoinerQueryBase<T, R> implements JoinerQuery<T, R>, JoinRoot {
         this.isCount = isCount;
     }
 
-    JoinerQueryBase(EntityPath<T> from, Expression<R> returnProjection) {
+    public JoinerQueryBase(EntityPath<T> from, Expression<R> returnProjection) {
         this.from = from;
         this.returnProjection = returnProjection;
     }
@@ -302,5 +295,51 @@ public class JoinerQueryBase<T, R> implements JoinerQuery<T, R>, JoinRoot {
         isCount = true;
     }
 
+    @Override
+    public String toString() {
+        return "JoinerQueryBase{" +
+                "from=" + from +
+                ", returnProjection=" + returnProjection +
+                ", where=" + where +
+                ", joins=" + joins +
+                ", joinGraphs=" + joinGraphs +
+                ", distinct=" + distinct +
+                ", groupBy=" + groupBy +
+                ", having=" + having +
+                ", hints=" + hints +
+                ", features=" + features +
+                ", offset=" + offset +
+                ", limit=" + limit +
+                ", orders=" + orders +
+                ", isCount=" + isCount +
+                '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof JoinerQueryBase)) return false;
+        JoinerQueryBase<?, ?> that = (JoinerQueryBase<?, ?>) o;
+        return distinct == that.distinct &&
+                isCount == that.isCount &&
+                Objects.equals(from, that.from) &&
+                Objects.equals(returnProjection, that.returnProjection) &&
+                Objects.equals(where, that.where) &&
+                Objects.equals(joins, that.joins) &&
+                Objects.equals(joinGraphs, that.joinGraphs) &&
+                Objects.equals(groupBy, that.groupBy) &&
+                Objects.equals(having, that.having) &&
+                Objects.equals(hints, that.hints) &&
+                Objects.equals(features, that.features) &&
+                Objects.equals(offset, that.offset) &&
+                Objects.equals(limit, that.limit) &&
+                Objects.equals(orders, that.orders);
+    }
+
+    @Override
+    public int hashCode() {
+
+        return Objects.hash(from, returnProjection, where, joins, joinGraphs, distinct, groupBy, having, hints, features, offset, limit, orders, isCount);
+    }
 }
 

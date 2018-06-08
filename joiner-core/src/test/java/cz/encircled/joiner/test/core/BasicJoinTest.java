@@ -24,6 +24,14 @@ import java.util.List;
 public class BasicJoinTest extends AbstractTest {
 
     @Test
+    public void testNestedJoinAlias() {
+        JoinerQueryBase<Group, Group> q = Q.from(QGroup.group).joins(J.left(QUser.user1)
+                .nested(J.left(QAddress.address).nested(QStatus.status)));
+        List<JoinDescription> j = J.unrollChildrenJoins(q.getAllJoins().values());
+        Assert.assertEquals("status_on_address_on_user1", j.get(j.size() - 1).getAlias().toString());
+    }
+
+    @Test
     public void testRightJoinSingleAssociation() {
         Assume.assumeFalse(isEclipse());
         List<User> users = joiner.find(Q.from(QUser.user1).joins(new JoinDescription(QGroup.group).right().fetch(false)));

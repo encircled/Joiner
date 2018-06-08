@@ -2,6 +2,8 @@ package cz.encircled.joiner.query;
 
 import com.querydsl.core.types.Expression;
 
+import java.util.Objects;
+
 /**
  * Definition of result set order
  *
@@ -26,4 +28,18 @@ public class QueryOrder<T> {
         return target;
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof QueryOrder)) return false;
+        QueryOrder<?> that = (QueryOrder<?>) o;
+        return isAsc == that.isAsc &&
+                Objects.equals(target, that.target);
+    }
+
+    @Override
+    public int hashCode() {
+
+        return Objects.hash(isAsc, target);
+    }
 }

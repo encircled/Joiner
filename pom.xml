@@ -35,6 +35,7 @@
         <module>joiner-core</module>
         <module>joiner-spring</module>
         <module>joiner-eclipse</module>
+        <module>joiner-kotlin</module>
     </modules>
 
     <packaging>pom</packaging>

@@ -89,7 +89,6 @@ public class Joiner {
     }
 
     public <T, R> List<R> find(JoinerQuery<T, R> request) {
-
         JPAQuery<R> query = toJPAQuery(request);
 
         if (request.isCount()) {
