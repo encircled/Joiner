@@ -16,7 +16,7 @@ public class ExpressionQueryFromBuilder<R> implements FromBuilder<R> {
 
     @Override
     public <T> JoinerQuery<T, R> from(EntityPath<T> from) {
-        return new JoinerQueryBase<T, R>(from, projection);
+        return new JoinerQueryBase<>(from, projection);
     }
 
 }

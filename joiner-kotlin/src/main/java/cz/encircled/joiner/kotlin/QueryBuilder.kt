@@ -4,21 +4,35 @@ import com.querydsl.core.JoinType
 import com.querydsl.core.types.EntityPath
 import com.querydsl.core.types.Expression
 import com.querydsl.core.types.Predicate
+import cz.encircled.joiner.query.FromBuilder
 import cz.encircled.joiner.query.JoinerQuery
-import cz.encircled.joiner.query.JoinerQueryBase
+import cz.encircled.joiner.query.Q
 import cz.encircled.joiner.query.join.J
 import cz.encircled.joiner.query.join.JoinDescription
 
-class KtJoinerQuery<R, T : EntityPath<R>>(private val entityPath: T) {
+//class KtJoinerQuery<R, T : EntityPath<R>>(private val entityPath: T) {
+class KtJoinerQuery<F, R, T : EntityPath<F>>(private val fromBuilder: FromBuilder<R>) {
 
-    val delegate: JoinerQueryBase<R, R> = JoinerQueryBase<R, R>(entityPath, entityPath)
+    lateinit var entityPath: T
+
+    val delegate: JoinerQuery<R, R> = Q.from(entityPath)
+
+    fun from(from: () -> EntityPath<R>) {
+        delegate
+    }
+
+    private fun checkState() {
+        if(entityPath == null) throw IllegalStateException("From not initialized")
+    }
 
     fun where(where: (e: T) -> Predicate) {
-        delegate.where(where.invoke(entityPath))
+        delegate.where(where.invoke(entityPath!!))
     }
 
     fun asc(asc: (e: T) -> Expression<*>) {
-        delegate.asc(asc.invoke(entityPath))
+        checkState()
+
+        delegate.asc(asc.invoke(entityPath!!))
     }
 
     fun desc(desc: (e: T) -> Expression<*>) {
@@ -102,8 +116,8 @@ data class KtJoinerJoin(var entityPath: EntityPath<*>) {
  */
 object QueryBuilder {
 
-    fun <R, T : EntityPath<R>> select(from: T, init: KtJoinerQuery<R, T>.() -> Unit): JoinerQuery<R, R> {
-        val query = KtJoinerQuery(from)
+    fun <R, T : EntityPath<R>> select(from: T, init: KtJoinerQuery<R, R, T>.() -> Unit): JoinerQuery<R, R> {
+        val query = KtJoinerQuery<R, R, T>(Q.select(from))
         query.init()
 
         return query.delegate
