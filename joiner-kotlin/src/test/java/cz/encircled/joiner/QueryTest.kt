@@ -5,6 +5,7 @@ import cz.encircled.joiner.query.Q
 import cz.encircled.joiner.query.join.J
 import cz.encircled.joiner.test.model.*
 import org.junit.Assert
+import org.junit.Ignore
 import org.junit.Test
 
 /**
@@ -12,6 +13,7 @@ import org.junit.Test
  */
 class QueryTest {
 
+    @Ignore
     @Test
     fun test() {
         val query =

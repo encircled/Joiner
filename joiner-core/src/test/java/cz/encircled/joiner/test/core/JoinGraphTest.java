@@ -73,6 +73,20 @@ public class JoinGraphTest extends AbstractTest {
     }
 
     @Test
+    public void testReplaceGraph() {
+        mockRegistry.registerJoinGraph("test", Collections.singletonList(J.left(QUser.user1)), Group.class);
+        Assert.assertEquals(Collections.singletonList(J.left(QUser.user1)), mockRegistry.getJoinGraph(Group.class, "test"));
+
+        mockRegistry.replaceJoinGraph("test", Collections.singletonList(J.left(QStatus.status)), Group.class);
+        Assert.assertEquals(Collections.singletonList(J.left(QStatus.status)), mockRegistry.getJoinGraph(Group.class, "test"));
+    }
+
+    @Test(expected = JoinerException.class)
+    public void testReplaceNonExistingGraph() {
+        mockRegistry.replaceJoinGraph("test", Collections.singletonList(J.left(QStatus.status)), Group.class);
+    }
+
+    @Test
     public void testDuplicatedNameForDifferentClasses() {
         mockRegistry.registerJoinGraph("test", Collections.singletonList(J.left(QUser.user1)), Group.class);
         mockRegistry.registerJoinGraph("test", Collections.singletonList(J.left(QUser.user1)), User.class);

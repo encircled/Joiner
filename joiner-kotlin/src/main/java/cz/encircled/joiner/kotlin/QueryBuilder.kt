@@ -4,18 +4,17 @@ import com.querydsl.core.JoinType
 import com.querydsl.core.types.EntityPath
 import com.querydsl.core.types.Expression
 import com.querydsl.core.types.Predicate
-import cz.encircled.joiner.query.FromBuilder
 import cz.encircled.joiner.query.JoinerQuery
 import cz.encircled.joiner.query.Q
 import cz.encircled.joiner.query.join.J
 import cz.encircled.joiner.query.join.JoinDescription
 
 //class KtJoinerQuery<R, T : EntityPath<R>>(private val entityPath: T) {
-class KtJoinerQuery<F, R, T : EntityPath<F>>(private val fromBuilder: FromBuilder<R>) {
+class KtJoinerQuery<F, R, T : EntityPath<F>>(private val p: EntityPath<R>) {
 
     lateinit var entityPath: T
 
-    val delegate: JoinerQuery<R, R> = Q.from(entityPath)
+    val delegate: JoinerQuery<R, R> = Q.from(p)
 
     fun from(from: () -> EntityPath<R>) {
         delegate
@@ -117,7 +116,7 @@ data class KtJoinerJoin(var entityPath: EntityPath<*>) {
 object QueryBuilder {
 
     fun <R, T : EntityPath<R>> select(from: T, init: KtJoinerQuery<R, R, T>.() -> Unit): JoinerQuery<R, R> {
-        val query = KtJoinerQuery<R, R, T>(Q.select(from))
+        val query = KtJoinerQuery<R, R, T>(from)
         query.init()
 
         return query.delegate

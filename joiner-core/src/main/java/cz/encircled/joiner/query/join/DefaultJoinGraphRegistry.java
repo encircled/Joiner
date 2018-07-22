@@ -38,6 +38,26 @@ public class DefaultJoinGraphRegistry implements JoinGraphRegistry {
     }
 
     @Override
+    public void replaceJoinGraph(Object graphName, Collection<JoinDescription> joins, Class<?>... rootClasses) {
+        Assert.notNull(graphName);
+        Assert.notNull(joins);
+        Assert.notNull(rootClasses);
+        Assert.assertThat(rootClasses.length > 0);
+
+        for (Class<?> clazz : rootClasses) {
+            Map<Object, List<JoinDescription>> existing = registry.get(clazz);
+            if (existing != null) {
+                if (existing.containsKey(graphName)) {
+                    existing.put(graphName, new ArrayList<>(joins));
+                    continue;
+                }
+            }
+
+            throw new JoinerException(String.format("JoinGraph with name [%s] is not defined for the class [%s]", graphName, clazz.getName()));
+        }
+    }
+
+    @Override
     public List<JoinDescription> getJoinGraph(Class<?> clazz, Object name) {
         // TODO add tests for join description modifying
         Map<Object, List<JoinDescription>> joinsOfClass = registry.get(clazz);
