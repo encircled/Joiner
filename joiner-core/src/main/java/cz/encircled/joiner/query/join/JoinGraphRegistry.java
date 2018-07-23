@@ -2,6 +2,7 @@ package cz.encircled.joiner.query.join;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 /**
  * JoinGraph allows to predefine a set of joins for a specific class that can be added to a query using {@link cz.encircled.joiner.query.JoinerQuery#joinGraphs(String...)}
@@ -35,5 +36,11 @@ public interface JoinGraphRegistry {
      * @return collection of registered join graphs
      */
     List<JoinDescription> getJoinGraph(Class<?> clazz, Object name);
+
+    /**
+     * @param clazz target class
+     * @return map of all registered join graphs
+     */
+    Map<Object, List<JoinDescription>> getAllJoinGraphs(Class<?> clazz);
 
 }

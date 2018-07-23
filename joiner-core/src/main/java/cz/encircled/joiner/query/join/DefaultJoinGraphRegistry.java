@@ -3,10 +3,7 @@ package cz.encircled.joiner.query.join;
 import cz.encircled.joiner.exception.JoinerException;
 import cz.encircled.joiner.util.Assert;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
@@ -69,6 +66,11 @@ public class DefaultJoinGraphRegistry implements JoinGraphRegistry {
         }
 
         throw new JoinerException(String.format("JoinGraph with name [%s] is not defined for class [%s]", name, clazz));
+    }
+
+    @Override
+    public Map<Object, List<JoinDescription>> getAllJoinGraphs(Class<?> clazz) {
+        return registry.getOrDefault(clazz, new HashMap<>());
     }
 
 }
