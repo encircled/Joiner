@@ -5,7 +5,7 @@
 
 Joiner is a Java library which allows to create type-safe JPA queries. It is focused on applications with complex domain model, which require a lot of work with query joins.   
 
-Joiner can be used instead of or together with QueryDSL. Joiner uses QueryDSL APT maven plugin for entitiy metamodel generation. See more about QueryDSL installation at [QueryDSL](http://www.querydsl.com/static/querydsl/latest/reference/html/ch02.html#jpa_integration).
+Joiner can be used instead of or together with QueryDSL. Joiner uses QueryDSL APT maven plugin for entity metamodel generation. See more about QueryDSL installation at [QueryDSL](http://www.querydsl.com/static/querydsl/latest/reference/html/ch02.html#jpa_integration).
 
 Joiner offers following extra features:
 * simple way of adding complex joins to the queries
@@ -14,8 +14,7 @@ Joiner offers following extra features:
 
 # Example setup
 
-## Non-spring environment
-All you need is entity manager instance, setup of Joiner itself is as simple as:
+All you need is an instance of entity manager, setup of Joiner is as simple as:
 
 ```java
 Joiner joiner = new Joiner(getEntityManager());
@@ -25,73 +24,46 @@ joiner.find(Q.from(QUser.user)
 
 # Features
 
-## Nested joins
-
-Joiner represents query joins as a graph, which allows to automatically resolve unique aliases for nested joins (even when there are name collisions in different tree branches).
-
-Aliases of nested joins are determined at runtime. To refer an unambiguous nested join, you can just use it's alias, otherwise use `J.path(...)` util method.     
-For example, there is a query like:
+## Basic query
 
 ```java
-Q.from(QGroup.group)
-    .joins(J.left(QPerson.person)
-                .nested(QContact.contact))
+joiner.find(Q.from(QGroup.group)
+                .where(QGroup.group.id.eq(1L))
+                .groupBy(QGroup.group.type)
+                .limit(10)
+                .offset(2)     
+                .distinct());
 ```
 
-`Person` is not a nested join and should be referenced directly:
+## Basic join
 
-```java
-Q.from(QGroup.group)
-    .joins(J.left(QPerson.person)
-                .nested(J.left(QContact.contact)))
-    .where(QPerson.person.name.eq('Chuck'));
-```
+Example below shows how to join users of group. Target attribute is looked up by type and field name, so it does not matter which relationship it is:
 
-To reference a `Contact` entity (in `where` clause etc), `QContact.contact` can be used directly as well:
-
-```java
-Q.from(QGroup.group)
-    .joins(J.left(QPerson.person)
-            .nested(QContact.contact))
-    .where(QContact.contact.number.eq(12345));
-```
-
-However, in cases when there are multiple alias candidates, `J.path(...)`. For example to predicate a contact of second person:
-
-```java
-Q.from(QGroup.group)
-        .joins(J.left(QPerson.person)
-                        .nested(QContact.contact),
-                J.left(new QPerson("secondPerson"))
-                        .nested(QContact.contact))
-        .where(J.path(new QPerson("secondPerson"), QContact.contact).attribute.eq("secondContactAttribute"))
-```
-
-## Examples
-
-### Query joins
-
-Basic select query
 ```java
 joiner.findOne(Q.from(QGroup.group)
-                .where(QGroup.group.id.eq(1L)));
+                .joins(QUser.user);
 ```
 
-Basic join
+By default, all joins are left fetch joins. If there are multiple field with the same type, a name should be specified explicitly:
+
 ```java
 joiner.findOne(Q.from(QGroup.group)
-                .joins(J.left(QUser.user1))
-                .where(QGroup.group.id.eq(1L)));
+                .joins(J.inner(new QUser("userAttrName"))
+                                    .on(new QUser("userAttrName").name.isNotNull())
+                                    .fetch(false)));
 ```
 
-Joining a subclass only (`SuperUser` extends `User`)
+## Inheritance
+
+Joining a subclass only (`SuperUser` extends `User`):
+
 ```java
 joiner.findOne(Q.from(QGroup.group)
                 .joins(QSuperUser.superUser)
                 .where(QGroup.group.id.eq(1L)));
 ```
 
-Joining an association, which is present on a subclass only (`Key` is present on `SuperUser` only)
+Joining an attribute, which is present on a subclass only (`Key` is present on `SuperUser` only)
 ```java
 joiner.findOne(Q.from(QGroup.group)
                 .joins(J.left(QSuperUser.superUser)
@@ -99,28 +71,130 @@ joiner.findOne(Q.from(QGroup.group)
                 .where(QGroup.group.id.eq(1L)));
 ```
 
-Joining multiple nested associations
+## Nested joins
+
+Nested joins look following:
+
 ```java
 joiner.findOne(Q.from(QGroup.group)
-                .joins(J.left(QSuperUser.superUser)
-                        .nested(QKey.key,QContact.contact))
-                .where(QGroup.group.id.eq(1L)));
-```
-### Result projection
-By default, list or single result of `from` clause is returned (for `find` and `findOne` respectively).   
-Next example shows how to return another projection:   
-```java
-joiner.find(Q.select(QPhone.phone.number)
-                .from(QUser.user)
-                .joins(QPhone.phone));
+                .joins(J.inner(QUser.user1).nested(QPhone.phone)));
 ```
 
-`Q.select` can be used for tuples as well:
+Or even deeper:
 
 ```java
-joiner.find(Q.select(QUser.user.id, QPhone.phone.number)
-                .from(QUser.user)
-                .joins(QPhone.phone));
+joiner.findOne(Q.from(QGroup.group)
+                .joins(
+                        J.inner(QUser.user1).nested(
+                                J.left(QPhone.phone)
+                                        .nested(QStatus.status)
+                        ),
+                        
+                        J.left(QStatus.status)
+                ));
+```
+
+Joiner represents query joins as a graph, which allows to automatically resolve unique aliases for nested joins (even when there are name collisions in different tree branches).
+
+Aliases of ambiguous aliases for joins are determined at runtime. `J.path(...)` allows to get alias of ambiguous join.
+
+So from previous example, the phone can be referenced directly, by the phone statuses only using `J.path(...)`:       
+
+```java
+joiner.findOne(Q.from(QGroup.group)
+                    .joins(
+                            J.inner(QUser.user1).nested(
+                                    J.left(QPhone.phone)
+                                            .nested(QStatus.status)
+                            ),
+                            
+                            J.left(QStatus.status)
+                    )
+                    .where(QPhone.phone.type.eq("mobile")
+                                            .and(J.path(QUser.user1, QPhone.phone, QStatus.status).active.isTrue())));
+```
+
+Or, you may use a unique name:
+
+```java
+joiner.findOne(Q.from(QGroup.group)
+                    .joins(
+                            J.inner(QUser.user1).nested(
+                                    J.left(QPhone.phone)
+                                            .nested(new QStatus("contactStatus"))
+                            ),
+                            
+                            J.left(QStatus.status)
+                    )
+                    .where(QPhone.phone.type.eq("mobile")
+                                            .and(new QStatus("contactStatus").active.isTrue())));
+```
+
+## Result projection
+
+By default, `find` and `findOne` return an object(s) of type passed to `from` method. 
+Customizing of result projection is possible using `Q.select` method. 
+Lets find the active phone number of John:    
+   
+```java
+String number = joiner.findOne(Q.select(QPhone.phone.number)
+                    .from(QUser.user)
+                    .joins(J.inner(QPhone.phone).nested(QStatus.status))
+                    .where(QUser.user.name.eq("John").and(QStatus.status.active.isTrue()))
+                    );
+```
+
+Or tuple:
+
+```java
+List<Tuple> tuple = joiner.findOne(QUser.user.surname, Q.select(QPhone.phone.number)
+                            .from(QUser.user)
+                            .joins(J.inner(QPhone.phone).nested(QStatus.status))
+                            .where(QUser.user.name.eq("John").and(QStatus.status.active.isTrue()))
+                            );
+```
+
+## Sorting
+
+```java
+joiner.findOne(Q.from(QGroup.group)
+                .asc(QGroup.group.name));
+```
+
+```java
+joiner.findOne(Q.from(QGroup.group)
+                .desc(QGroup.group.name, QGroup.group.id));
+```
+
+## Query features
+
+Query features allow to modify the request/query before executing in declarative way.   
+For example, joiner offers a build-it query feature for spring-based pagination - PageableFeature.  
+Usage of the features is following:
+
+```java
+joiner.findOne(Q.from(QGroup.group)
+                .addFeatures(new PageableFeature(PageRequest.of(0, 20))));
+```
+
+You can implement your own features, for example a feature which adds active status predicate to all present joins:
+```java
+public class ActiveStatusFeature implements QueryFeature {
+
+    @Override
+    public <T, R> JoinerQuery<T, R> before(JoinerQuery<T, R> request) {
+        J.unrollChildrenJoins(request.getJoins()).forEach(j -> {
+            // Find status field
+            BooleanPath active = ReflectionUtils.getField(j.getAlias(), "active", BooleanPath.class);
+            
+            // Add predicate to "on" clause
+            j.on(active.isTrue().and(j.getOn()));
+        });
+        
+        return request;
+    }
+
+}
 ```
 
 ## Maven dependencies  
