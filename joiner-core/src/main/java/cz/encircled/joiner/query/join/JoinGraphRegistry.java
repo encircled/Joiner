@@ -30,6 +30,15 @@ public interface JoinGraphRegistry {
     void replaceJoinGraph(Object graphName, Collection<JoinDescription> joins, Class<?>... rootClasses);
 
     /**
+     * Adds new join graph to the registry or replace an existing one.
+     *
+     * @param graphName   graph unique name. Generally, any object may be used as a name, it should have correct hashCode method. String or enum is recommended.
+     * @param joins       associated joins
+     * @param rootClasses target class for a new join graph
+     */
+    void registerOrReplaceJoinGraph(Object graphName, Collection<JoinDescription> joins, Class<?>... rootClasses);
+
+    /**
      *
      * @param clazz target class
      * @param name join graph name

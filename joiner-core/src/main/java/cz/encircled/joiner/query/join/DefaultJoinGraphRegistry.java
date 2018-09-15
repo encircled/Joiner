@@ -55,6 +55,20 @@ public class DefaultJoinGraphRegistry implements JoinGraphRegistry {
     }
 
     @Override
+    public void registerOrReplaceJoinGraph(Object graphName, Collection<JoinDescription> joins, Class<?>... rootClasses) {
+        Assert.notNull(graphName);
+        Assert.notNull(joins);
+        Assert.notNull(rootClasses);
+        Assert.assertThat(rootClasses.length > 0);
+
+        for (Class<?> clazz : rootClasses) {
+            registry.computeIfAbsent(clazz, c -> new ConcurrentHashMap<>());
+            Map<Object, List<JoinDescription>> joinsOfClass = registry.get(clazz);
+            joinsOfClass.put(graphName, new ArrayList<>(joins));
+        }
+    }
+
+    @Override
     public List<JoinDescription> getJoinGraph(Class<?> clazz, Object name) {
         // TODO add tests for join description modifying
         Map<Object, List<JoinDescription>> joinsOfClass = registry.get(clazz);
