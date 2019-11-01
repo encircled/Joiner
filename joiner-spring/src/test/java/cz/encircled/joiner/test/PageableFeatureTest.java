@@ -44,7 +44,7 @@ public class PageableFeatureTest {
     @Test
     public void testDescSort() {
         JoinerQuery<User, User> request = Q.from(QUser.user1);
-        new PageableFeature(PageRequest.of(2, 10, asc("id"))).before(request);
+        new PageableFeature(PageRequest.of(2, 10, desc("id"))).before(request);
 
         List<QueryOrder> orders = request.getOrder();
         Assert.assertEquals(1, orders.size());
@@ -82,7 +82,7 @@ public class PageableFeatureTest {
     }
 
     private Sort desc(String... props) {
-        return Sort.by(Arrays.stream(props).map(Sort.Order::asc).collect(Collectors.toList()));
+        return Sort.by(Arrays.stream(props).map(Sort.Order::desc).collect(Collectors.toList()));
     }
 
 }
