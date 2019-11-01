@@ -23,7 +23,8 @@ public class PageableFeatureTest {
     @Test
     public void testLimitAndOffset() {
         JoinerQuery<User, User> request = Q.from(QUser.user1);
-        new PageableFeature(new PageRequest(2, 10)).before(request);
+
+        new PageableFeature(PageRequest.of(2, 10)).before(request);
 
         Assert.assertEquals(Long.valueOf(10L), request.getLimit());
         Assert.assertEquals(Long.valueOf(20L), request.getOffset());
@@ -32,7 +33,7 @@ public class PageableFeatureTest {
     @Test
     public void testAscSort() {
         JoinerQuery<User, User> request = Q.from(QUser.user1);
-        new PageableFeature(new PageRequest(2, 10, asc("id"))).before(request);
+        new PageableFeature(PageRequest.of(2, 10, asc("id"))).before(request);
 
         List<QueryOrder> orders = request.getOrder();
         Assert.assertEquals(1, orders.size());
@@ -43,7 +44,7 @@ public class PageableFeatureTest {
     @Test
     public void testDescSort() {
         JoinerQuery<User, User> request = Q.from(QUser.user1);
-        new PageableFeature(new PageRequest(2, 10, desc("id"))).before(request);
+        new PageableFeature(PageRequest.of(2, 10, asc("id"))).before(request);
 
         List<QueryOrder> orders = request.getOrder();
         Assert.assertEquals(1, orders.size());
@@ -54,7 +55,7 @@ public class PageableFeatureTest {
     @Test
     public void testMultipleSorts() {
         JoinerQuery<User, User> request = Q.from(QUser.user1);
-        new PageableFeature(new PageRequest(2, 10, asc("id", "name"))).before(request);
+        new PageableFeature(PageRequest.of(2, 10, asc("id", "name"))).before(request);
 
         List<QueryOrder> orders = request.getOrder();
         Assert.assertEquals(2, orders.size());
@@ -68,7 +69,7 @@ public class PageableFeatureTest {
     public void testNestedPropertySort() {
         JoinerQuery<User, User> request = Q.from(QUser.user1);
 
-        new PageableFeature(new PageRequest(2, 10, new Sort(new Sort.Order(Sort.Direction.ASC, "groups.name")))).before(request);
+        new PageableFeature(PageRequest.of(2, 10, Sort.by(Sort.Order.asc("groups.name")))).before(request);
 
         List<QueryOrder> orders = request.getOrder();
         Assert.assertEquals(1, orders.size());
@@ -77,11 +78,11 @@ public class PageableFeatureTest {
     }
 
     private Sort asc(String... props) {
-        return new Sort(Arrays.stream(props).map(p -> new Sort.Order(Sort.Direction.ASC, p)).collect(Collectors.toList()));
+        return Sort.by(Arrays.stream(props).map(Sort.Order::asc).collect(Collectors.toList()));
     }
 
     private Sort desc(String... props) {
-        return new Sort(Arrays.stream(props).map(p -> new Sort.Order(Sort.Direction.DESC, p)).collect(Collectors.toList()));
+        return Sort.by(Arrays.stream(props).map(Sort.Order::asc).collect(Collectors.toList()));
     }
 
 }

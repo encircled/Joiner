@@ -1,10 +1,5 @@
 package cz.encircled.joiner.test;
 
-import java.util.List;
-
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-
 import cz.encircled.joiner.query.Q;
 import cz.encircled.joiner.spring.PageableFeature;
 import cz.encircled.joiner.test.config.SpringTestConfig;
@@ -26,13 +21,17 @@ import org.springframework.test.context.junit4.AbstractTransactionalJUnit4Spring
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+import java.util.List;
+
 /**
  * @author Vlad on 14-Aug-16.
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = {SpringTestConfig.class})
 @Transactional
-@TestExecutionListeners(listeners = { TestDataListener.class })
+@TestExecutionListeners(listeners = {TestDataListener.class})
 public class SpringRepositoryTest extends AbstractTransactionalJUnit4SpringContextTests {
 
     @Autowired
@@ -58,7 +57,7 @@ public class SpringRepositoryTest extends AbstractTransactionalJUnit4SpringConte
 
     @Test
     public void testPagination() {
-        PageableFeature feature = new PageableFeature(new PageRequest(0, 10, new Sort(new Sort.Order(Sort.Direction.ASC, "statuses.name"))));
+        PageableFeature feature = new PageableFeature(PageRequest.of(0, 10, Sort.by(Sort.Order.asc("statuses.name"))));
 
         List<User> users = userRepository.find(Q.from(QUser.user1)
                 .joins(QStatus.status)
@@ -68,7 +67,7 @@ public class SpringRepositoryTest extends AbstractTransactionalJUnit4SpringConte
 
     @Test
     public void testFindPageWithFetchJoin() {
-        Page<User> page = userRepository.findPage(Q.from(QUser.user1).joins(QGroup.group), new PageRequest(0, 1));
+        Page<User> page = userRepository.findPage(Q.from(QUser.user1).joins(QGroup.group), PageRequest.of(0, 1));
         Assert.assertNotNull(page.getContent());
         Assert.assertEquals(1, page.getContent().size());
         Assert.assertEquals(entityManager.createQuery("select count(u) from User u").getSingleResult(), page.getTotalElements());
@@ -76,7 +75,7 @@ public class SpringRepositoryTest extends AbstractTransactionalJUnit4SpringConte
 
     @Test
     public void testFindPageWithFetchJoinGraph() {
-        Page<User> page = userRepository.findPage(Q.from(QUser.user1).joinGraphs("userGroups"), new PageRequest(0, 1));
+        Page<User> page = userRepository.findPage(Q.from(QUser.user1).joinGraphs("userGroups"), PageRequest.of(0, 1));
         Assert.assertNotNull(page.getContent());
         Assert.assertEquals(1, page.getContent().size());
         Assert.assertEquals(entityManager.createQuery("select count(u) from User u").getSingleResult(), page.getTotalElements());
