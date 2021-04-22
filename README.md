@@ -73,6 +73,8 @@ joiner.findOne(Q.from(QGroup.group)
 
 ## Nested joins
 
+**Remark**: Kotlin API greatly improves read-ability of nested joins, see details below 
+
 Nested joins look following:
 
 ```java
