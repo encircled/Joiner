@@ -2,8 +2,8 @@ package cz.encircled.joiner.kotlin
 
 import cz.encircled.joiner.kotlin.JoinerKtOps.innerJoin
 import cz.encircled.joiner.kotlin.JoinerKtOps.leftJoin
-import cz.encircled.joiner.kotlin.QueryBuilder.countOf
-import cz.encircled.joiner.kotlin.QueryBuilder.from
+import cz.encircled.joiner.kotlin.JoinerKtQueryBuilder.countOf
+import cz.encircled.joiner.kotlin.JoinerKtQueryBuilder.from
 import cz.encircled.joiner.model.QGroup
 import cz.encircled.joiner.model.QStatus
 import cz.encircled.joiner.model.QUser

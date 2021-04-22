@@ -2,9 +2,9 @@ package cz.encircled.joiner.kotlin
 
 import cz.encircled.joiner.kotlin.JoinerKtOps.innerJoin
 import cz.encircled.joiner.kotlin.JoinerKtOps.leftJoin
-import cz.encircled.joiner.kotlin.QueryBuilder.all
-import cz.encircled.joiner.kotlin.QueryBuilder.countOf
-import cz.encircled.joiner.kotlin.QueryBuilder.from
+import cz.encircled.joiner.kotlin.JoinerKtQueryBuilder.all
+import cz.encircled.joiner.kotlin.JoinerKtQueryBuilder.countOf
+import cz.encircled.joiner.kotlin.JoinerKtQueryBuilder.from
 import cz.encircled.joiner.model.*
 import cz.encircled.joiner.query.Q
 import cz.encircled.joiner.query.join.J
@@ -15,7 +15,7 @@ import kotlin.test.assertEquals
 /**
  * @author Vlad on 05-Jun-18.
  */
-class QueryBuilderTest {
+class JoinerKtQueryBuilderTest {
 
     @Test
     fun testCountQuery() {

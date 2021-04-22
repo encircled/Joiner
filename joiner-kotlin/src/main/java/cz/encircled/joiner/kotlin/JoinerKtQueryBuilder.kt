@@ -85,22 +85,22 @@ interface JoinOps {
         return JoinDescription(this).nested(J.inner(p))
     }
 
-    infix fun <FROM_C, PROJ, FROM : EntityPath<FROM_C>> KtJoinerQuery<FROM_C, PROJ, FROM>.leftJoin(j: JoinDescription): KtJoinerQuery<FROM_C, PROJ, FROM> {
+    infix fun <FROM_C, PROJ, FROM : EntityPath<FROM_C>> JoinerKtQuery<FROM_C, PROJ, FROM>.leftJoin(j: JoinDescription): JoinerKtQuery<FROM_C, PROJ, FROM> {
         delegate.joins(j.left())
         return this
     }
 
-    infix fun <FROM_C, PROJ, FROM : EntityPath<FROM_C>> KtJoinerQuery<FROM_C, PROJ, FROM>.leftJoin(p: EntityPath<*>): KtJoinerQuery<FROM_C, PROJ, FROM> {
+    infix fun <FROM_C, PROJ, FROM : EntityPath<FROM_C>> JoinerKtQuery<FROM_C, PROJ, FROM>.leftJoin(p: EntityPath<*>): JoinerKtQuery<FROM_C, PROJ, FROM> {
         delegate.joins(J.left(p))
         return this
     }
 
-    infix fun <FROM_C, PROJ, FROM : EntityPath<FROM_C>> KtJoinerQuery<FROM_C, PROJ, FROM>.innerJoin(j: JoinDescription): KtJoinerQuery<FROM_C, PROJ, FROM> {
+    infix fun <FROM_C, PROJ, FROM : EntityPath<FROM_C>> JoinerKtQuery<FROM_C, PROJ, FROM>.innerJoin(j: JoinDescription): JoinerKtQuery<FROM_C, PROJ, FROM> {
         delegate.joins(j.inner())
         return this
     }
 
-    infix fun <FROM_C, PROJ, FROM : EntityPath<FROM_C>> KtJoinerQuery<FROM_C, PROJ, FROM>.innerJoin(p: EntityPath<*>): KtJoinerQuery<FROM_C, PROJ, FROM> {
+    infix fun <FROM_C, PROJ, FROM : EntityPath<FROM_C>> JoinerKtQuery<FROM_C, PROJ, FROM>.innerJoin(p: EntityPath<*>): JoinerKtQuery<FROM_C, PROJ, FROM> {
         delegate.joins(J.inner(p))
         return this
     }
@@ -108,7 +108,7 @@ interface JoinOps {
 }
 
 
-class KtJoinerQuery<FROM_C, PROJ, FROM : EntityPath<FROM_C>>(
+class JoinerKtQuery<FROM_C, PROJ, FROM : EntityPath<FROM_C>>(
     private val entityPath: FROM,
     projection: Path<PROJ>,
     isCount: Boolean,
@@ -118,27 +118,27 @@ class KtJoinerQuery<FROM_C, PROJ, FROM : EntityPath<FROM_C>>(
 //    internal val delegate: JoinerQuery<FROM_C, PROJ> = if (isCount) Q.count(entityPath) as JoinerQuery<FROM_C, PROJ> else Q.select(projection).from(entityPath)
 ) : JoinerQuery<FROM_C, PROJ> by delegate, JoinOps {
 
-    infix fun where(where: ConditionOps.(e: FROM) -> Predicate): KtJoinerQuery<FROM_C, PROJ, FROM> {
+    infix fun where(where: ConditionOps.(e: FROM) -> Predicate): JoinerKtQuery<FROM_C, PROJ, FROM> {
         delegate.where(where.invoke(KConditionOps(), entityPath))
         return this
     }
 
-    override infix fun limit(limit: Long?): KtJoinerQuery<FROM_C, PROJ, FROM> {
+    override infix fun limit(limit: Long?): JoinerKtQuery<FROM_C, PROJ, FROM> {
         delegate.limit(limit)
         return this
     }
 
-    infix fun asc(asc: (e: FROM) -> Expression<*>): KtJoinerQuery<FROM_C, PROJ, FROM> {
+    infix fun asc(asc: (e: FROM) -> Expression<*>): JoinerKtQuery<FROM_C, PROJ, FROM> {
         delegate.asc(asc.invoke(entityPath))
         return this
     }
 
-    override infix fun asc(asc: Expression<*>): KtJoinerQuery<FROM_C, PROJ, FROM> {
+    override infix fun asc(asc: Expression<*>): JoinerKtQuery<FROM_C, PROJ, FROM> {
         delegate.asc(asc)
         return this
     }
 
-    infix fun desc(desc: (e: FROM) -> Expression<*>): KtJoinerQuery<FROM_C, PROJ, FROM> {
+    infix fun desc(desc: (e: FROM) -> Expression<*>): JoinerKtQuery<FROM_C, PROJ, FROM> {
         delegate.desc(desc.invoke(entityPath))
         return this
     }
@@ -148,22 +148,22 @@ class KtJoinerQuery<FROM_C, PROJ, FROM : EntityPath<FROM_C>>(
 /**
  * @author Vlad on 05-Jun-18.
  */
-object QueryBuilder : JoinOps {
+object JoinerKtQueryBuilder : JoinOps {
 
-    private fun <FROM_C, FROM : EntityPath<FROM_C>, PROJ> select(sf: SelectFrom<FROM_C, FROM, PROJ>): KtJoinerQuery<FROM_C, PROJ, FROM> {
-        return KtJoinerQuery(sf.from, sf.projection, sf.isCount)
+    private fun <FROM_C, FROM : EntityPath<FROM_C>, PROJ> select(sf: SelectFrom<FROM_C, FROM, PROJ>): JoinerKtQuery<FROM_C, PROJ, FROM> {
+        return JoinerKtQuery(sf.from, sf.projection, sf.isCount)
     }
 
-    infix fun <PROJ, FROM_C, FROM : EntityPath<FROM_C>> Path<PROJ>.from(path: FROM): KtJoinerQuery<FROM_C, PROJ, FROM> {
+    infix fun <PROJ, FROM_C, FROM : EntityPath<FROM_C>> Path<PROJ>.from(path: FROM): JoinerKtQuery<FROM_C, PROJ, FROM> {
         return select(SelectFrom(this, path))
     }
 
-    fun <FROM_C, FROM : EntityPath<FROM_C>> FROM.all(): KtJoinerQuery<FROM_C, FROM_C, FROM> {
+    fun <FROM_C, FROM : EntityPath<FROM_C>> FROM.all(): JoinerKtQuery<FROM_C, FROM_C, FROM> {
         return select(SelectFrom(this, this))
     }
 
-    fun <FROM_C, FROM : EntityPath<FROM_C>> FROM.countOf(): KtJoinerQuery<FROM_C, Long, FROM> {
-        return KtJoinerQuery(this, this, true) as KtJoinerQuery<FROM_C, Long, FROM>
+    fun <FROM_C, FROM : EntityPath<FROM_C>> FROM.countOf(): JoinerKtQuery<FROM_C, Long, FROM> {
+        return JoinerKtQuery(this, this, true) as JoinerKtQuery<FROM_C, Long, FROM>
     }
 
     private data class SelectFrom<FROM_C, FROM : EntityPath<FROM_C>, PROJ>(

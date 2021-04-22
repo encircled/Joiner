@@ -197,21 +197,77 @@ public class ActiveStatusFeature implements QueryFeature {
         J.unrollChildrenJoins(request.getJoins()).forEach(j -> {
             // Find status field
             BooleanPath active = ReflectionUtils.getField(j.getAlias(), "active", BooleanPath.class);
-            
+
             // Add predicate to "on" clause
             j.on(active.isTrue().and(j.getOn()));
         });
-        
+
         return request;
     }
 
 }
 ```
 
-## Maven dependencies  
+## Kotlin API
+
+With Kotlin, it is possible to introduce even more fluent API. It supports the same set of features and brings better
+core read-ability. Kotlin query builder is 100% compatible with existing java `Joiner` class and spring data
+repositories.
+
+Kotlin query showcase:
+
+```kotlin
+        val userNames = joiner.findOne(
+    QUser.user1.name from QUser.user1
+            leftJoin QUser.user1.addresses
+            innerJoin QPhone.phone
+            leftJoin (QGroup.group innerJoin QStatus.status)
+
+            where { it.name eq "user1" and it.id notIn listOf(1, 2) }
+            limit 5
+
+            asc QUser.user1.id
+)
+```
+
+where
+
+- `QUser.user1.name from QUser.user1` specifies the result projection (names of users) and target entity (user)
+- `leftJoin QUser.user1.addresses` and `innerJoin QPhone.phone` join can be set as a path via parent (like joining user
+  addresses via `QUser.user1.addresses`) or via entity alias (`QPhone.phone`)
+- `leftJoin (QGroup.group innerJoin QStatus.status)` nested joins are much easier to read&write now, those are just
+  marked by brackets
+- `where { it.name eq "user1" and it.id notIn listOf(1, 2) }` root entity is passed as a param, so it can be accessed
+  directly (`it.name` instead of `QUser.user.name`), all operators are supported as infix functions
+
+### Select all and count queries
+
+Result projection can be omitted by using `QUser.user.all() where { ... }`. Count query is created
+via `QUser.user.countOf() where { ... }`.
+
+### Importing Kotlin API
+
+As of now, Intellij IDEA may struggle with finding correct imports for Joiner infix & extension functions, so it may be
+needed to add those manually:
+
+```kotlin
+import cz.encircled.joiner.kotlin.JoinerKtOps.innerJoin
+import cz.encircled.joiner.kotlin.JoinerKtOps.leftJoin
+import cz.encircled.joiner.kotlin.QueryBuilder.all
+import cz.encircled.joiner.kotlin.QueryBuilder.countOf
+import cz.encircled.joiner.kotlin.QueryBuilder.from
+```
+
+In some cases, it might be more convenient to avoid direct imports. For instance, when a class has a lot of queries. As
+of now, it will improve autocompletion in IDEA. It can be done by implementing
+interface `cz.encircled.joiner.kotlin.JoinOps`
+
+## Maven dependencies
 
 ### Core module
+
 ```xml
+
 <dependency>
     <groupId>cz.encircled</groupId>
     <artifactId>joiner-core</artifactId>
@@ -229,9 +285,18 @@ public class ActiveStatusFeature implements QueryFeature {
 ```
 
 ### Eclipselink support module
+
 ```xml
 <dependency>
     <groupId>cz.encircled</groupId>
     <artifactId>joiner-eclipse</artifactId>
+    <version>${joiner.version}</version>
+</depend
+
+### Kotlin module
+```xml
+<dependency>
+    <groupId>cz.encircled</groupId>
+    <artifactId>joiner-kotlin</artifactId>
     <version>${joiner.version}</version>
 </depend
