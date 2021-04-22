@@ -130,12 +130,23 @@ joiner.findOne(Q.from(QGroup.group)
                                             .and(new QStatus("contactStatus").active.isTrue())));
 ```
 
+If the target join is at second level, it may be referenced via parent like this:
+
+```java
+joiner.findOne(Q.from(QGroup.group)
+                    .joins(
+                            J.inner(QUser.user1).nested(J.left(QStatus.status)),
+                            J.left(QStatus.status)
+                    )
+                    .where(QPhone.phone.type.eq("mobile")
+                                            .and(J.path(QUser.user1.statuses).active.isTrue())));
+```
+
 ## Result projection
 
-By default, `find` and `findOne` return an object(s) of type passed to `from` method. 
-Customizing of result projection is possible using `Q.select` method. 
-Lets find the active phone number of John:    
-   
+By default, `find` and `findOne` return an object(s) of type passed to `from` method. Customizing of result projection
+is possible using `Q.select` method. Lets find the active phone number of John:
+
 ```java
 String number = joiner.findOne(Q.select(QPhone.phone.number)
                     .from(QUser.user)

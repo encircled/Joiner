@@ -35,15 +35,15 @@
         <module>joiner-core</module>
         <module>joiner-spring</module>
         <module>joiner-eclipse</module>
-        <!--<module>joiner-kotlin</module>-->
+        <module>joiner-kotlin</module>
     </modules>
 
     <packaging>pom</packaging>
 
     <properties>
         <querydsl.version>4.1.4</querydsl.version>
-        <spring.version>5.2.0.RELEASE</spring.version>
-        <hibernate.version>5.2.12.Final</hibernate.version>
+        <spring.version>5.3.6</spring.version>
+        <hibernate.version>5.4.30.Final</hibernate.version>
         <eclipselink.version>2.7.1</eclipselink.version>
         <vendor.name>hibernate</vendor.name>
     </properties>

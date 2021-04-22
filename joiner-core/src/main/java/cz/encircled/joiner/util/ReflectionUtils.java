@@ -1,11 +1,9 @@
 package cz.encircled.joiner.util;
 
-import com.querydsl.core.types.EntityPath;
 import cz.encircled.joiner.exception.JoinerException;
 
 import javax.persistence.EntityManager;
 import javax.persistence.metamodel.Type;
-
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.util.Arrays;
@@ -76,6 +74,10 @@ public class ReflectionUtils {
         } catch (IllegalAccessException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public static Object getField(String field, Object object) {
+        return getField(findField(object.getClass(), field), object);
     }
 
     public static Object getField(Field field, Object object) {

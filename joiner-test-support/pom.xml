@@ -51,6 +51,7 @@
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-test</artifactId>
+            <scope>compile</scope>
         </dependency>
 
         <!-- H2 -->

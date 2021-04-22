@@ -4,6 +4,7 @@ import com.querydsl.core.types.EntityPath;
 import com.querydsl.core.types.Expression;
 import com.querydsl.core.types.Path;
 import com.querydsl.core.types.Predicate;
+import com.querydsl.core.types.dsl.CollectionPathBase;
 import cz.encircled.joiner.query.join.JoinDescription;
 
 import java.util.Collection;
@@ -24,19 +25,19 @@ public interface JoinerQuery<T, R> extends JoinRoot {
 
     Expression<R> getReturnProjection();
 
-    JoinerQueryBase<T, R> where(Predicate where);
+    JoinerQuery<T, R> where(Predicate where);
 
     Predicate getWhere();
 
-    JoinerQueryBase<T, R> distinct(boolean isDistinct);
+    JoinerQuery<T, R> distinct(boolean isDistinct);
 
     boolean isDistinct();
 
-    JoinerQueryBase<T, R> groupBy(Path<?> groupBy);
+    JoinerQuery<T, R> groupBy(Path<?> groupBy);
 
     Path<?> getGroupBy();
 
-    JoinerQueryBase<T, R> having(Predicate having);
+    JoinerQuery<T, R> having(Predicate having);
 
     Predicate getHaving();
 
@@ -47,7 +48,7 @@ public interface JoinerQuery<T, R> extends JoinRoot {
      * @return this
      * @see cz.encircled.joiner.query.join.JoinGraphRegistry
      */
-    JoinerQueryBase<T, R> joinGraphs(String... names);
+    JoinerQuery<T, R> joinGraphs(String... names);
 
     /**
      * Add join graphs to the query.
@@ -76,6 +77,8 @@ public interface JoinerQuery<T, R> extends JoinRoot {
      * @return this
      */
     JoinerQueryBase<T, R> joins(EntityPath<?>... paths);
+
+    JoinerQueryBase<T, R> joins(CollectionPathBase<?, ?, ?>... path);
 
     JoinerQueryBase<T, R> joins(JoinDescription... joins);
 
@@ -109,13 +112,13 @@ public interface JoinerQuery<T, R> extends JoinRoot {
      * @param limit value
      * @return this
      */
-    JoinerQueryBase<T, R> limit(Long limit);
+    JoinerQuery<T, R> limit(Long limit);
 
     Long getLimit();
 
-    JoinerQueryBase<T, R> asc(Expression<?> orderBy);
+    JoinerQuery<T, R> asc(Expression<?> orderBy);
 
-    JoinerQueryBase<T, R> desc(Expression<?> orderBy);
+    JoinerQuery<T, R> desc(Expression<?> orderBy);
 
     List<QueryOrder> getOrder();
 

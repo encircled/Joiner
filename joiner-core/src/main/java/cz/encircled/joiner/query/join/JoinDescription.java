@@ -185,6 +185,20 @@ public class JoinDescription implements JoinRoot {
         return this;
     }
 
+    /**
+     * Add children joins to current join from specified paths
+     *
+     * @param paths children join paths
+     * @return current join
+     */
+    public JoinDescription nested(CollectionPathBase<?, ?, ?>... paths) {
+        for (CollectionPathBase<?, ?, ?> path : paths) {
+            nested(J.left(path));
+        }
+
+        return this;
+    }
+
     public JoinDescription getParent() {
         return parent;
     }

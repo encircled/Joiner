@@ -1,111 +1,146 @@
 package cz.encircled.joiner.kotlin
 
-import com.querydsl.core.JoinType
 import com.querydsl.core.types.EntityPath
 import com.querydsl.core.types.Expression
+import com.querydsl.core.types.Path
 import com.querydsl.core.types.Predicate
+import com.querydsl.core.types.dsl.BooleanExpression
+import com.querydsl.core.types.dsl.SimpleExpression
 import cz.encircled.joiner.query.JoinerQuery
 import cz.encircled.joiner.query.Q
 import cz.encircled.joiner.query.join.J
 import cz.encircled.joiner.query.join.JoinDescription
 
-//class KtJoinerQuery<R, T : EntityPath<R>>(private val entityPath: T) {
-class KtJoinerQuery<F, R, T : EntityPath<F>>(private val p: EntityPath<R>) {
 
-    lateinit var entityPath: T
+data class PredicateContinuation<T>(
+    inline val t: ((SimpleExpression<T>) -> BooleanExpression) -> BooleanExpression
+)
 
-    val delegate: JoinerQuery<R, R> = Q.from(p)
+open class KConditionOps : ConditionOps
 
-    fun from(from: () -> EntityPath<R>) {
-        delegate
+interface ConditionOps {
+
+    infix fun <T> SimpleExpression<T>.eq(to: T): BooleanExpression = eq(to)
+
+    infix fun <T> SimpleExpression<T>.isIn(to: Collection<T>): BooleanExpression = `in`(to)
+
+    infix fun <T> SimpleExpression<T>.notIn(to: Collection<T>): BooleanExpression = notIn(to)
+
+    infix fun <T> SimpleExpression<T>.ne(to: T): BooleanExpression = ne(to)
+
+    infix fun <T> PredicateContinuation<T>.eq(to: T): BooleanExpression {
+        return t.invoke { it.eq(to) }
     }
 
-    private fun checkState() {
-        if(entityPath == null) throw IllegalStateException("From not initialized")
+    infix fun <T> PredicateContinuation<T>.ne(to: T): BooleanExpression {
+        return t.invoke { it.ne(to) }
     }
 
-    fun where(where: (e: T) -> Predicate) {
-        delegate.where(where.invoke(entityPath!!))
+    infix fun <T> PredicateContinuation<T>.isIn(to: Collection<T>): BooleanExpression {
+        return t.invoke { it.`in`(to) }
     }
 
-    fun asc(asc: (e: T) -> Expression<*>) {
-        checkState()
-
-        delegate.asc(asc.invoke(entityPath!!))
+    infix fun <T> PredicateContinuation<T>.notIn(to: Collection<T>): BooleanExpression {
+        return t.invoke { it.notIn(to) }
     }
 
-    fun desc(desc: (e: T) -> Expression<*>) {
-        delegate.desc(desc.invoke(entityPath))
+    infix fun <T> BooleanExpression.and(exp: SimpleExpression<T>): PredicateContinuation<T> {
+        return PredicateContinuation { this.and(it.invoke(exp)) }
     }
 
-    fun leftJoin(path: EntityPath<*>, init: KtJoinerJoin.() -> Unit): KtJoinerJoin =
-            join(path, true, init)
-
-    fun leftJoin(vararg paths: EntityPath<*>) {
-        paths.forEach { delegate.joins(J.left(it)) }
+    infix fun <T> BooleanExpression.or(exp: SimpleExpression<T>): PredicateContinuation<T> {
+        return PredicateContinuation { this.or(it.invoke(exp)) }
     }
 
-    fun innerJoin(vararg paths: EntityPath<*>) {
-        paths.forEach { delegate.joins(J.inner(it)) }
+    infix fun BooleanExpression.and(another: BooleanExpression): BooleanExpression = and(another)
+    infix fun BooleanExpression.or(another: BooleanExpression): BooleanExpression = or(another)
+
+}
+
+object JoinerKtOps : ConditionOps, JoinOps
+
+interface JoinOps {
+
+    infix fun JoinDescription.leftJoin(p: EntityPath<*>): JoinDescription {
+        return this.nested(J.left(p))
     }
 
-    fun innerJoin(path: EntityPath<*>, init: KtJoinerJoin.() -> Unit): KtJoinerJoin =
-            join(path, false, init)
-
-    private fun join(path: EntityPath<*>, isLeft: Boolean, init: KtJoinerJoin.() -> Unit): KtJoinerJoin {
-        val builder = KtJoinerJoin(path)
-        builder.init()
-
-        val join = if (isLeft) J.left(path) else J.inner(path)
-        addNestedJoins(builder, join)
-
-        delegate.joins(join)
-
-        return builder
+    infix fun JoinDescription.innerJoin(p: EntityPath<*>): JoinDescription {
+        return this.nested(J.inner(p))
     }
 
-    private fun addNestedJoins(builder: KtJoinerJoin, parentJoin: JoinDescription) {
-        val children = mutableListOf<Pair<KtJoinerJoin, JoinDescription>>()
-        builder.children.forEach {
-            val nested = J.left(it.second.entityPath)
-            parentJoin.nested(nested)
-            children.add(Pair(it.second, nested))
-        }
-        children.forEach {
-            addNestedJoins(it.first, it.second)
-        }
+    infix fun EntityPath<*>.leftJoin(p: EntityPath<*>): JoinDescription {
+        return JoinDescription(this).nested(J.left(p))
+    }
+
+    infix fun EntityPath<*>.leftJoin(p: JoinDescription): JoinDescription {
+        return JoinDescription(this).nested(p.left())
+    }
+
+    infix fun EntityPath<*>.innerJoin(p: JoinDescription): JoinDescription {
+        return JoinDescription(this).nested(p.inner())
+    }
+
+    infix fun EntityPath<*>.innerJoin(p: EntityPath<*>): JoinDescription {
+        return JoinDescription(this).nested(J.inner(p))
+    }
+
+    infix fun <FROM_C, PROJ, FROM : EntityPath<FROM_C>> KtJoinerQuery<FROM_C, PROJ, FROM>.leftJoin(j: JoinDescription): KtJoinerQuery<FROM_C, PROJ, FROM> {
+        delegate.joins(j.left())
+        return this
+    }
+
+    infix fun <FROM_C, PROJ, FROM : EntityPath<FROM_C>> KtJoinerQuery<FROM_C, PROJ, FROM>.leftJoin(p: EntityPath<*>): KtJoinerQuery<FROM_C, PROJ, FROM> {
+        delegate.joins(J.left(p))
+        return this
+    }
+
+    infix fun <FROM_C, PROJ, FROM : EntityPath<FROM_C>> KtJoinerQuery<FROM_C, PROJ, FROM>.innerJoin(j: JoinDescription): KtJoinerQuery<FROM_C, PROJ, FROM> {
+        delegate.joins(j.inner())
+        return this
+    }
+
+    infix fun <FROM_C, PROJ, FROM : EntityPath<FROM_C>> KtJoinerQuery<FROM_C, PROJ, FROM>.innerJoin(p: EntityPath<*>): KtJoinerQuery<FROM_C, PROJ, FROM> {
+        delegate.joins(J.inner(p))
+        return this
     }
 
 }
 
-data class KtJoinerJoin(var entityPath: EntityPath<*>) {
 
-    val children: MutableList<Pair<JoinType, KtJoinerJoin>> = mutableListOf()
+class KtJoinerQuery<FROM_C, PROJ, FROM : EntityPath<FROM_C>>(
+    private val entityPath: FROM,
+    projection: Path<PROJ>,
+    isCount: Boolean,
+    internal val delegate: JoinerQuery<FROM_C, PROJ> = if (isCount) Q.count(entityPath) as JoinerQuery<FROM_C, PROJ> else Q.select(
+        projection
+    ).from(entityPath)
+//    internal val delegate: JoinerQuery<FROM_C, PROJ> = if (isCount) Q.count(entityPath) as JoinerQuery<FROM_C, PROJ> else Q.select(projection).from(entityPath)
+) : JoinerQuery<FROM_C, PROJ> by delegate, JoinOps {
 
-    operator fun EntityPath<*>.unaryPlus() {
-        entityPath = this
+    infix fun where(where: ConditionOps.(e: FROM) -> Predicate): KtJoinerQuery<FROM_C, PROJ, FROM> {
+        delegate.where(where.invoke(KConditionOps(), entityPath))
+        return this
     }
 
-    fun leftJoin(path: EntityPath<*>, init: KtJoinerJoin.() -> Unit): KtJoinerJoin =
-            join(path, true, init)
-
-    fun leftJoin(vararg paths: EntityPath<*>) {
-        paths.forEach { children.add(Pair(JoinType.LEFTJOIN, KtJoinerJoin(it))) }
+    override infix fun limit(limit: Long?): KtJoinerQuery<FROM_C, PROJ, FROM> {
+        delegate.limit(limit)
+        return this
     }
 
-    fun innerJoin(vararg paths: EntityPath<*>) {
-        paths.forEach { children.add(Pair(JoinType.INNERJOIN, KtJoinerJoin(it))) }
+    infix fun asc(asc: (e: FROM) -> Expression<*>): KtJoinerQuery<FROM_C, PROJ, FROM> {
+        delegate.asc(asc.invoke(entityPath))
+        return this
     }
 
-    fun innerJoin(path: EntityPath<*>, init: KtJoinerJoin.() -> Unit): KtJoinerJoin =
-            join(path, false, init)
+    override infix fun asc(asc: Expression<*>): KtJoinerQuery<FROM_C, PROJ, FROM> {
+        delegate.asc(asc)
+        return this
+    }
 
-    private fun join(path: EntityPath<*>, isLeft: Boolean, init: KtJoinerJoin.() -> Unit): KtJoinerJoin {
-        val j = KtJoinerJoin(path)
-        j.init()
-        val joinType = if (isLeft) JoinType.LEFTJOIN else JoinType.RIGHTJOIN
-        children.add(Pair(joinType, j))
-        return j
+    infix fun desc(desc: (e: FROM) -> Expression<*>): KtJoinerQuery<FROM_C, PROJ, FROM> {
+        delegate.desc(desc.invoke(entityPath))
+        return this
     }
 
 }
@@ -113,14 +148,28 @@ data class KtJoinerJoin(var entityPath: EntityPath<*>) {
 /**
  * @author Vlad on 05-Jun-18.
  */
-object QueryBuilder {
+object QueryBuilder : JoinOps {
 
-    fun <R, T : EntityPath<R>> select(from: T, init: KtJoinerQuery<R, R, T>.() -> Unit): JoinerQuery<R, R> {
-        val query = KtJoinerQuery<R, R, T>(from)
-        query.init()
-
-        return query.delegate
+    private fun <FROM_C, FROM : EntityPath<FROM_C>, PROJ> select(sf: SelectFrom<FROM_C, FROM, PROJ>): KtJoinerQuery<FROM_C, PROJ, FROM> {
+        return KtJoinerQuery(sf.from, sf.projection, sf.isCount)
     }
 
+    infix fun <PROJ, FROM_C, FROM : EntityPath<FROM_C>> Path<PROJ>.from(path: FROM): KtJoinerQuery<FROM_C, PROJ, FROM> {
+        return select(SelectFrom(this, path))
+    }
+
+    fun <FROM_C, FROM : EntityPath<FROM_C>> FROM.all(): KtJoinerQuery<FROM_C, FROM_C, FROM> {
+        return select(SelectFrom(this, this))
+    }
+
+    fun <FROM_C, FROM : EntityPath<FROM_C>> FROM.countOf(): KtJoinerQuery<FROM_C, Long, FROM> {
+        return KtJoinerQuery(this, this, true) as KtJoinerQuery<FROM_C, Long, FROM>
+    }
+
+    private data class SelectFrom<FROM_C, FROM : EntityPath<FROM_C>, PROJ>(
+        val projection: Path<PROJ>,
+        val from: FROM,
+        val isCount: Boolean = false
+    )
 
 }

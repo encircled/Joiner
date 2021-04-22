@@ -23,6 +23,7 @@ import java.util.stream.Collectors;
  * @see PredicateAliasResolver
  * @author Vlad on 10-Feb-17.
  */
+// TODO find by original alias?
 public class DefaultPredicateAliasResolver implements PredicateAliasResolver {
 
     @Override

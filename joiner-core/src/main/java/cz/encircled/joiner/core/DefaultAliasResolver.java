@@ -119,8 +119,7 @@ public class DefaultAliasResolver implements AliasResolver {
 
     private void testAliasCandidate(Class<?> targetType, List<Path<?>> candidatePaths, Object candidate) {
         if (candidate instanceof CollectionPathBase) {
-            Field elementTypeField = ReflectionUtils.findField(candidate.getClass(), "elementType");
-            Class<?> elementType = (Class<?>) getField(elementTypeField, candidate);
+            Class<?> elementType = (Class<?>) getField("elementType", candidate);
 
             if (elementType.isAssignableFrom(targetType)) {
                 candidatePaths.add((Path<?>) candidate);

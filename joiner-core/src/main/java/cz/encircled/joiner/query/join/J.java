@@ -1,7 +1,10 @@
 package cz.encircled.joiner.query.join;
 
 import com.querydsl.core.types.EntityPath;
+import com.querydsl.core.types.dsl.CollectionPathBase;
+import com.querydsl.core.types.dsl.SimpleExpression;
 import cz.encircled.joiner.util.Assert;
+import cz.encircled.joiner.util.JoinerUtils;
 import cz.encircled.joiner.util.ReflectionUtils;
 
 import java.util.Collection;
@@ -14,6 +17,25 @@ import java.util.List;
  * @author Kisel on 26.01.2016.
  */
 public class J {
+
+    /**
+     * Aliases of nested joins are determined at runtime. To refer a nested join, this method should be used to get a correct alias.
+     * For example, there is a query
+     * <p>
+     * <code>Q.from(QGroup.group).joins(J.left(QPerson.person).nested(J.left(QContact.contact)))</code>
+     * </p>
+     * To refer a <code>Contact</code> entity in the 'where' clause, one should use <code>J.path(QPerson.person.contacts).number.eq(12345)</code>
+     *
+     * @param path path on parent entity
+     * @param <T>  any entity path
+     * @return entity path with correct alias
+     */
+    @SuppressWarnings("unchcecked")
+    public static <P extends SimpleExpression<?>, T extends EntityPath<P>> P path(CollectionPathBase<?, ?, P> path) {
+        Assert.notNull(path);
+        EntityPath<?> current = JoinerUtils.getDefaultPath(path);
+        return ReflectionUtils.instantiate(current.getClass(), current + "_on_" + path.getMetadata().getParent());
+    }
 
     /**
      * Aliases of nested joins are determined at runtime. To refer a nested join, this method should be used to get a correct alias.
@@ -71,6 +93,16 @@ public class J {
     }
 
     /**
+     * Add <b>left</b> join for given <code>path</code>
+     *
+     * @param path path to an object to be joined
+     * @return join description
+     */
+    public static JoinDescription left(CollectionPathBase<?, ?, ?> path) {
+        return getBasicJoin(JoinerUtils.getDefaultPath(path)).left();
+    }
+
+    /**
      * Add <b>inner</b> join for given <code>path</code>
      *
      * @param path alias of object to be joined
@@ -78,6 +110,16 @@ public class J {
      */
     public static JoinDescription inner(EntityPath<?> path) {
         return getBasicJoin(path).inner();
+    }
+
+    /**
+     * Add <b>inner</b> join for given <code>path</code>
+     *
+     * @param path path to an object to be joined
+     * @return join description
+     */
+    public static JoinDescription inner(CollectionPathBase<?, ?, ?> path) {
+        return getBasicJoin(JoinerUtils.getDefaultPath(path)).inner();
     }
 
     /**
