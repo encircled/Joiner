@@ -4,7 +4,7 @@
 
     <groupId>cz.encircled</groupId>
     <artifactId>joiner-parent</artifactId>
-    <version>0.3.12-SNAPSHOT</version>
+    <version>0.3.11-SNAPSHOT</version>
     <name>joiner</name>
     <description>Joiner parent module</description>
 
