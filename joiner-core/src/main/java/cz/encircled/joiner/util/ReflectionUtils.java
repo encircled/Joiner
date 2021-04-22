@@ -91,19 +91,17 @@ public class ReflectionUtils {
         }
     }
 
-    public static void makeAccessible(Field field) {
-        Assert.notNull(field);
-
-        if (!field.isAccessible()) {
-            field.setAccessible(true);
-        }
-    }
-
     public static Set<Class> getSubclasses(Class<?> parent, EntityManager entityManager) {
         return entityManager.getMetamodel().getEntities().stream()
                 .filter(entityType -> parent != entityType.getJavaType() && parent.isAssignableFrom(entityType.getJavaType()))
                 .map(Type::getJavaType)
                 .collect(Collectors.toCollection(HashSet::new));
+    }
+
+    private static void makeAccessible(Field field) {
+        if (field != null && !field.isAccessible()) {
+            field.setAccessible(true);
+        }
     }
 
 }

@@ -1,4 +1,4 @@
-package cz.encircled.joiner;
+package cz.encircled.joiner.util;
 
 import com.querydsl.core.types.EntityPath;
 import cz.encircled.joiner.core.AbstractTest;
@@ -7,7 +7,6 @@ import cz.encircled.joiner.model.NormalUser;
 import cz.encircled.joiner.model.QSuperUser;
 import cz.encircled.joiner.model.SuperUser;
 import cz.encircled.joiner.model.User;
-import cz.encircled.joiner.util.ReflectionUtils;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -38,6 +37,23 @@ public class ReflectionUtilsTest extends AbstractTest {
     @Test
     public void testFindFieldException() {
         Assert.assertNull(ReflectionUtils.findField(QSuperUser.class, "notExists"));
+    }
+
+    @Test
+    public void testGetField() {
+        Assert.assertSame(entityManager, ReflectionUtils.getField("entityManager", this));
+        Assert.assertSame(entityManager, ReflectionUtils.getField(ReflectionUtils.findField(this.getClass(), "entityManager"), this));
+    }
+
+    @Test
+    public void testSetField() {
+        EntityManager original = entityManager;
+        try {
+            ReflectionUtils.setField(ReflectionUtils.findField(this.getClass(), "entityManager"), this, null);
+            Assert.assertNull(entityManager);
+        } finally {
+            entityManager = original;
+        }
     }
 
     @Test

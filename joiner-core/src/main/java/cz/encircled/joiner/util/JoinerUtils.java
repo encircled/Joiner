@@ -27,7 +27,6 @@ public final class JoinerUtils {
     }
 
     // TODO cache? and test
-
     /**
      * Find default path of an entity (e.g. QUser.user for QUser class)
      */
