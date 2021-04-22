@@ -293,7 +293,8 @@ interface `cz.encircled.joiner.kotlin.JoinOps`
     <groupId>cz.encircled</groupId>
     <artifactId>joiner-eclipse</artifactId>
     <version>${joiner.version}</version>
-</depend
+</dependency>
+```
 
 ### Kotlin module
 ```xml
@@ -301,4 +302,5 @@ interface `cz.encircled.joiner.kotlin.JoinOps`
     <groupId>cz.encircled</groupId>
     <artifactId>joiner-kotlin</artifactId>
     <version>${joiner.version}</version>
-</depend
+</dependency>
+```
