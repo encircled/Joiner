@@ -41,7 +41,7 @@
     <packaging>pom</packaging>
 
     <properties>
-        <querydsl.version>4.1.4</querydsl.version>
+        <querydsl.version>4.4.0</querydsl.version>
         <spring.version>5.3.6</spring.version>
         <hibernate.version>5.4.30.Final</hibernate.version>
         <eclipselink.version>2.7.1</eclipselink.version>
@@ -103,7 +103,7 @@
             <dependency>
                 <groupId>com.h2database</groupId>
                 <artifactId>h2</artifactId>
-                <version>1.4.192</version>
+                <version>1.4.200</version>
             </dependency>
 
             <dependency>
@@ -178,7 +178,7 @@
             <dependency>
                 <groupId>junit</groupId>
                 <artifactId>junit</artifactId>
-                <version>4.12</version>
+                <version>4.13.1</version>
             </dependency>
 
         </dependencies>
