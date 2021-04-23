@@ -263,9 +263,8 @@ import cz.encircled.joiner.kotlin.QueryBuilder.countOf
 import cz.encircled.joiner.kotlin.QueryBuilder.from
 ```
 
-In some cases, it might be more convenient to avoid direct imports. For instance, when a class has a lot of queries. As
-of now, it will improve autocompletion in IDEA. It can be done by implementing
-interface `cz.encircled.joiner.kotlin.JoinOps`
+In some cases, it might be more convenient to avoid direct imports, especially due to autocompletion in IDEA. For instance, when a class has a lot of queries. It can be done by implementing
+interface `cz.encircled.joiner.kotlin.JoinOps` like `class YourRepository : JoinOps { ... }`
 
 ## Maven dependencies
 
