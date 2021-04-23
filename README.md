@@ -219,16 +219,17 @@ repositories.
 Kotlin query showcase:
 
 ```kotlin
-        val userNames = joiner.findOne(
-                QUser.user1.name from QUser.user1
-                        leftJoin QUser.user1.addresses
-                        innerJoin QPhone.phone
-                        leftJoin (QGroup.group innerJoin QStatus.status)
-            
-                        where { it.name eq "user1" and it.id notIn listOf(1, 2) }
-                        limit 5
-            
-                        asc QUser.user1.id
+import some.model.QUser.user
+
+val userNames = joiner.findOne(user.name from user
+        leftJoin user.addresses
+        innerJoin QPhone.phone
+        leftJoin (QGroup.group innerJoin QStatus.status)
+
+        where { it.name eq "user1" and it.id notIn listOf(1, 2) }
+        limit 5
+
+        asc user.id
 )
 ```
 
