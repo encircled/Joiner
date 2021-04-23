@@ -7,6 +7,8 @@ Joiner is a Java library which allows to create type-safe JPA queries. It is foc
 
 Joiner can be used instead of or together with QueryDSL. Joiner uses QueryDSL APT maven plugin for entity metamodel generation. See more about QueryDSL installation at [QueryDSL](http://www.querydsl.com/static/querydsl/latest/reference/html/ch02.html#jpa_integration).
 
+Joiner offers Java and Kotlin API, which is described below
+
 Joiner offers following extra features:
 * simple way of adding complex joins to the queries
 * automatic resolving of alias uniqueness in queries
