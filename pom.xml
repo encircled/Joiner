@@ -4,7 +4,7 @@
 
     <groupId>cz.encircled</groupId>
     <artifactId>joiner-parent</artifactId>
-    <version>0.4.1</version>
+    <version>0.4.2-SNAPSHOT</version>
     <name>joiner</name>
     <description>Joiner parent module</description>
 
@@ -12,7 +12,7 @@
     <scm>
         <connection>scm:git:git@github.com:encircled/Joiner.git</connection>
         <url>git@github.com:encircled/Joiner.git</url>
-        <tag>joiner-parent-0.4.1</tag>
+        <tag>HEAD</tag>
     </scm>
 
     <licenses>
