@@ -3,11 +3,19 @@
     <parent>
         <artifactId>joiner-parent</artifactId>
         <groupId>cz.encircled</groupId>
-        <version>0.3.11-SNAPSHOT</version>
+        <version>0.4</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>joiner-kotlin</artifactId>
+
+    <pluginRepositories>
+        <pluginRepository>
+            <id>jcenter</id>
+            <name>JCenter</name>
+            <url>https://jcenter.bintray.com/</url>
+        </pluginRepository>
+    </pluginRepositories>
 
     <properties>
         <kotlin.version>1.4.32</kotlin.version>
