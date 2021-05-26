@@ -37,6 +37,7 @@ All you need is an instance of entity manager, setup of Joiner is as simple as:
 
 ```java
 Joiner joiner=new Joiner(getEntityManager());
+
         joiner.find(Q.from(QUser.user)
         .where(QUser.user.name.isNotNull()));
 ```
@@ -44,7 +45,8 @@ Joiner joiner=new Joiner(getEntityManager());
 or in Kotlin
 
 ```kotlin
-val joiner: Joiner = Joiner(getEntityManager());
+val joiner: Joiner = Joiner(getEntityManager())
+
 joiner.find(QUser.user.all()
         where { it.name eq "John" })
 ```
