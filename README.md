@@ -36,9 +36,9 @@ Joiner offers following extra features:
 All you need is an instance of entity manager, setup of Joiner is as simple as:
 
 ```java
-Joiner joiner=new Joiner(getEntityManager());
+Joiner joiner = new Joiner(getEntityManager());
 
-        joiner.find(Q.from(QUser.user)
+joiner.find(Q.from(QUser.user)
         .where(QUser.user.name.isNotNull()));
 ```
 
@@ -56,25 +56,25 @@ joiner.find(QUser.user.all()
 ## Basic query
 
 ```java
-QGroup group=QGroup.group;
+QGroup group = QGroup.group;
 
-        joiner.find(Q.select(group.name).from(group)
-        .where(group.id.eq(1L))
-        .groupBy(group.type)
-        .limit(10)
-        .offset(2)
-        .distinct());
+joiner.find(Q.select(group.name).from(group)
+                .where(group.id.eq(1L))
+                .groupBy(group.type)
+                .limit(10)
+                .offset(2)
+                .distinct());
 ```
 
 or in Kotlin
 
 ```kotlin
 joiner.find(group.name from group
-        where { it.id eq 1 }
-        groupBy { it.type }
-        limit 10
-        offset 2
-);
+                          where { it.id eq 1 }
+                          groupBy { it.type }
+                          limit 10
+                          offset 2
+)
 ```
 
 ## Basic join
@@ -84,7 +84,7 @@ matter which relationship it is:
 
 ```java
 joiner.findOne(Q.from(QGroup.group)
-        .joins(QUser.user);
+                  .joins(QUser.user);
 ```
 
 Aliases can be imported or extracted as a variable to make it:
@@ -111,7 +111,7 @@ joiner.findOne(Q.from(group).joins(new QUser("user2")));
 in Kotlin
 
 ```kotlin
-joiner.findOne(group.all() leftJoin group.users);
+joiner.findOne(group.all() leftJoin group.users)
 ```
 
 ## Customizing a join
@@ -120,7 +120,7 @@ To perform an inner join, or to make a non-fetch join (thus it will not be part 
 
 ```java
 joiner.findOne(Q.from(group)
-        .joins(J.inner(user).on(user.name.isNotNull()).fetch(false))
+                    .joins(J.inner(user).on(user.name.isNotNull()).fetch(false))
         );
 ```
 
@@ -138,7 +138,7 @@ Nested joins look following:
 
 ```java
 joiner.findOne(Q.from(QGroup.group)
-                .joins(J.inner(QUser.user1).nested(QPhone.phone)));
+                 .joins(J.inner(QUser.user1).nested(QPhone.phone)));
 ```
 
 Or even deeper:
@@ -147,8 +147,7 @@ Or even deeper:
 joiner.findOne(Q.from(QGroup.group)
                 .joins(
                         J.inner(QUser.user1).nested(
-                                J.left(QPhone.phone)
-                                        .nested(QStatus.status)
+                                J.left(QPhone.phone).nested(QStatus.status)
                         ),
                         
                         J.left(QStatus.status)
@@ -196,8 +195,8 @@ If the target join is at second level, it may be referenced via parent like this
 ```java
 joiner.findOne(Q.from(QGroup.group)
         .joins(
-        J.inner(QUser.user1).nested(J.left(QStatus.status)),
-        J.left(QStatus.status)
+            J.inner(QUser.user1).nested(J.left(QStatus.status)),
+            J.left(QStatus.status)
         )
         .where(QPhone.phone.type.eq("mobile")
         .and(J.path(QUser.user1.statuses).active.isTrue())));
@@ -209,17 +208,17 @@ Joining a subclass only (`SuperUser` extends `User`):
 
 ```java
 joiner.findOne(Q.from(QGroup.group)
-        .joins(QSuperUser.superUser)
-        .where(QGroup.group.id.eq(1L)));
+                  .joins(QSuperUser.superUser)
+                  .where(QGroup.group.id.eq(1L)));
 ```
 
 Joining an attribute, which is present on a subclass only (`Key` is present on `SuperUser` only)
 
 ```java
 joiner.findOne(Q.from(QGroup.group)
-        .joins(J.left(QSuperUser.superUser)
-        .nested(QKey.key))
-        .where(QGroup.group.id.eq(1L)));
+                  .joins(J.left(QSuperUser.superUser)
+                  .nested(QKey.key))
+                  .where(QGroup.group.id.eq(1L)));
 ```
 
 ## Result projection
@@ -228,20 +227,20 @@ By default, `find` and `findOne` return an object(s) of type passed to `from` me
 is possible using `Q.select` method. Lets find the active phone number of John:
 
 ```java
-String number=joiner.findOne(Q.select(phone.number)
-        .from(user)
-        .joins(J.inner(phone).nested(status))
-        .where(user.name.eq("John").and(status.active.isTrue()))
+String number = joiner.findOne(Q.select(phone.number)
+                                  .from(user)
+                                  .joins(J.inner(phone).nested(status))
+                                  .where(user.name.eq("John").and(status.active.isTrue()))
         );
 ```
 
 Or tuple:
 
 ```java
-List<Tuple> tuple=joiner.findOne(user.surname,Q.select(phone.number)
-        .from(user)
-        .joins(J.inner(phone).nested(status))
-        .where(user.name.eq("John").and(status.active.isTrue()))
+List<Tuple> tuple = joiner.findOne(user.surname, Q.select(phone.number)
+                                      .from(user)
+                                      .joins(J.inner(phone).nested(status))
+                                      .where(user.name.eq("John").and(status.active.isTrue()))
         );
 ```
 
@@ -258,20 +257,19 @@ val number = joiner.findOne(phone.number from user
 
 ```java
 joiner.findOne(Q.from(QGroup.group)
-        .asc(QGroup.group.name));
+                  .asc(QGroup.group.name));
 ```
 
 ```java
 joiner.findOne(Q.from(QGroup.group)
-        .desc(QGroup.group.name,QGroup.group.id));
+                 .desc(QGroup.group.name,QGroup.group.id));
 ```
 
 in Kotlin
 
 ```kotlin
-joiner.findOne(
-  group.all()
-          asc group.name
+joiner.findOne(group.all()
+                asc group.name
 )
 ```
 
