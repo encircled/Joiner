@@ -226,21 +226,30 @@ By default, `find` and `findOne` return an object(s) of type passed to `from` me
 is possible using `Q.select` method. Lets find the active phone number of John:
 
 ```java
-String number=joiner.findOne(Q.select(QPhone.phone.number)
-        .from(QUser.user)
-        .joins(J.inner(QPhone.phone).nested(QStatus.status))
-                    .where(QUser.user.name.eq("John").and(QStatus.status.active.isTrue()))
-                    );
+String number=joiner.findOne(Q.select(phone.number)
+        .from(user)
+        .joins(J.inner(phone).nested(status))
+        .where(user.name.eq("John").and(status.active.isTrue()))
+        );
 ```
 
 Or tuple:
 
 ```java
-List<Tuple> tuple = joiner.findOne(QUser.user.surname, Q.select(QPhone.phone.number)
-                            .from(QUser.user)
-                            .joins(J.inner(QPhone.phone).nested(QStatus.status))
-                            .where(QUser.user.name.eq("John").and(QStatus.status.active.isTrue()))
-                            );
+List<Tuple> tuple=joiner.findOne(user.surname,Q.select(phone.number)
+        .from(user)
+        .joins(J.inner(phone).nested(status))
+        .where(user.name.eq("John").and(status.active.isTrue()))
+        );
+```
+
+in Kotlin:
+
+```kotlin
+val number = joiner.findOne(phone.number from user
+        innerJoin (phone leftJoin status)
+        where { user.name eq "John" and status.active eq true }
+)
 ```
 
 ## Sorting
