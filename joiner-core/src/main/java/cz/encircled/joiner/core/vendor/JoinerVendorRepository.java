@@ -3,6 +3,7 @@ package cz.encircled.joiner.core.vendor;
 import com.querydsl.core.types.EntityPath;
 import com.querydsl.core.types.Expression;
 import com.querydsl.jpa.impl.JPAQuery;
+import cz.encircled.joiner.query.ExtendedJPAQuery;
 import cz.encircled.joiner.query.join.JoinDescription;
 
 import javax.persistence.EntityManager;
@@ -16,7 +17,7 @@ import java.util.List;
  */
 public interface JoinerVendorRepository {
 
-    JPAQuery createQuery(EntityManager entityManager);
+    <R> ExtendedJPAQuery<R> createQuery(EntityManager entityManager);
 
     void addJoin(JPAQuery<?> query, JoinDescription joinDescription);
 

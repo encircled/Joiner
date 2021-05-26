@@ -2,7 +2,12 @@ package cz.encircled.joiner.core;
 
 import com.google.common.collect.ArrayListMultimap;
 import com.querydsl.core.JoinType;
-import com.querydsl.core.types.*;
+import com.querydsl.core.types.EntityPath;
+import com.querydsl.core.types.Expression;
+import com.querydsl.core.types.Order;
+import com.querydsl.core.types.OrderSpecifier;
+import com.querydsl.core.types.Path;
+import com.querydsl.core.types.Predicate;
 import com.querydsl.jpa.impl.AbstractJPAQuery;
 import com.querydsl.jpa.impl.JPAQuery;
 import cz.encircled.joiner.core.vendor.EclipselinkRepository;
@@ -10,6 +15,7 @@ import cz.encircled.joiner.core.vendor.HibernateRepository;
 import cz.encircled.joiner.core.vendor.JoinerVendorRepository;
 import cz.encircled.joiner.exception.AliasMissingException;
 import cz.encircled.joiner.exception.JoinerException;
+import cz.encircled.joiner.query.ExtendedJPAQuery;
 import cz.encircled.joiner.query.JoinerQuery;
 import cz.encircled.joiner.query.QueryFeature;
 import cz.encircled.joiner.query.QueryOrder;
@@ -26,7 +32,11 @@ import javax.annotation.concurrent.ThreadSafe;
 import javax.persistence.EntityManager;
 import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Field;
-import java.util.*;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -98,7 +108,7 @@ public class Joiner {
         }
     }
 
-    public <T, R> JPAQuery<R> toJPAQuery(JoinerQuery<T, R> request) {
+    public <T, R> ExtendedJPAQuery<R> toJPAQuery(JoinerQuery<T, R> request) {
         Assert.notNull(request);
         Assert.notNull(request.getFrom());
 
@@ -108,7 +118,7 @@ public class Joiner {
             request = doPreProcess(request, feature);
         }
 
-        JPAQuery<R> query = joinerVendorRepository.createQuery(entityManager);
+        ExtendedJPAQuery<R> query = joinerVendorRepository.createQuery(entityManager);
         makeInsertionOrderHints(query);
 
         query.from(request.getFrom());
@@ -146,7 +156,7 @@ public class Joiner {
     }
 
     private <T, R> void validateAllAliases(JoinerQuery<T, R> request, Set<Path<?>> usedAliases) {
-        for (QueryOrder queryOrder : request.getOrder()) {
+        for (QueryOrder<?> queryOrder : request.getOrder()) {
             checkAliasesArePresent(queryOrder.getTarget(), usedAliases);
         }
     }
@@ -161,7 +171,7 @@ public class Joiner {
      * @param <T>
      * @param <R>
      */
-    private <T, R> void applyPredicates(JoinerQuery<T, R> request, JPAQuery query, Set<Path<?>> usedAliases, List<JoinDescription> joins) {
+    private <T, R> void applyPredicates(JoinerQuery<T, R> request, JPAQuery<R> query, Set<Path<?>> usedAliases, List<JoinDescription> joins) {
         if (request.getWhere() != null) {
             Predicate where = predicateAliasResolver.resolvePredicate(request.getWhere(), joins, usedAliases);
             checkAliasesArePresent(where, usedAliases);
@@ -181,7 +191,7 @@ public class Joiner {
         }
     }
 
-    private <T, R> void applyPaging(JoinerQuery<T, R> request, JPAQuery query) {
+    private <T, R> void applyPaging(JoinerQuery<T, R> request, JPAQuery<R> query) {
         if (request.getLimit() != null) {
             query.limit(request.getLimit());
         }
@@ -221,7 +231,7 @@ public class Joiner {
         }
     }
 
-    private <T, R> JPAQuery<R> doPostProcess(JoinerQuery<T, R> request, JPAQuery query, QueryFeature feature) {
+    private <T, R> ExtendedJPAQuery<R> doPostProcess(JoinerQuery<T, R> request, ExtendedJPAQuery<R> query, QueryFeature feature) {
         return feature.after(request, query);
     }
 

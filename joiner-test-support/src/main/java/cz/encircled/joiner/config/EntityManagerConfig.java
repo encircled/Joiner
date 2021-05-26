@@ -4,6 +4,7 @@ import org.eclipse.persistence.config.PersistenceUnitProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.env.Environment;
+import org.springframework.core.env.Profiles;
 import org.springframework.dao.annotation.PersistenceExceptionTranslationPostProcessor;
 import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseBuilder;
 import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseType;
@@ -40,7 +41,7 @@ public class EntityManagerConfig {
         em.setDataSource(dataSource);
         em.setPackagesToScan("cz.encircled");
 
-        if (environment.acceptsProfiles("eclipse")) {
+        if (environment.acceptsProfiles(Profiles.of("eclipse"))) {
             AbstractJpaVendorAdapter vendorAdapter = new EclipseLinkJpaVendorAdapter();
             em.setJpaVendorAdapter(vendorAdapter);
             em.setJpaProperties(eclipseProperties(true));

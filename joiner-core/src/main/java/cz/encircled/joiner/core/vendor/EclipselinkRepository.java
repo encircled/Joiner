@@ -7,6 +7,7 @@ import com.querydsl.jpa.EclipseLinkTemplates;
 import com.querydsl.jpa.impl.AbstractJPAQuery;
 import com.querydsl.jpa.impl.JPAQuery;
 import cz.encircled.joiner.exception.JoinerException;
+import cz.encircled.joiner.query.ExtendedJPAQuery;
 import cz.encircled.joiner.query.join.JoinDescription;
 import cz.encircled.joiner.util.ReflectionUtils;
 
@@ -23,10 +24,10 @@ public class EclipselinkRepository extends AbstractVendorRepository implements J
     private static final String DOT_ESCAPED = "\\.";
 
     @Override
-    public JPAQuery createQuery(EntityManager entityManager) {
-        JPAQuery query = new JPAQuery(entityManager, EclipseLinkTemplates.DEFAULT);
+    public <R> ExtendedJPAQuery<R> createQuery(EntityManager entityManager) {
+        JPAQuery<R> query = new JPAQuery<>(entityManager, EclipseLinkTemplates.DEFAULT);
         makeInsertionOrderHints(query);
-        return query;
+        return new ExtendedJPAQuery<>(entityManager, query);
     }
 
     private void makeInsertionOrderHints(AbstractJPAQuery<?, ?> sourceQuery) {

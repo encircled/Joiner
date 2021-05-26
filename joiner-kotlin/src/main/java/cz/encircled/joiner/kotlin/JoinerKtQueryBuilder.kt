@@ -11,6 +11,12 @@ import cz.encircled.joiner.query.Q
 import cz.encircled.joiner.query.join.J
 import cz.encircled.joiner.query.join.JoinDescription
 
+/**
+ * List of missing stuff in Kt:
+ * - distinct
+ * - some operators
+ * - join (non)fetch
+ */
 
 data class PredicateContinuation<T>(
     inline val t: ((SimpleExpression<T>) -> BooleanExpression) -> BooleanExpression

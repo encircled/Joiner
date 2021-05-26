@@ -3,25 +3,50 @@
 
 # Overview
 
-Joiner is a Java library which allows to create type-safe JPA queries. It is focused on applications with complex domain model, which require a lot of work with query joins.   
+Joiner is a Java library which allows to create type-safe JPA queries. It is focused on applications with complex domain model, which require a lot of work with query joins.
 
-Joiner can be used instead of or together with QueryDSL. Joiner uses QueryDSL APT maven plugin for entity metamodel generation. See more about QueryDSL installation at [QueryDSL](http://www.querydsl.com/static/querydsl/latest/reference/html/ch02.html#jpa_integration).
+Joiner can be used instead of or together with QueryDSL. Joiner uses QueryDSL APT maven plugin for entity metamodel
+generation. See more about QueryDSL installation
+at [QueryDSL](http://www.querydsl.com/static/querydsl/latest/reference/html/ch02.html#jpa_integration).
 
 Joiner offers Java and Kotlin API, which is described below
 
 Joiner offers following extra features:
+
 * simple way of adding complex joins to the queries
 * automatic resolving of alias uniqueness in queries
 * fixed join fetching in Eclipselink (when using inheritance)
+
+### Readme
+
+- [Example setup](#example-setup)
+- [Basic query](#basic-query)
+- [Basic joins](#basic-join)
+- [Customizing a join](#customizing-a-join)
+- [Nested joins](#nested-joins)
+- [Entity inheritance](#inheritance)
+- [Result projection](#result-projection)
+- [Sorting](#sorting)
+- [Query features](#query-features)
+- [Kotlin API showcase](#kotlin-api-showcase)
+- [Maven dependencies](#maven-dependencies)
 
 # Example setup
 
 All you need is an instance of entity manager, setup of Joiner is as simple as:
 
 ```java
-Joiner joiner = new Joiner(getEntityManager());
-joiner.find(Q.from(QUser.user)
-                .where(QUser.user.isNotNull()));
+Joiner joiner=new Joiner(getEntityManager());
+        joiner.find(Q.from(QUser.user)
+        .where(QUser.user.name.isNotNull()));
+```
+
+or in Kotlin
+
+```kotlin
+val joiner: Joiner = Joiner(getEntityManager());
+joiner.find(QUser.user.all()
+        where { it.name eq "John" })
 ```
 
 # Features
@@ -29,53 +54,83 @@ joiner.find(Q.from(QUser.user)
 ## Basic query
 
 ```java
-joiner.find(Q.from(QGroup.group)
-                .where(QGroup.group.id.eq(1L))
-                .groupBy(QGroup.group.type)
-                .limit(10)
-                .offset(2)     
-                .distinct());
+QGroup group=QGroup.group;
+
+        joiner.find(Q.select(group.name).from(group)
+        .where(group.id.eq(1L))
+        .groupBy(group.type)
+        .limit(10)
+        .offset(2)
+        .distinct());
+```
+
+or in Kotlin
+
+```kotlin
+joiner.find(group.name from group
+        where { it.id eq 1 }
+        groupBy { it.type }
+        limit 10
+        offset 2
+);
 ```
 
 ## Basic join
 
-Example below shows how to join users of group. Target attribute is looked up by type and field name, so it does not matter which relationship it is:
+Example below shows how to join users of group. Target attribute is looked up by type and field name, so it does not
+matter which relationship it is:
 
 ```java
 joiner.findOne(Q.from(QGroup.group)
-                .joins(QUser.user);
+        .joins(QUser.user);
 ```
 
-By default, all joins are left fetch joins. If there are multiple field with the same type, a name should be specified explicitly:
+Aliases can be imported or extracted as a variable to make it:
 
 ```java
-joiner.findOne(Q.from(QGroup.group)
-                .joins(J.inner(new QUser("userAttrName"))
-                                    .on(new QUser("userAttrName").name.isNotNull())
-                                    .fetch(false)));
+joiner.findOne(Q.from(group).joins(user));
 ```
 
-## Inheritance
+By default, all joins are left fetch joins.
 
-Joining a subclass only (`SuperUser` extends `User`):
+If there are multiple field with the same type, then the name must be specified explicitly. So in case when there
+are `user1` and `user2` field on the group, correct way would be:
 
 ```java
-joiner.findOne(Q.from(QGroup.group)
-                .joins(QSuperUser.superUser)
-                .where(QGroup.group.id.eq(1L)));
+joiner.findOne(Q.from(group).joins(group.user1));
 ```
 
-Joining an attribute, which is present on a subclass only (`Key` is present on `SuperUser` only)
+or
+
 ```java
-joiner.findOne(Q.from(QGroup.group)
-                .joins(J.left(QSuperUser.superUser)
-                        .nested(QKey.key))
-                .where(QGroup.group.id.eq(1L)));
+joiner.findOne(Q.from(group).joins(new QUser("user2")));
+```
+
+in Kotlin
+
+```kotlin
+joiner.findOne(group.all() leftJoin group.users);
+```
+
+## Customizing a join
+
+To perform an inner join, or to make a non-fetch join (thus it will not be part of the result set)
+
+```java
+joiner.findOne(Q.from(group)
+        .joins(J.inner(user).on(user.name.isNotNull()).fetch(false))
+        );
+```
+
+in Kotlin
+
+```kotlin
+joiner.findOne(group innerJoin user on { it.name.isNotNull() })
 ```
 
 ## Nested joins
 
-**Remark**: Kotlin API greatly improves read-ability of nested joins, see details below 
+**Remark**: Kotlin API greatly improves read-ability of nested joins, see details below
 
 Nested joins look following:
 
@@ -138,12 +193,31 @@ If the target join is at second level, it may be referenced via parent like this
 
 ```java
 joiner.findOne(Q.from(QGroup.group)
-                    .joins(
-                            J.inner(QUser.user1).nested(J.left(QStatus.status)),
-                            J.left(QStatus.status)
-                    )
-                    .where(QPhone.phone.type.eq("mobile")
-                                            .and(J.path(QUser.user1.statuses).active.isTrue())));
+        .joins(
+        J.inner(QUser.user1).nested(J.left(QStatus.status)),
+        J.left(QStatus.status)
+        )
+        .where(QPhone.phone.type.eq("mobile")
+        .and(J.path(QUser.user1.statuses).active.isTrue())));
+```
+
+## Inheritance
+
+Joining a subclass only (`SuperUser` extends `User`):
+
+```java
+joiner.findOne(Q.from(QGroup.group)
+        .joins(QSuperUser.superUser)
+        .where(QGroup.group.id.eq(1L)));
+```
+
+Joining an attribute, which is present on a subclass only (`Key` is present on `SuperUser` only)
+
+```java
+joiner.findOne(Q.from(QGroup.group)
+        .joins(J.left(QSuperUser.superUser)
+        .nested(QKey.key))
+        .where(QGroup.group.id.eq(1L)));
 ```
 
 ## Result projection
@@ -152,9 +226,9 @@ By default, `find` and `findOne` return an object(s) of type passed to `from` me
 is possible using `Q.select` method. Lets find the active phone number of John:
 
 ```java
-String number = joiner.findOne(Q.select(QPhone.phone.number)
-                    .from(QUser.user)
-                    .joins(J.inner(QPhone.phone).nested(QStatus.status))
+String number=joiner.findOne(Q.select(QPhone.phone.number)
+        .from(QUser.user)
+        .joins(J.inner(QPhone.phone).nested(QStatus.status))
                     .where(QUser.user.name.eq("John").and(QStatus.status.active.isTrue()))
                     );
 ```
@@ -173,12 +247,21 @@ List<Tuple> tuple = joiner.findOne(QUser.user.surname, Q.select(QPhone.phone.num
 
 ```java
 joiner.findOne(Q.from(QGroup.group)
-                .asc(QGroup.group.name));
+        .asc(QGroup.group.name));
 ```
 
 ```java
 joiner.findOne(Q.from(QGroup.group)
-                .desc(QGroup.group.name, QGroup.group.id));
+        .desc(QGroup.group.name,QGroup.group.id));
+```
+
+in Kotlin
+
+```kotlin
+joiner.findOne(
+  group.all()
+          asc group.name
+)
 ```
 
 ## Query features
@@ -189,7 +272,7 @@ Usage of the features is following:
 
 ```java
 joiner.findOne(Q.from(QGroup.group)
-                .addFeatures(new PageableFeature(PageRequest.of(0, 20))));
+        .addFeatures(new PageableFeature(PageRequest.of(0,20))));
 ```
 
 You can implement your own features, for example a feature which adds active status predicate to all present joins:
@@ -212,13 +295,13 @@ public class ActiveStatusFeature implements QueryFeature {
 }
 ```
 
-## Kotlin API
+## Kotlin API showcase
 
 With Kotlin, it is possible to introduce even more fluent API. It supports the same set of features and brings better
 core read-ability. Kotlin query builder is 100% compatible with existing java `Joiner` class and spring data
 repositories.
 
-Kotlin query showcase:
+This example demonstrates different ways of making a join:
 
 ```kotlin
 import some.model.QUser.user
@@ -258,13 +341,23 @@ needed to add those manually:
 ```kotlin
 import cz.encircled.joiner.kotlin.JoinerKtOps.innerJoin
 import cz.encircled.joiner.kotlin.JoinerKtOps.leftJoin
-import cz.encircled.joiner.kotlin.QueryBuilder.all
-import cz.encircled.joiner.kotlin.QueryBuilder.countOf
-import cz.encircled.joiner.kotlin.QueryBuilder.from
+import cz.encircled.joiner.kotlin.JoinerKtQueryBuilder.all
+import cz.encircled.joiner.kotlin.JoinerKtQueryBuilder.countOf
+import cz.encircled.joiner.kotlin.JoinerKtQueryBuilder.from
 ```
 
-In some cases, it might be more convenient to avoid direct imports, especially due to autocompletion in IDEA. For instance, when a class has a lot of queries. It can be done by implementing
+In some cases, it might be more convenient to avoid direct imports, especially due to autocompletion in IDEA. For
+instance, when a class has a lot of queries. It can be done by implementing
 interface `cz.encircled.joiner.kotlin.JoinOps` like `class YourRepository : JoinOps { ... }`
+
+## Reactive API
+
+### Project Reactor
+
+Joiner provides reactive API (currently Project Reactor) by using Hibernate Reactive under the hood.
+
+Reactive API is available via `cz.encircled.joiner.reactive.ReactorJoiner` class, providing flux/mono functions for
+insert and search operations. See full demo app in `example` folder
 
 ## Maven dependencies
 
@@ -273,8 +366,8 @@ interface `cz.encircled.joiner.kotlin.JoinOps` like `class YourRepository : Join
 ```xml
 
 <dependency>
-    <groupId>cz.encircled</groupId>
-    <artifactId>joiner-core</artifactId>
+  <groupId>cz.encircled</groupId>
+  <artifactId>joiner-core</artifactId>
     <version>${joiner.version}</version>
 </dependency>
 ```
@@ -299,10 +392,23 @@ interface `cz.encircled.joiner.kotlin.JoinOps` like `class YourRepository : Join
 ```
 
 ### Kotlin module
+
 ```xml
+
 <dependency>
-    <groupId>cz.encircled</groupId>
-    <artifactId>joiner-kotlin</artifactId>
-    <version>${joiner.version}</version>
+  <groupId>cz.encircled</groupId>
+  <artifactId>joiner-kotlin</artifactId>
+  <version>${joiner.version}</version>
+</dependency>
+```
+
+### Reactive module
+
+```xml
+
+<dependency>
+  <groupId>cz.encircled</groupId>
+  <artifactId>joiner-reactive</artifactId>
+  <version>${joiner.version}</version>
 </dependency>
 ```

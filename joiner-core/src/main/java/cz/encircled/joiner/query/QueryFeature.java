@@ -1,7 +1,5 @@
 package cz.encircled.joiner.query;
 
-import com.querydsl.jpa.impl.JPAQuery;
-
 /**
  * Query features allow to modify the request/query before executing in declarative way
  *
@@ -26,7 +24,7 @@ public interface QueryFeature {
      * @param query   JPA query
      * @return modified JPA query to be executed
      */
-    default <T, R> JPAQuery<R> after(JoinerQuery<T, R> request, JPAQuery<R> query) {
+    default <T, R> ExtendedJPAQuery<R> after(JoinerQuery<T, R> request, ExtendedJPAQuery<R> query) {
         return query;
     }
 

@@ -1,9 +1,9 @@
 package cz.encircled.joiner.core;
 
-import com.querydsl.jpa.impl.JPAQuery;
 import cz.encircled.joiner.config.TestConfig;
 import cz.encircled.joiner.model.QUser;
 import cz.encircled.joiner.model.User;
+import cz.encircled.joiner.query.ExtendedJPAQuery;
 import cz.encircled.joiner.query.JoinerQuery;
 import cz.encircled.joiner.query.Q;
 import cz.encircled.joiner.query.QueryFeature;
@@ -28,7 +28,7 @@ public class QueryFeatureTest extends AbstractTest {
             }
 
             @Override
-            public <T, R> JPAQuery<R> after(JoinerQuery<T, R> request, JPAQuery<R> query) {
+            public <T, R> ExtendedJPAQuery<R> after(JoinerQuery<T, R> request, ExtendedJPAQuery<R> query) {
                 return query;
             }
         });
@@ -45,7 +45,7 @@ public class QueryFeatureTest extends AbstractTest {
             }
 
             @Override
-            public <T, R> JPAQuery<R> after(JoinerQuery<T, R> request, JPAQuery<R> query) {
+            public <T, R> ExtendedJPAQuery<R> after(JoinerQuery<T, R> request, ExtendedJPAQuery<R> query) {
                 return query;
             }
         }));
@@ -62,7 +62,7 @@ public class QueryFeatureTest extends AbstractTest {
             }
 
             @Override
-            public <T, R> JPAQuery<R> after(JoinerQuery<T, R> request, JPAQuery<R> query) {
+            public <T, R> ExtendedJPAQuery<R> after(JoinerQuery<T, R> request, ExtendedJPAQuery<R> query) {
                 throw new TestException();
             }
         });

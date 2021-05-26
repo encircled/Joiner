@@ -1,19 +1,19 @@
 package cz.encircled.joiner.spring;
 
 
-import java.util.Optional;
-
 import com.querydsl.core.types.Expression;
 import com.querydsl.core.types.Path;
 import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.core.types.dsl.PathBuilder;
-import com.querydsl.jpa.impl.JPAQuery;
+import cz.encircled.joiner.query.ExtendedJPAQuery;
 import cz.encircled.joiner.query.JoinerQuery;
 import cz.encircled.joiner.query.QueryFeature;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.mapping.PropertyPath;
+
+import java.util.Optional;
 
 /**
  * This feature allows applying spring {@link Pageable} criteria (limit, offset, sort) to the query
@@ -49,7 +49,7 @@ public class PageableFeature implements QueryFeature {
     }
 
     @Override
-    public <T, R> JPAQuery<R> after(JoinerQuery<T, R> request, JPAQuery<R> query) {
+    public <T, R> ExtendedJPAQuery<R> after(JoinerQuery<T, R> request, ExtendedJPAQuery<R> query) {
         return query;
     }
 

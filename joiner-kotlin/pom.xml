@@ -9,9 +9,6 @@
 
     <artifactId>joiner-kotlin</artifactId>
 
-    <properties>
-        <kotlin.version>1.4.32</kotlin.version>
-    </properties>
 
     <pluginRepositories>
         <pluginRepository>

@@ -40,6 +40,13 @@ public class User extends AbstractEntity {
     @JoinColumn(name = "parent_id")
     private User user;
 
+    public User() {
+    }
+
+    public User(String name) {
+        setName(name);
+    }
+
     public Set<Contact> getContacts() {
         return contacts;
     }
