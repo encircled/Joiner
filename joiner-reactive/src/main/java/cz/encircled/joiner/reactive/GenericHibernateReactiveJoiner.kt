@@ -4,7 +4,6 @@ import com.querydsl.core.types.ParamExpression
 import com.querydsl.core.types.ParamNotSetException
 import com.querydsl.core.types.dsl.Param
 import cz.encircled.joiner.core.Joiner
-import cz.encircled.joiner.query.ExtendedJPAQuery
 import cz.encircled.joiner.query.JoinerQuery
 import org.hibernate.reactive.stage.Stage
 import reactor.core.scheduler.Schedulers
@@ -81,7 +80,7 @@ abstract class GenericHibernateReactiveJoiner(emf: EntityManagerFactory) {
         onComplete: () -> Unit
     ) {
         sessionFactory.withTransaction { session, _ ->
-            val jpa = createQuery(session, joiner.toJPAQuery(query))
+            val jpa = createQuery(session, query)
 
             jpa.resultList.handle { t, u ->
                 Schedulers.boundedElastic().schedule {
@@ -99,17 +98,17 @@ abstract class GenericHibernateReactiveJoiner(emf: EntityManagerFactory) {
         }
     }
 
-    protected fun <R> createQuery(session: Stage.Session, q: ExtendedJPAQuery<R>): Stage.Query<R> {
-        val s = q.serializer
-        val query = try {
-            session.createQuery<R>(s.toString())
-        } catch (e: Exception) {
-            throw IllegalStateException(e)
-        }
+    protected fun <R> createQuery(session: Stage.Session, query: JoinerQuery<*, R>): Stage.Query<R> {
+        val queryDsl = joiner.toJPAQuery(query)
+        val serializer = queryDsl.serializer
+        val jpaQuery = session.createQuery<R>(serializer.toString())
 
-        setConstants(query, s.constantToAllLabels, q.metadata.params)
+        query.limit?.apply { jpaQuery.setMaxResults(toInt()) }
+        query.offset?.apply { jpaQuery.setFirstResult(toInt()) }
 
-        return query
+        setConstants(jpaQuery, serializer.constantToAllLabels, queryDsl.metadata.params)
+
+        return jpaQuery
     }
 
     protected fun setConstants(

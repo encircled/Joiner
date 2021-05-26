@@ -16,6 +16,7 @@ import cz.encircled.joiner.query.join.JoinDescription
  * - distinct
  * - some operators
  * - join (non)fetch
+ * - query features
  */
 
 data class PredicateContinuation<T>(
@@ -131,6 +132,11 @@ class JoinerKtQuery<FROM_C, PROJ, FROM : EntityPath<FROM_C>>(
 
     override infix fun limit(limit: Long?): JoinerKtQuery<FROM_C, PROJ, FROM> {
         delegate.limit(limit)
+        return this
+    }
+
+    override infix fun offset(offset: Long?): JoinerKtQuery<FROM_C, PROJ, FROM> {
+        delegate.offset(limit)
         return this
     }
 

@@ -102,7 +102,7 @@ public interface JoinerQuery<T, R> extends JoinRoot {
      * @param offset value
      * @return this
      */
-    JoinerQueryBase<T, R> offset(Long offset);
+    JoinerQuery<T, R> offset(Long offset);
 
     Long getOffset();
 

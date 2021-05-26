@@ -1,5 +1,6 @@
 package cz.encircled.joiner.eclipse;
 
+import com.querydsl.core.Tuple;
 import cz.encircled.joiner.model.*;
 import cz.encircled.joiner.query.Q;
 import cz.encircled.joiner.query.join.J;
@@ -10,10 +11,19 @@ import javax.persistence.Persistence;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static org.junit.Assert.assertEquals;
+
 /**
  * Created by Kisel on 28.01.2016.
  */
 public class InheritanceJoinTest extends AbstractEclipseTest {
+
+    @Test
+    public void testTupleProjection() {
+        List<Tuple> tuple = joiner.find(Q.select(QGroup.group.name, QGroup.group.id).from(QGroup.group));
+        assertEquals(1, tuple.size());
+        assertEquals("group1", tuple.get(0).get(QGroup.group.name));
+    }
 
     @Test
     public void testNestedOneToMany() {

@@ -49,6 +49,18 @@ class ReactorJoinerTest : WithInMemMySql() {
     }
 
     @Test
+    fun testFindMultipleLimitAndOffset() {
+        reactorJoiner.persist(User("Test Name")).block()
+        reactorJoiner.persist(User("Test Name 2")).block()
+        reactorJoiner.persist(User("Test Name 3")).block()
+
+        StepVerifier.create(reactorJoiner.find(QUser.user1.name from QUser.user1 limit 1 offset 1 ))
+            .expectNext("Test Name 2")
+            .expectComplete()
+            .verify()
+    }
+
+    @Test
     fun testFindMultiple() {
         reactorJoiner.persist(User("Test Name")).block()
         reactorJoiner.persist(User("Test Name 2")).block()

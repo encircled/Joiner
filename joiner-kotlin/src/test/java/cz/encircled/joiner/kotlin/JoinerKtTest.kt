@@ -47,6 +47,7 @@ class JoinerKtTest : AbstractTest() {
 
                     where { it.name eq "user1" or it.id ne 1 or it.id isIn listOf(1) }
                     limit 1
+                    offset 0
 
                     asc QUser.user1.id
         )
@@ -64,6 +65,7 @@ class JoinerKtTest : AbstractTest() {
 
                     where { it.name eq "user1" or it.id ne 1 or it.id isIn listOf(1) }
                     limit 1
+                    offset 0
 
                     asc QUser.user1.id
         )
