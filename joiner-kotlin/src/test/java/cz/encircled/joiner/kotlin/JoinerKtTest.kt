@@ -70,7 +70,7 @@ class JoinerKtTest : AbstractTest() {
                     asc QUser.user1.id
         )
 
-        assertEquals(6, find)
+        assertEquals(7, find)
     }
 
 }
