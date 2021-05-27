@@ -19,12 +19,12 @@ public class JavaEmploymentController {
 
     @GetMapping("{id}")
     Mono<Employment> getOne(@PathVariable Long id) {
-        return joiner.findOne(Q.from(QSomeEntity.someEntity).where(QSomeEntity.someEntity.id.eq(id)));
+        return joiner.findOne(Q.from(QEmployment.employment).where(QEmployment.employment.id.eq(id)));
     }
 
     @GetMapping
     Flux<Employment> getAll() {
-        return joiner.find(Q.from(QSomeEntity.someEntity));
+        return joiner.find(Q.from(QEmployment.employment));
     }
 
 }
