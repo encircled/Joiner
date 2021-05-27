@@ -7,14 +7,16 @@ import cz.encircled.joiner.model.User;
 import org.eclipse.persistence.config.QueryHints;
 import org.eclipse.persistence.internal.jpa.EJBQueryImpl;
 import org.eclipse.persistence.internal.queries.JoinedAttributeManager;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.springframework.util.ReflectionUtils;
 
 import javax.persistence.Persistence;
 import javax.persistence.Query;
 import java.lang.reflect.Field;
 import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * @author Vlad on 06-Sep-16.
@@ -38,11 +40,11 @@ public class InheritanceJoiningCustomizerTest extends AbstractEclipseTest {
 
         List<Password> passwords = query.getResultList();
 
-        Assert.assertFalse(passwords.isEmpty());
+        assertFalse(passwords.isEmpty());
 
         for (Password password : passwords) {
-            Assert.assertTrue(Persistence.getPersistenceUtil().isLoaded(password, "normalUser"));
-            Assert.assertTrue(Persistence.getPersistenceUtil().isLoaded(password.getNormalUser(), "employmentContacts"));
+            assertTrue(Persistence.getPersistenceUtil().isLoaded(password, "normalUser"));
+            assertTrue(Persistence.getPersistenceUtil().isLoaded(password.getNormalUser(), "employmentContacts"));
         }
     }
 
@@ -54,11 +56,11 @@ public class InheritanceJoiningCustomizerTest extends AbstractEclipseTest {
 
         boolean hasStatus = false;
 
-        Assert.assertFalse(users.isEmpty());
+        assertFalse(users.isEmpty());
         for (User user : users) {
-            Assert.assertTrue(Persistence.getPersistenceUtil().isLoaded(user, "contacts"));
+            assertTrue(Persistence.getPersistenceUtil().isLoaded(user, "contacts"));
             for (Contact contact : user.getContacts()) {
-                Assert.assertTrue(Persistence.getPersistenceUtil().isLoaded(contact, "statuses"));
+                assertTrue(Persistence.getPersistenceUtil().isLoaded(contact, "statuses"));
                 if (contact instanceof Phone) {
                     if (!((Phone) contact).getStatuses().isEmpty()) {
                         hasStatus = true;
@@ -67,7 +69,7 @@ public class InheritanceJoiningCustomizerTest extends AbstractEclipseTest {
             }
         }
 
-        Assert.assertTrue(hasStatus);
+        assertTrue(hasStatus);
     }
 
 }

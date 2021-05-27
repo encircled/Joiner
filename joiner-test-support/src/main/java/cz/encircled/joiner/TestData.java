@@ -40,6 +40,7 @@ public class TestData {
         baseUserCreate(group, 1, true);
         baseUserCreate(group, 2, true);
         baseUserCreate(group, 2, false);
+        baseUserCreate(group, 3, false);
         superUser(group);
         normalUser(group);
 

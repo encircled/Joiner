@@ -13,8 +13,9 @@ import cz.encircled.joiner.model.QSuperUser;
 import cz.encircled.joiner.model.QUser;
 import cz.encircled.joiner.query.join.J;
 import cz.encircled.joiner.query.join.JoinDescription;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * @author Vlad on 06-Sep-16.
@@ -29,7 +30,7 @@ public class AliasResolverUnitTest extends AbstractTest {
 
         resolver.resolveJoinAlias(left, QUser.user1);
 
-        Assert.assertEquals(new QNormalUser("user1").passwords, left.getCollectionPath());
+        assertEquals(new QNormalUser("user1").passwords, left.getCollectionPath());
     }
 
     @Test
@@ -39,7 +40,7 @@ public class AliasResolverUnitTest extends AbstractTest {
         JoinDescription left = J.left(QAddress.address);
         resolver.resolveJoinAlias(left, QSuperUser.superUser);
 
-        Assert.assertEquals(new QUser(QSuperUser.superUser.toString()).addresses, left.getCollectionPath());
+        assertEquals(new QUser(QSuperUser.superUser.toString()).addresses, left.getCollectionPath());
     }
 
     @Test
@@ -49,14 +50,14 @@ public class AliasResolverUnitTest extends AbstractTest {
         JoinDescription left = J.left(QSuperUser.superUser);
         resolver.resolveJoinAlias(left, QAddress.address);
 
-        Assert.assertEquals(QAddress.address.user, left.getSinglePath());
+        assertEquals(QAddress.address.user, left.getSinglePath());
     }
 
-    @Test(expected = JoinerException.class)
+    @Test
     public void testFieldNotFound() {
         AliasResolver resolver = new DefaultAliasResolver(entityManager);
 
-        resolver.resolveJoinAlias(J.left(QPassword.password), QGroup.group);
+        assertThrows(JoinerException.class, () -> resolver.resolveJoinAlias(J.left(QPassword.password), QGroup.group));
     }
 
     @Test
@@ -67,11 +68,11 @@ public class AliasResolverUnitTest extends AbstractTest {
             resolver.resolveJoinAlias(J.left(QUser.user1), QContact.contact);
         } catch (JoinerException e) {
             e.printStackTrace();
-            Assert.assertTrue(e.getMessage().contains("Multiple mappings found: [contact.employmentUser, contact.user]"));
+            assertTrue(e.getMessage().contains("Multiple mappings found: [contact.employmentUser, contact.user]"));
             return;
         }
 
-        Assert.fail();
+        fail();
     }
 
 }

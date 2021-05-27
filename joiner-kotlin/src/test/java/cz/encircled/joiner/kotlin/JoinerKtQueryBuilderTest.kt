@@ -8,8 +8,7 @@ import cz.encircled.joiner.kotlin.JoinerKtQueryBuilder.from
 import cz.encircled.joiner.model.*
 import cz.encircled.joiner.query.Q
 import cz.encircled.joiner.query.join.J
-import org.junit.Assert
-import org.junit.Test
+import kotlin.test.Test
 import kotlin.test.assertEquals
 
 /**
@@ -170,8 +169,8 @@ class JoinerKtQueryBuilderTest {
                 J.left(QGroup.group)
                     .nested(J.left(QStatus.status).nested(userTree))
             )
-        Assert.assertEquals(expected, query.delegate)
-        Assert.assertEquals(J.unrollChildrenJoins(expected.joins), J.unrollChildrenJoins(query.joins))
+        assertEquals(expected, query.delegate)
+        assertEquals(J.unrollChildrenJoins(expected.joins), J.unrollChildrenJoins(query.joins))
     }
 
 }

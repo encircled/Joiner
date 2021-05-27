@@ -7,12 +7,13 @@ import cz.encircled.joiner.model.NormalUser;
 import cz.encircled.joiner.model.QSuperUser;
 import cz.encircled.joiner.model.SuperUser;
 import cz.encircled.joiner.model.User;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import java.util.Set;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * @author Vlad on 01-Nov-16.
@@ -25,24 +26,24 @@ public class ReflectionUtilsTest extends AbstractTest {
     @Test
     public void testInstantiateQ() {
         EntityPath user = ReflectionUtils.instantiate(QSuperUser.class, "testAlias");
-        Assert.assertEquals(QSuperUser.class, user.getClass());
-        Assert.assertEquals("testAlias", user.toString());
+        assertEquals(QSuperUser.class, user.getClass());
+        assertEquals("testAlias", user.toString());
     }
 
-    @Test(expected = JoinerException.class)
+    @Test
     public void testInstantiateQException() {
-        ReflectionUtils.instantiate(QSuperUser.class, null);
+        assertThrows(JoinerException.class, () -> ReflectionUtils.instantiate(QSuperUser.class, null));
     }
 
     @Test
     public void testFindFieldException() {
-        Assert.assertNull(ReflectionUtils.findField(QSuperUser.class, "notExists"));
+        assertNull(ReflectionUtils.findField(QSuperUser.class, "notExists"));
     }
 
     @Test
     public void testGetField() {
-        Assert.assertSame(entityManager, ReflectionUtils.getField("entityManager", this));
-        Assert.assertSame(entityManager, ReflectionUtils.getField(ReflectionUtils.findField(this.getClass(), "entityManager"), this));
+        assertSame(entityManager, ReflectionUtils.getField("entityManager", this));
+        assertSame(entityManager, ReflectionUtils.getField(ReflectionUtils.findField(this.getClass(), "entityManager"), this));
     }
 
     @Test
@@ -50,7 +51,7 @@ public class ReflectionUtilsTest extends AbstractTest {
         EntityManager original = entityManager;
         try {
             ReflectionUtils.setField(ReflectionUtils.findField(this.getClass(), "entityManager"), this, null);
-            Assert.assertNull(entityManager);
+            assertNull(entityManager);
         } finally {
             entityManager = original;
         }
@@ -59,9 +60,9 @@ public class ReflectionUtilsTest extends AbstractTest {
     @Test
     public void testGetSubclasses() {
         Set<Class> subclasses = ReflectionUtils.getSubclasses(User.class, entityManager);
-        Assert.assertEquals(2, subclasses.size());
-        Assert.assertTrue(subclasses.contains(SuperUser.class));
-        Assert.assertTrue(subclasses.contains(NormalUser.class));
+        assertEquals(2, subclasses.size());
+        assertTrue(subclasses.contains(SuperUser.class));
+        assertTrue(subclasses.contains(NormalUser.class));
     }
 
 }

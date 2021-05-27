@@ -9,11 +9,13 @@ import cz.encircled.joiner.model.QSuperUser;
 import cz.encircled.joiner.model.QUser;
 import cz.encircled.joiner.query.join.J;
 import cz.encircled.joiner.query.join.JoinDescription;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import javax.persistence.EntityManager;
 import java.util.concurrent.atomic.AtomicInteger;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 /**
  * @author Vlad on 18-Dec-16.
@@ -28,8 +30,8 @@ public class AliasResolverCacheTest extends AbstractTest {
         JoinDescription left = J.left(QUser.user1);
         resolver.resolveJoinAlias(left, QAddress.address);
 
-        Assert.assertNotNull(left.getSinglePath());
-        Assert.assertEquals(1, resolver.getCounter());
+        assertNotNull(left.getSinglePath());
+        assertEquals(1, resolver.getCounter());
     }
 
     @Test
@@ -40,8 +42,8 @@ public class AliasResolverCacheTest extends AbstractTest {
         JoinDescription left = J.left(QKey.key);
         resolver.resolveJoinAlias(left, QUser.user1);
 
-        Assert.assertNotNull(left.getSinglePath());
-        Assert.assertEquals(1, resolver.getCounter());
+        assertNotNull(left.getSinglePath());
+        assertEquals(1, resolver.getCounter());
     }
 
     @Test
@@ -53,8 +55,8 @@ public class AliasResolverCacheTest extends AbstractTest {
         JoinDescription left = J.left(QSuperUser.superUser);
         resolver.resolveJoinAlias(left, QAddress.address);
 
-        Assert.assertNotNull(left.getSinglePath());
-        Assert.assertEquals(1, resolver.getCounter());
+        assertNotNull(left.getSinglePath());
+        assertEquals(1, resolver.getCounter());
     }
 
     @Test
@@ -65,13 +67,13 @@ public class AliasResolverCacheTest extends AbstractTest {
         JoinDescription left = J.left(QAddress.address);
         resolver.resolveJoinAlias(left, QSuperUser.superUser);
 
-        Assert.assertNotNull(left.getCollectionPath());
-        Assert.assertEquals(1, resolver.getCounter());
+        assertNotNull(left.getCollectionPath());
+        assertEquals(1, resolver.getCounter());
     }
 
     private static class CountingAliasResolver extends DefaultAliasResolver {
 
-        private AtomicInteger counter = new AtomicInteger(0);
+        private final AtomicInteger counter = new AtomicInteger(0);
 
         CountingAliasResolver(EntityManager entityManager) {
             super(entityManager);

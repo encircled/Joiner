@@ -1,6 +1,7 @@
 package cz.encircled.joiner.util;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 public class AssertTest {
 
@@ -9,9 +10,9 @@ public class AssertTest {
         Assert.notNull("");
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void testAssertWhenNull() {
-        Assert.notNull(null);
+        Assertions.assertThrows(IllegalArgumentException.class, () -> Assert.notNull(null));
     }
 
     @Test
@@ -19,9 +20,9 @@ public class AssertTest {
         Assert.assertThat(true);
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void testAssertThatFail() {
-        Assert.assertThat(false);
+        Assertions.assertThrows(IllegalArgumentException.class, () -> Assert.assertThat(false));
     }
 
 }

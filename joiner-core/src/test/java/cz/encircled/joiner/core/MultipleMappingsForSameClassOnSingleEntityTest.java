@@ -10,12 +10,14 @@ import cz.encircled.joiner.model.User;
 import cz.encircled.joiner.query.JoinerQuery;
 import cz.encircled.joiner.query.Q;
 import cz.encircled.joiner.query.join.J;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.persistence.Persistence;
 import java.util.List;
-import java.util.Objects;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Tests for cases when an entity has multiple associations with the same class type (i.e. User and Contacts in test domain model)
@@ -24,37 +26,43 @@ import java.util.Objects;
  */
 public class MultipleMappingsForSameClassOnSingleEntityTest extends AbstractTest {
 
-    @Test(expected = JoinerException.class)
+    @Autowired
+    public Joiner joiner2;
+
+    @Test
     public void testJoinAmbiguousAliasException() {
-        joiner.find(Q.from(QUser.user1).joins(J.left(QContact.contact)));
+        Assertions.assertThrows(JoinerException.class, () -> {
+            joiner.find(Q.from(QUser.user1).joins(J.left(QContact.contact)));
+        });
     }
 
     @Test
     public void testConflictResolvedAndFetched() {
         List<User> users = joiner.find(Q.from(QUser.user1).joins(J.left(new QContact("employmentContacts"))));
-        Assert.assertFalse(users.isEmpty());
+        assertFalse(users.isEmpty());
 
         for (User user : users) {
-            Assert.assertTrue(Persistence.getPersistenceUtil().isLoaded(user, "employmentContacts"));
-            Assert.assertFalse(Persistence.getPersistenceUtil().isLoaded(user, "contacts"));
+            assertTrue(Persistence.getPersistenceUtil().isLoaded(user, "employmentContacts"));
+            assertFalse(Persistence.getPersistenceUtil().isLoaded(user, "contacts"));
         }
     }
 
     @Test
     public void testAllConflictsResolvedAndFetched() {
-        String s = joiner.toJPAQuery(Q.from(QUser.user1).joins(J.left(new QContact("employmentContacts")), J.left(new QContact("contacts")))).toString();
         List<User> users = joiner.find(Q.from(QUser.user1).joins(J.left(new QContact("employmentContacts")), J.left(new QContact("contacts"))));
-        Assert.assertFalse(users.isEmpty());
+        assertFalse(users.isEmpty());
 
         for (User user : users) {
-            Assert.assertTrue(Persistence.getPersistenceUtil().isLoaded(user, "employmentContacts"));
-            Assert.assertTrue(Persistence.getPersistenceUtil().isLoaded(user, "contacts"));
+            assertTrue(Persistence.getPersistenceUtil().isLoaded(user, "employmentContacts"));
+            assertTrue(Persistence.getPersistenceUtil().isLoaded(user, "contacts"));
         }
     }
 
-    @Test(expected = JoinerException.class)
+    @Test
     public void testWrongAttributeNotMatchedByAlias() {
-        joiner.find(Q.from(QContact.contact).joins(new QContact("user")));
+        Assertions.assertThrows(JoinerException.class, () -> {
+            joiner.find(Q.from(QContact.contact).joins(new QContact("user")));
+        });
     }
 
     @Test
@@ -62,12 +70,12 @@ public class MultipleMappingsForSameClassOnSingleEntityTest extends AbstractTest
         List<Contact> result = joiner.find(Q.from(QContact.contact)
                 .joins(J.left(new QUser("user")), J.left(new QUser("employmentUser"))));
 
-        Assert.assertFalse(result.isEmpty());
+        assertFalse(result.isEmpty());
 
         for (Contact contact : result) {
-            Assert.assertTrue(Persistence.getPersistenceUtil().isLoaded(contact, "user"));
-            Assert.assertTrue(Persistence.getPersistenceUtil().isLoaded(contact, "employmentUser"));
-            Assert.assertFalse(Objects.equals(contact.getUser().getId(), contact.getEmploymentUser().getId()));
+            assertTrue(Persistence.getPersistenceUtil().isLoaded(contact, "user"));
+            assertTrue(Persistence.getPersistenceUtil().isLoaded(contact, "employmentUser"));
+            assertNotEquals(contact.getUser().getId(), contact.getEmploymentUser().getId());
         }
     }
 
@@ -78,13 +86,13 @@ public class MultipleMappingsForSameClassOnSingleEntityTest extends AbstractTest
                         .nested(J.left(new QContact("employmentContacts")).nested(J.left(new QUser("employmentUser"))), J.left(new QContact("contacts")))
         );
         List<Group> groups = joiner.find(request);
-        Assert.assertFalse(groups.isEmpty());
+        assertFalse(groups.isEmpty());
 
         for (Group group : groups) {
-            Assert.assertFalse(group.getUsers().isEmpty());
+            assertFalse(group.getUsers().isEmpty());
             for (User user : group.getUsers()) {
-                Assert.assertTrue(Persistence.getPersistenceUtil().isLoaded(user, "employmentContacts"));
-                Assert.assertTrue(Persistence.getPersistenceUtil().isLoaded(user, "contacts"));
+                assertTrue(Persistence.getPersistenceUtil().isLoaded(user, "employmentContacts"));
+                assertTrue(Persistence.getPersistenceUtil().isLoaded(user, "contacts"));
             }
         }
     }
@@ -94,7 +102,7 @@ public class MultipleMappingsForSameClassOnSingleEntityTest extends AbstractTest
         joiner.find(Q.from(QUser.user1).joins(J.left(new QContact("employmentContacts"))));
         try {
             joiner.find(Q.from(QUser.user1).joins(J.left(QContact.contact)));
-            Assert.fail();
+            fail();
         } catch (JoinerException e) {
             // Expected
         }

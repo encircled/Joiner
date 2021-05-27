@@ -6,7 +6,7 @@ import com.querydsl.core.types.dsl.Param
 import cz.encircled.joiner.core.Joiner
 import cz.encircled.joiner.query.JoinerQuery
 import org.hibernate.reactive.stage.Stage
-import reactor.core.scheduler.Schedulers
+import java.util.concurrent.CompletionStage
 import javax.persistence.EntityManagerFactory
 
 /**
@@ -20,81 +20,43 @@ abstract class GenericHibernateReactiveJoiner(emf: EntityManagerFactory) {
 
     private val sessionFactory: Stage.SessionFactory = emf.unwrap(Stage.SessionFactory::class.java)
 
-    protected fun <T> doPersist(
-        entity: T,
-        onSuccess: (T) -> Unit,
-        onError: (Throwable) -> Unit,
-        onComplete: () -> Unit
-    ) {
-        sessionFactory.withTransaction { session, _ ->
-            try {
-                session.persist(entity).handle { _, error ->
-                    Schedulers.boundedElastic().schedule {
-                        if (error != null) {
-                            onError(error)
-                        } else {
-                            onSuccess(session.getReference(entity))
-                            onComplete()
-                        }
-                    }
-                }
-            } catch (e: Exception) {
-                onError(e)
-                return@withTransaction null
+    fun executeComposed(a: List<(Any?) -> Any>): CompletionStage<*> {
+        val toStage: (Any?, Stage.Session, (Any?) -> Any) -> CompletionStage<*> = { value, session, actionCreator ->
+            val action = actionCreator(value)
+            if (action is JoinerQuery<*, *>) {
+                createQuery(session, action).resultList
+            } else session.persist(action).handle { _, _ ->
+                session.getReference(action)
             }
+        }
+
+        return sessionFactory.withTransaction { session, t ->
+            var curr = toStage(null, session, a[0])
+            (1 until a.size).forEach { i ->
+                curr = curr.thenCompose { v ->
+                    toStage(v, session, a[i])
+                }
+            }
+            curr
         }
     }
 
-    protected fun <T> doPersistMultiple(
-        entities: Collection<T>,
-        onSuccess: (T) -> Unit,
-        onError: (Throwable) -> Unit,
-        onComplete: () -> Unit
-    ) {
-        sessionFactory.withTransaction { session, _ ->
-            try {
-                val asArray = entities.stream().toArray()
-                session.persist(*asArray).handle { _, error ->
-                    Schedulers.boundedElastic().schedule {
-                        if (error != null) {
-                            onError(error)
-                        } else {
-                            entities.forEach {
-                                onSuccess(session.getReference(it))
-                            }
-                            onComplete()
-                        }
-                    }
-                }
-            } catch (e: Exception) {
-                onError(e)
-                return@withTransaction null
-            }
+    protected fun <T> doPersist(entity: T) : CompletionStage<T> {
+        return sessionFactory.withTransaction { session, _ ->
+                session.persist(entity).thenApply { session.getReference(entity) }
         }
     }
 
-    protected fun <T, R> doFind(
-        query: JoinerQuery<T, R>,
-        onNext: (R) -> Unit,
-        onError: (Throwable) -> Unit,
-        onComplete: () -> Unit
-    ) {
-        sessionFactory.withTransaction { session, _ ->
-            val jpa = createQuery(session, query)
+    protected fun <T> doPersistMultiple(entities: Collection<T>) : CompletionStage<List<T>> {
+        return sessionFactory.withTransaction { session, _ ->
+            val asArray = entities.stream().toArray()
+            session.persist(*asArray).thenApply { entities.map { e -> session.getReference(e) } }
+        }
+    }
 
-            jpa.resultList.handle { t, u ->
-                Schedulers.boundedElastic().schedule {
-                    if (u?.cause != null) {
-                        onError(u.cause!!)
-                    } else {
-                        t.forEach {
-                            onNext(it)
-                        }
-                    }
-                    onComplete()
-                    session.close()
-                }
-            }
+    protected fun <T, R> doFind(query: JoinerQuery<T, R>) : CompletionStage<List<R>> {
+        return sessionFactory.withTransaction { session, _ ->
+            createQuery(session, query).resultList
         }
     }
 

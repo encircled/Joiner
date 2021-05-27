@@ -14,9 +14,8 @@ import cz.encircled.joiner.model.Status;
 import cz.encircled.joiner.query.Q;
 import cz.encircled.joiner.query.join.J;
 import cz.encircled.joiner.query.join.JoinDescription;
-import org.junit.Assert;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 import org.springframework.test.context.ContextConfiguration;
 
 import java.lang.reflect.AnnotatedElement;
@@ -27,53 +26,56 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+
 /**
  * @author Vlad on 04-Aug-16.
  */
 @ContextConfiguration(classes = {TestConfig.class})
 public class PredicateResolverTest extends AbstractTest {
 
-    private PredicateAliasResolver resolver = new DefaultPredicateAliasResolver();
+    private final PredicateAliasResolver resolver = new DefaultPredicateAliasResolver();
 
-    private QStatus testStatus = new QStatus("testStatus");
+    private final QStatus testStatus = new QStatus("testStatus");
 
     @Test
     public void testOperationResolved() {
         Map<AnnotatedElement, List<JoinDescription>> grouped = Stream.of(J.left(testStatus))
                 .collect(Collectors.groupingBy(j -> j.getOriginalAlias().getAnnotatedElement()));
         Path<String> resolved = resolver.resolvePath(QStatus.status.name, grouped, Collections.emptySet());
-        Assert.assertEquals(testStatus.name, resolved);
+        assertEquals(testStatus.name, resolved);
     }
 
     @Test
     public void testPredicateResolved() {
         Predicate resolved = resolver.resolvePredicate(QStatus.status.id.eq(1L), Collections.singletonList(J.left(testStatus)), Collections.emptySet());
-        Assert.assertEquals(testStatus.id.eq(1L), resolved);
+        assertEquals(testStatus.id.eq(1L), resolved);
     }
 
     @Test
     public void testMissingAliasNotChanged() {
         Predicate resolved = resolver.resolvePredicate(QStatus.status.id.eq(1L), Collections.singletonList(J.left(QUser.user1)), Collections.emptySet());
-        Assert.assertEquals(QStatus.status.id.eq(1L), resolved);
+        assertEquals(QStatus.status.id.eq(1L), resolved);
     }
 
     @Test
     public void testCustomMissingAliasNotChanged() {
         Predicate resolved = resolver.resolvePredicate(new QStatus("some").id.eq(1L), Collections.singletonList(J.left(QUser.user1)), Collections.emptySet());
-        Assert.assertEquals(new QStatus("some").id.eq(1L), resolved);
+        assertEquals(new QStatus("some").id.eq(1L), resolved);
     }
 
     @Test
     public void testPresentAliasNotChanged() {
         Predicate resolved = resolver.resolvePredicate(new QStatus("notChanged").id.eq(1L), Collections.singletonList(J.left(testStatus)), Collections.singleton(new QStatus("notChanged")));
-        Assert.assertEquals("notChanged.id = 1", resolved.toString());
+        assertEquals("notChanged.id = 1", resolved.toString());
     }
 
     @Test
     public void testAmbiguousJoinsNotChanged() {
         Predicate resolved = resolver.resolvePredicate(new QStatus("notChanged").id.eq(1L), Arrays.asList(J.left(testStatus), J.left(new QStatus("anotherStatus"))),
                 Collections.emptySet());
-        Assert.assertEquals("notChanged.id = 1", resolved.toString());
+        assertEquals("notChanged.id = 1", resolved.toString());
     }
 
     @Test
@@ -83,7 +85,7 @@ public class PredicateResolverTest extends AbstractTest {
                 .where(QStatus.status.id.lt(2000L).and(QStatus.status.id.ne(3L))
                         .or(QStatus.status.id.eq(3L).and(QStatus.status.id.ne(3L))).and(QStatus.status.id.ne(4L))));
 
-        Assert.assertFalse(result.isEmpty());
+        assertFalse(result.isEmpty());
     }
 
     @Test
@@ -92,7 +94,7 @@ public class PredicateResolverTest extends AbstractTest {
                 .joins(J.left(QUser.user1).nested(QStatus.status))
                 .where(QStatus.status.id.gt(0L)));
 
-        Assert.assertFalse(result.isEmpty());
+        assertFalse(result.isEmpty());
     }
 
     @Test
@@ -101,7 +103,7 @@ public class PredicateResolverTest extends AbstractTest {
                 .joins(J.left(QUser.user1).nested(QStatus.status))
                 .where(QStatus.status.id.isNotNull()));
 
-        Assert.assertFalse(result.isEmpty());
+        assertFalse(result.isEmpty());
     }
 
     @Test
@@ -110,7 +112,7 @@ public class PredicateResolverTest extends AbstractTest {
                 .joins(J.left(QUser.user1).nested(QStatus.status))
                 .where(QStatus.status.id.gt(100L).or(QStatus.status.id.isNotNull())));
 
-        Assert.assertFalse(result.isEmpty());
+        assertFalse(result.isEmpty());
     }
 
     @Test
@@ -119,7 +121,7 @@ public class PredicateResolverTest extends AbstractTest {
                 .joins(J.left(QUser.user1).nested(QGroup.group))
                 .where(QGroup.group.id.gt(100L).or(QGroup.group.id.isNotNull())));
 
-        Assert.assertFalse(statuses.isEmpty());
+        assertFalse(statuses.isEmpty());
     }
 
     @Test
@@ -128,11 +130,11 @@ public class PredicateResolverTest extends AbstractTest {
                 .joins(J.left(QUser.user1).nested(QUser.user1.groups))
                 .where(QGroup.group.id.gt(100L).or(QGroup.group.id.isNotNull())));
 
-        Assert.assertFalse(statuses.isEmpty());
+        assertFalse(statuses.isEmpty());
     }
 
     @Test
-    @Ignore // maybe later?
+    @Disabled // maybe later?
     public void testFromResolvedInQuery() {
         joiner.find(Q.from(new QGroup("some")).where(QGroup.group.id.isNotNull()));
     }

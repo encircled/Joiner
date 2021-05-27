@@ -1,14 +1,42 @@
 package cz.encircled.joiner.reactive
 
 import cz.encircled.joiner.exception.JoinerException
+import cz.encircled.joiner.kotlin.JoinerKtQueryBuilder.all
 import cz.encircled.joiner.kotlin.JoinerKtQueryBuilder.from
 import cz.encircled.joiner.model.QUser
 import cz.encircled.joiner.model.User
-import org.junit.Test
 import reactor.test.StepVerifier
+import kotlin.test.Test
 
 
 class ReactorJoinerTest : WithInMemMySql() {
+
+    @Test
+    fun testTransactionBatchAsMono() {
+        StepVerifier.create(reactorJoiner.transaction {
+            persist(User("TestName"))
+                .persist(User("TestName 2"))
+                .findOne { user ->
+                    QUser.user1.all() where { it.id eq user.id }
+                }
+        })
+            .expectNextMatches { user -> user.name.equals("TestName 2") }
+            .expectComplete()
+            .verify()
+    }
+
+    @Test
+    fun testTransactionBatchAsFlux() {
+        StepVerifier.create(reactorJoiner.transaction {
+            persist(User("TestName Flux 1"))
+                .persist { user -> User("${user.name}2") }
+                .find { QUser.user1.name from QUser.user1 where { it.name contains "Flux"  } }
+        })
+            .expectNext("TestName Flux 1")
+            .expectNext("TestName Flux 12")
+            .expectComplete()
+            .verify()
+    }
 
     @Test
     fun testPersistNewEntity() {
@@ -54,7 +82,7 @@ class ReactorJoinerTest : WithInMemMySql() {
         reactorJoiner.persist(User("Test Name 2")).block()
         reactorJoiner.persist(User("Test Name 3")).block()
 
-        StepVerifier.create(reactorJoiner.find(QUser.user1.name from QUser.user1 limit 1 offset 1 ))
+        StepVerifier.create(reactorJoiner.find(QUser.user1.name from QUser.user1 limit 1 offset 1))
             .expectNext("Test Name 2")
             .expectComplete()
             .verify()

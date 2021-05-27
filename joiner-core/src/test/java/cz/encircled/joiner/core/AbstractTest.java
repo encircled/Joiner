@@ -4,14 +4,17 @@ import cz.encircled.joiner.TestDataListener;
 import cz.encircled.joiner.config.TestConfig;
 import cz.encircled.joiner.model.AbstractEntity;
 import cz.encircled.joiner.query.join.JoinGraphRegistry;
-import org.junit.Assert;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestExecutionListeners;
-import org.springframework.test.context.junit4.AbstractTransactionalJUnit4SpringContextTests;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
+import org.springframework.test.context.support.DependencyInjectionTestExecutionListener;
+import org.springframework.test.context.transaction.TransactionalTestExecutionListener;
+import org.springframework.transaction.annotation.EnableTransactionManagement;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityManager;
@@ -22,11 +25,13 @@ import java.util.Collection;
 /**
  * @author Kisel on 11.01.2016.
  */
-@RunWith(SpringJUnit4ClassRunner.class)
+@ExtendWith(SpringExtension.class)
+@SpringJUnitConfig(classes = {TestConfig.class})
 @ContextConfiguration(classes = {TestConfig.class})
 @Transactional
-@TestExecutionListeners(listeners = {TestDataListener.class})
-public abstract class AbstractTest extends AbstractTransactionalJUnit4SpringContextTests {
+@EnableTransactionManagement
+@TestExecutionListeners(listeners = {TestDataListener.class, DependencyInjectionTestExecutionListener.class, TransactionalTestExecutionListener.class})
+public abstract class AbstractTest {
 
     @Autowired
     protected Joiner joiner;
@@ -41,15 +46,15 @@ public abstract class AbstractTest extends AbstractTransactionalJUnit4SpringCont
     private Environment environment;
 
     protected void assertHasName(Collection<? extends AbstractEntity> entities, String name) {
-        Assert.assertFalse("Found collection must be not empty!", entities.isEmpty());
+        Assertions.assertFalse(entities.isEmpty(), "Found collection must be not empty!");
         for (AbstractEntity entity : entities) {
             assertHasName(entity, name);
         }
     }
 
     protected void assertHasName(AbstractEntity entity, String name) {
-        Assert.assertNotNull(entity);
-        Assert.assertEquals(name, entity.getName());
+        Assertions.assertNotNull(entity);
+        Assertions.assertEquals(name, entity.getName());
     }
 
     protected boolean isEclipse() {

@@ -8,59 +8,69 @@ import cz.encircled.joiner.model.QGroup;
 import cz.encircled.joiner.model.QUser;
 import cz.encircled.joiner.query.Q;
 import cz.encircled.joiner.query.join.J;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-import java.util.List;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 /**
  * @author Kisel on 26.01.2016.
  */
 public class FailTest extends AbstractTest {
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void testNullInput() {
-        joiner.find(null);
+        assertThrows(IllegalArgumentException.class, () -> {
+            joiner.find(null);
+        });
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void testNullProjection() {
-        joiner.find(Q.select((EntityPath<?>[]) null).from(QAddress.address));
+        assertThrows(IllegalArgumentException.class, () -> {
+            joiner.find(Q.select((EntityPath<?>[]) null).from(QAddress.address));
+        });
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void testNullRequest() {
-        joiner.find(null);
+        assertThrows(IllegalArgumentException.class, () -> {
+            joiner.find(null);
+        });
     }
 
-    @Test(expected = AliasMissingException.class)
+    @Test
     public void predicateNoAliasTest() {
-        joiner.find(Q.from(QUser.user1).where(QAddress.address.name.eq("user1street1")));
+        assertThrows(AliasMissingException.class, () -> {
+            joiner.find(Q.from(QUser.user1).where(QAddress.address.name.eq("user1street1")));
+        });
     }
 
-    @Test(expected = JoinerException.class)
+    @Test
     public void testRightJoinFetch() {
-        joiner.find(Q.from(QGroup.group).joins(J.left(QUser.user1).right()));
+        assertThrows(JoinerException.class, () -> {
+            joiner.find(Q.from(QGroup.group).joins(J.left(QUser.user1).right()));
+        });
     }
 
-    @Test(expected = AliasMissingException.class)
+    @Test
     public void testGroupByNoAlias() {
-        List<Double> avg = joiner.find(
-                Q.select(QAddress.address.id.avg())
-                        .from(QAddress.address).groupBy(QGroup.group.name)
-        );
-        Assert.assertTrue(avg.size() > 0);
-        Assert.assertTrue(avg.size() < joiner.find(Q.from(QAddress.address)).size());
+        assertThrows(AliasMissingException.class, () -> {
+            joiner.find(
+                    Q.select(QAddress.address.id.avg())
+                            .from(QAddress.address).groupBy(QGroup.group.name)
+            );
+        }, "Alias group1 is not present in joins!");
     }
 
-    @Test(expected = AliasMissingException.class)
+    @Test
     public void testGroupByHavingNoAlias() {
-        List<Double> avg = joiner.find(
-                Q.select(QAddress.address.id.avg()).from(QAddress.address)
-                        .groupBy(QAddress.address.user)
-                        .having(QGroup.group.id.count().gt(2))
-        );
-        Assert.assertTrue(avg.isEmpty());
+        assertThrows(AliasMissingException.class, () -> {
+            joiner.find(
+                    Q.select(QAddress.address.id.avg()).from(QAddress.address)
+                            .groupBy(QAddress.address.user)
+                            .having(QGroup.group.id.count().gt(2))
+            );
+        }, "Alias group1 is not present in joins!");
     }
 
 }

@@ -6,7 +6,7 @@ import cz.encircled.joiner.model.QUser;
 import cz.encircled.joiner.model.User;
 import cz.encircled.joiner.query.Q;
 import cz.encircled.joiner.query.join.J;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.util.List;
 

@@ -7,8 +7,10 @@ import cz.encircled.joiner.model.User;
 import cz.encircled.joiner.query.JoinerQueryBase;
 import cz.encircled.joiner.query.Q;
 import cz.encircled.joiner.query.join.J;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 /**
  * @author Vlad on 28-Dec-16.
@@ -19,9 +21,9 @@ public class JoinRootTest {
     public void testQueryGetJoin() {
         JoinerQueryBase<User, User> query = Q.from(QUser.user1).addHint("", null);
 
-        Assert.assertNull(query.getJoin(QGroup.group));
+        assertNull(query.getJoin(QGroup.group));
         query.joins(QGroup.group);
-        Assert.assertNotNull(query.getJoin(QGroup.group));
+        assertNotNull(query.getJoin(QGroup.group));
     }
 
     @Test
@@ -30,9 +32,9 @@ public class JoinRootTest {
                 .joins(J.left(QGroup.group))
                 .addHint("", null);
 
-        Assert.assertNull(query.getJoin(QGroup.group).getJoin(QStatus.status));
+        assertNull(query.getJoin(QGroup.group).getJoin(QStatus.status));
         query.getJoin(QGroup.group).nested(QStatus.status);
-        Assert.assertNotNull(query.getJoin(QGroup.group).getJoin(QStatus.status));
+        assertNotNull(query.getJoin(QGroup.group).getJoin(QStatus.status));
     }
 
 }

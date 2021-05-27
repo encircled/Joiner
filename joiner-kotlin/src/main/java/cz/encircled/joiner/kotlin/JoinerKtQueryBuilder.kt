@@ -6,6 +6,7 @@ import com.querydsl.core.types.Path
 import com.querydsl.core.types.Predicate
 import com.querydsl.core.types.dsl.BooleanExpression
 import com.querydsl.core.types.dsl.SimpleExpression
+import com.querydsl.core.types.dsl.StringExpression
 import cz.encircled.joiner.query.JoinerQuery
 import cz.encircled.joiner.query.Q
 import cz.encircled.joiner.query.join.J
@@ -26,6 +27,8 @@ data class PredicateContinuation<T>(
 open class KConditionOps : ConditionOps
 
 interface ConditionOps {
+
+    infix fun StringExpression.contains(to: String): BooleanExpression = contains(to)
 
     infix fun <T> SimpleExpression<T>.eq(to: T): BooleanExpression = eq(to)
 

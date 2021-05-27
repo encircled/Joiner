@@ -7,10 +7,12 @@ import cz.encircled.joiner.query.ExtendedJPAQuery;
 import cz.encircled.joiner.query.JoinerQuery;
 import cz.encircled.joiner.query.Q;
 import cz.encircled.joiner.query.QueryFeature;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.springframework.test.context.ContextConfiguration;
 
 import java.util.Collections;
+
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 /**
  * @author Kisel on 01.02.2016.
@@ -18,7 +20,7 @@ import java.util.Collections;
 @ContextConfiguration(classes = { TestConfig.class })
 public class QueryFeatureTest extends AbstractTest {
 
-    @Test(expected = TestException.class)
+    @Test
     public void testQueryFeatureBefore() {
         JoinerQuery<User, User> request = Q.from(QUser.user1);
         request.addFeatures(new QueryFeature() {
@@ -32,10 +34,11 @@ public class QueryFeatureTest extends AbstractTest {
                 return query;
             }
         });
-        joiner.find(request);
+
+        assertThrows(TestException.class, () -> joiner.find(request));
     }
 
-    @Test(expected = TestException.class)
+    @Test
     public void testQueryFeatureCollectionBefore() {
         JoinerQuery<User, User> request = Q.from(QUser.user1);
         request.addFeatures(Collections.singletonList(new QueryFeature() {
@@ -49,10 +52,10 @@ public class QueryFeatureTest extends AbstractTest {
                 return query;
             }
         }));
-        joiner.find(request);
+        assertThrows(TestException.class, () -> joiner.find(request));
     }
 
-    @Test(expected = TestException.class)
+    @Test
     public void testQueryFeatureAfter() {
         JoinerQuery<User, User> request = Q.from(QUser.user1);
         request.addFeatures(new QueryFeature() {
@@ -66,7 +69,7 @@ public class QueryFeatureTest extends AbstractTest {
                 throw new TestException();
             }
         });
-        joiner.find(request);
+        assertThrows(TestException.class, () -> joiner.find(request));
     }
 
 }

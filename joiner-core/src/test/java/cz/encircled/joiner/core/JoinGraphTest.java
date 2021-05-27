@@ -12,15 +12,16 @@ import cz.encircled.joiner.query.Q;
 import cz.encircled.joiner.query.join.DefaultJoinGraphRegistry;
 import cz.encircled.joiner.query.join.J;
 import cz.encircled.joiner.query.join.JoinDescription;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * @author Vlad on 15-Aug-16.
@@ -30,7 +31,7 @@ public class JoinGraphTest extends AbstractTest {
 
     private DefaultJoinGraphRegistry mockRegistry;
 
-    @Before
+    @BeforeEach
     public void before() {
         mockRegistry = new DefaultJoinGraphRegistry();
 
@@ -46,60 +47,74 @@ public class JoinGraphTest extends AbstractTest {
         }
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void testNullName() {
-        mockRegistry.registerJoinGraph(null, Collections.singletonList(J.left(QUser.user1)), Group.class);
+        assertThrows(IllegalArgumentException.class, () -> {
+            mockRegistry.registerJoinGraph(null, Collections.singletonList(J.left(QUser.user1)), Group.class);
+        });
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void testNullJoins() {
-        mockRegistry.registerJoinGraph("test", null, Group.class);
+        assertThrows(IllegalArgumentException.class, () -> {
+            mockRegistry.registerJoinGraph("test", null, Group.class);
+        });
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void testNullClass() {
-        mockRegistry.registerJoinGraph("test", Collections.singletonList(J.left(QUser.user1)), null);
+        assertThrows(IllegalArgumentException.class, () -> {
+            mockRegistry.registerJoinGraph("test", Collections.singletonList(J.left(QUser.user1)), null);
+        });
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void testEmptyClasses() {
-        mockRegistry.registerJoinGraph("test", Collections.singletonList(J.left(QUser.user1)));
+        assertThrows(IllegalArgumentException.class, () -> {
+            mockRegistry.registerJoinGraph("test", Collections.singletonList(J.left(QUser.user1)));
+        });
     }
 
-    @Test(expected = JoinerException.class)
+    @Test
     public void testDuplicatedName() {
-        mockRegistry.registerJoinGraph("test", Collections.singletonList(J.left(QUser.user1)), Group.class);
-        mockRegistry.registerJoinGraph("test", Collections.singletonList(J.left(QUser.user1)), Group.class);
+        assertThrows(JoinerException.class, () -> {
+            mockRegistry.registerJoinGraph("test", Collections.singletonList(J.left(QUser.user1)), Group.class);
+            mockRegistry.registerJoinGraph("test", Collections.singletonList(J.left(QUser.user1)), Group.class);
+        });
     }
 
-    @Test(expected = JoinerException.class)
+    @Test
     public void testGraphMissing() {
-        mockRegistry.getJoinGraph(Group.class, "NotExists");
+        assertThrows(JoinerException.class, () -> {
+            mockRegistry.getJoinGraph(Group.class, "NotExists");
+        });
     }
 
     @Test
     public void testReplaceGraph() {
         mockRegistry.registerJoinGraph("test", Collections.singletonList(J.left(QUser.user1)), Group.class);
-        Assert.assertEquals(Collections.singletonList(J.left(QUser.user1)), mockRegistry.getJoinGraph(Group.class, "test"));
+        assertEquals(Collections.singletonList(J.left(QUser.user1)), mockRegistry.getJoinGraph(Group.class, "test"));
 
         mockRegistry.replaceJoinGraph("test", Collections.singletonList(J.left(QStatus.status)), Group.class);
-        Assert.assertEquals(Collections.singletonList(J.left(QStatus.status)), mockRegistry.getJoinGraph(Group.class, "test"));
+        assertEquals(Collections.singletonList(J.left(QStatus.status)), mockRegistry.getJoinGraph(Group.class, "test"));
     }
 
-    @Test(expected = JoinerException.class)
+    @Test
     public void testReplaceNonExistingGraph() {
-        mockRegistry.replaceJoinGraph("test", Collections.singletonList(J.left(QStatus.status)), Group.class);
+        assertThrows(JoinerException.class, () -> {
+            mockRegistry.replaceJoinGraph("test", Collections.singletonList(J.left(QStatus.status)), Group.class);
+        });
     }
 
     @Test
     public void testRegisterOrReplaceGraph() {
         mockRegistry.registerOrReplaceJoinGraph("test", Collections.singletonList(J.left(QStatus.status)), Group.class);
 
-        Assert.assertEquals(Collections.singletonList(J.left(QStatus.status)), mockRegistry.getJoinGraph(Group.class, "test"));
+        assertEquals(Collections.singletonList(J.left(QStatus.status)), mockRegistry.getJoinGraph(Group.class, "test"));
 
         mockRegistry.registerOrReplaceJoinGraph("test", Collections.singletonList(J.left(QUser.user1)), Group.class);
 
-        Assert.assertEquals(Collections.singletonList(J.left(QUser.user1)), mockRegistry.getJoinGraph(Group.class, "test"));
+        assertEquals(Collections.singletonList(J.left(QUser.user1)), mockRegistry.getJoinGraph(Group.class, "test"));
     }
 
     @Test
@@ -116,8 +131,8 @@ public class JoinGraphTest extends AbstractTest {
         mockRegistry.registerJoinGraph("users", joins, Group.class);
         mockRegistry.registerJoinGraph("statuses", joins2, Group.class);
 
-        Assert.assertEquals(joins, mockRegistry.getJoinGraph(Group.class, "users"));
-        Assert.assertEquals(joins2, mockRegistry.getJoinGraph(Group.class, "statuses"));
+        assertEquals(joins, mockRegistry.getJoinGraph(Group.class, "users"));
+        assertEquals(joins2, mockRegistry.getJoinGraph(Group.class, "statuses"));
     }
 
     @Test
@@ -147,48 +162,48 @@ public class JoinGraphTest extends AbstractTest {
     public void testChildrenAggregated() {
         JoinerQuery<Group, Group> request = Q.from(QGroup.group).joinGraphs("users", "usersAddress", "userStatuses", "addressStatuses");
         joiner.find(request);
-        Assert.assertEquals(1, request.getJoins().size());
+        assertEquals(1, request.getJoins().size());
         JoinDescription userJoin = request.getJoins().iterator().next();
-        Assert.assertEquals(QUser.user1, userJoin.getAlias());
-        Assert.assertEquals(2, userJoin.getChildren().size());
+        assertEquals(QUser.user1, userJoin.getAlias());
+        assertEquals(2, userJoin.getChildren().size());
 
         Iterator<JoinDescription> children = userJoin.getChildren().iterator();
         JoinDescription first = children.next();
 
         // Address and its nested status
-        Assert.assertEquals(J.path(QUser.user1, QAddress.address), first.getAlias());
-        Assert.assertEquals(1, first.getChildren().size());
+        assertEquals(J.path(QUser.user1, QAddress.address), first.getAlias());
+        assertEquals(1, first.getChildren().size());
 
-        Assert.assertEquals(J.path(QUser.user1, QStatus.status), children.next().getAlias());
+        assertEquals(J.path(QUser.user1, QStatus.status), children.next().getAlias());
     }
 
     @Test
     public void testChildrenNotOverrided() {
         JoinerQuery<Group, Group> request = Q.from(QGroup.group).joinGraphs("addressStatuses", "usersAddress", "userStatuses", "users");
         joiner.find(request);
-        Assert.assertEquals(1, request.getJoins().size());
+        assertEquals(1, request.getJoins().size());
         JoinDescription userJoin = request.getJoins().iterator().next();
-        Assert.assertEquals(QUser.user1, userJoin.getAlias());
-        Assert.assertEquals(2, userJoin.getChildren().size());
+        assertEquals(QUser.user1, userJoin.getAlias());
+        assertEquals(2, userJoin.getChildren().size());
 
         Iterator<JoinDescription> children = userJoin.getChildren().iterator();
         JoinDescription first = children.next();
 
         // Address and its nested status
-        Assert.assertEquals(J.path(QUser.user1, QAddress.address), first.getAlias());
-        Assert.assertEquals(1, first.getChildren().size());
+        assertEquals(J.path(QUser.user1, QAddress.address), first.getAlias());
+        assertEquals(1, first.getChildren().size());
 
-        Assert.assertEquals(J.path(QUser.user1, QStatus.status), children.next().getAlias());
+        assertEquals(J.path(QUser.user1, QStatus.status), children.next().getAlias());
     }
 
     private void assertUserAndStatusesFetched(List<Group> groups, boolean isGroupStatusFetched) {
-        Assert.assertFalse(groups.isEmpty());
+        assertFalse(groups.isEmpty());
 
         for (Group group : groups) {
-            Assert.assertTrue(isLoaded(group, "users"));
-            Assert.assertEquals(isGroupStatusFetched, isLoaded(group, "statuses"));
+            assertTrue(isLoaded(group, "users"));
+            assertEquals(isGroupStatusFetched, isLoaded(group, "statuses"));
             for (User user : group.getUsers()) {
-                Assert.assertTrue(isLoaded(user, "statuses"));
+                assertTrue(isLoaded(user, "statuses"));
             }
         }
     }
