@@ -15,6 +15,7 @@ import cz.encircled.joiner.core.vendor.HibernateRepository;
 import cz.encircled.joiner.core.vendor.JoinerVendorRepository;
 import cz.encircled.joiner.exception.AliasMissingException;
 import cz.encircled.joiner.exception.JoinerException;
+import cz.encircled.joiner.exception.JoinerExceptions;
 import cz.encircled.joiner.query.ExtendedJPAQuery;
 import cz.encircled.joiner.query.JoinerQuery;
 import cz.encircled.joiner.query.QueryFeature;
@@ -94,7 +95,7 @@ public class Joiner {
         } else if (list.size() == 1) {
             return list.get(0);
         } else {
-            throw new JoinerException("FindOne returned multiple records!");
+            throw JoinerExceptions.multipleEntitiesFound();
         }
     }
 

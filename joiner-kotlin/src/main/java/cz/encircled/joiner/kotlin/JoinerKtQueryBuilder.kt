@@ -125,7 +125,6 @@ class JoinerKtQuery<FROM_C, PROJ, FROM : EntityPath<FROM_C>>(
     internal val delegate: JoinerQuery<FROM_C, PROJ> = if (isCount) Q.count(entityPath) as JoinerQuery<FROM_C, PROJ> else Q.select(
         projection
     ).from(entityPath)
-//    internal val delegate: JoinerQuery<FROM_C, PROJ> = if (isCount) Q.count(entityPath) as JoinerQuery<FROM_C, PROJ> else Q.select(projection).from(entityPath)
 ) : JoinerQuery<FROM_C, PROJ> by delegate, JoinOps {
 
     infix fun where(where: ConditionOps.(e: FROM) -> Predicate): JoinerKtQuery<FROM_C, PROJ, FROM> {

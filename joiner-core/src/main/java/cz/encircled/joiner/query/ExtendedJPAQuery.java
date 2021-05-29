@@ -12,8 +12,8 @@ public class ExtendedJPAQuery<T> extends JPAQuery<T> {
         clone(another);
     }
 
-    public JPQLSerializer getSerializer() {
-        return serialize(false);
+    public JPQLSerializer getSerializer(boolean forCount) {
+        return serialize(forCount);
     }
 
 }

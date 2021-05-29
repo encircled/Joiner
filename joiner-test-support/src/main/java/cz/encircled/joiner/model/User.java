@@ -94,4 +94,13 @@ public class User extends AbstractEntity {
     public void setStatuses(final Set<Status> statuses) {
         this.statuses = statuses;
     }
+
+    @Override
+    public String toString() {
+        return "User{" +
+                "id=" + id +
+                ", name='" + name + '\'' +
+                '}';
+    }
+
 }

@@ -56,6 +56,11 @@ class JoinerKtTest : AbstractTest() {
     }
 
     @Test
+    fun ktCountQuery() {
+        assertEquals(7, joinerKt.findOne(QUser.user1.countOf()))
+    }
+
+    @Test
     fun ktCountQueryIntegrationTest() {
         val find = joinerKt.findOne(
             QUser.user1.countOf()
@@ -64,8 +69,6 @@ class JoinerKtTest : AbstractTest() {
                     innerJoin QStatus.status
 
                     where { it.name eq "user1" or it.id ne 1 or it.id isIn listOf(1) }
-                    limit 1
-                    offset 0
 
                     asc QUser.user1.id
         )

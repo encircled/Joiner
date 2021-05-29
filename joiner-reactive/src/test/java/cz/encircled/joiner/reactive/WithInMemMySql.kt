@@ -1,6 +1,9 @@
 package cz.encircled.joiner.reactive
 
 import ch.vorburger.mariadb4j.DB
+import cz.encircled.joiner.exception.JoinerException
+import cz.encircled.joiner.kotlin.JoinerKtQueryBuilder.all
+import cz.encircled.joiner.model.QUser
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll
 import javax.persistence.EntityManagerFactory
@@ -19,6 +22,11 @@ open class WithInMemMySql {
         if (!this::reactorJoiner.isInitialized) {
             reactorJoiner = ReactorJoiner(emf)
         }
+
+        reactorJoiner.find(QUser.user1.all())
+            .flatMap { reactorJoiner.remove(it) }
+            .collectList()
+            .block()
     }
 
     companion object {
@@ -37,5 +45,9 @@ open class WithInMemMySql {
             db.stop()
         }
     }
+
+    fun Throwable.hasCause(msg: String) =
+        this is JoinerException && message!!.contains(msg) ||
+                cause is JoinerException && cause!!.message!!.contains(msg)
 
 }
