@@ -11,44 +11,31 @@ interface OuterScopeExecution<E : CompletableFuture<*>> : ExecutionStep<Completa
 
 class MonoOuterScopeMapper<T, E>(private val callback: (T) -> E) : OuterScopeExecution<CompletableFuture<List<E>>> {
 
-    override fun perform(arg: List<Any>?): CompletableFuture<*> {
-        val future = CompletableFuture<List<E>>()
-        reactor {
-            try {
-                future.complete(listOf(callback(extractExactlyOne(arg))))
-            } catch (e: Throwable) {
-                future.completeExceptionally(e)
-            }
+    override fun perform(arg: List<Any>?): CompletableFuture<List<E>> {
+        return reactor(CompletableFuture<List<E>>()) { f ->
+                f.complete(listOf(callback(extractExactlyOne(arg))))
         }
-        return future
     }
 
 }
 
-class OptionalMonoOuterScopeMapper<T, E>(private val callback: (Optional<T>) -> E) : OuterScopeExecution<CompletableFuture<List<E>>> {
+class OptionalMonoOuterScopeMapper<T, E>(private val callback: (Optional<T>) -> E) :
+    OuterScopeExecution<CompletableFuture<List<E>>> {
 
-    override fun perform(arg: List<Any>?): CompletableFuture<*> {
-        val future = CompletableFuture<List<E>>()
-        reactor {
-            try {
-                future.complete(listOf(callback(Optional.ofNullable(extractAtMostOne(arg)))))
-            } catch (e: Throwable) {
-                future.completeExceptionally(e)
-            }
+    override fun perform(arg: List<Any>?): CompletableFuture<List<E>> {
+        return reactor(CompletableFuture<List<E>>()) { f ->
+            f.complete(listOf(callback(Optional.ofNullable(extractAtMostOne(arg)))))
         }
-        return future
     }
 
 }
 
 class FluxOuterScopeMapper<T, E>(private val callback: (T) -> E) : OuterScopeExecution<CompletableFuture<List<E>>> {
 
-    override fun perform(arg: List<Any>?): CompletableFuture<*> {
-        val future = CompletableFuture<List<E>>()
-        reactor {
-            future.complete(arg!!.map { callback(it as T) })
+    override fun perform(arg: List<Any>?): CompletableFuture<List<E>> {
+        return reactor(CompletableFuture<List<E>>()) { f ->
+            f.complete(arg!!.map { callback(it as T) })
         }
-        return future
     }
 
 }

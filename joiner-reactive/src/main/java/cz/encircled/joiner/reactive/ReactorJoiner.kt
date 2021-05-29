@@ -25,7 +25,7 @@ class ReactorJoiner(emf: EntityManagerFactory) : GenericHibernateReactiveJoiner(
      */
     fun <T> persist(entity: T): Mono<T> = Mono.create { mono ->
         doPersist(entity).handle { result, error ->
-            reactor {
+            reactor(mono) {
                 if (error != null) mono.error(error) else mono.success(result)
             }
         }
