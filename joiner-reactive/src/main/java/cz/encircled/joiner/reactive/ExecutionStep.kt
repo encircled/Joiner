@@ -8,7 +8,29 @@ import java.util.*
  */
 interface ExecutionStep<T> {
 
-    fun perform(arg : List<Any>?) : T
+    fun perform(arg: List<Any>?): T
+
+    fun <T> extractExactlyOne(arg: List<Any>?): T {
+        return when {
+            arg.isNullOrEmpty() -> {
+                throw JoinerExceptions.entityNotFound()
+            }
+            arg.size > 1 -> {
+                throw JoinerExceptions.multipleEntitiesFound()
+            }
+            else -> arg[0] as T
+        }
+    }
+
+    fun <T> extractAtMostOne(arg: List<Any>?): T? {
+        return when {
+            arg.isNullOrEmpty() -> null
+            arg.size > 1 -> {
+                throw JoinerExceptions.multipleEntitiesFound()
+            }
+            else -> arg[0] as T
+        }
+    }
 
 }
 
@@ -22,7 +44,7 @@ class SyncExecutionStep<T>(
     private val value: T
 ) : ExecutionStep<T> {
 
-    override fun perform(arg : List<Any>?) : T = value
+    override fun perform(arg: List<Any>?): T = value
 
 }
 
@@ -41,15 +63,9 @@ class AsyncExecutionStep<T>(
     private val callback: (Any) -> T
 ) : ExecutionStep<T> {
 
-    override fun perform(arg : List<Any>?) : T {
-        return if (isMono) {
-            if (arg.isNullOrEmpty()) {
-                throw JoinerExceptions.entityNotFound()
-            } else if (arg.size > 1) {
-                throw JoinerExceptions.multipleEntitiesFound()
-            }
-            return callback(arg[0])
-        } else callback(arg!!)
+    override fun perform(arg: List<Any>?): T {
+        return if (isMono) callback(extractExactlyOne(arg))
+        else callback(arg!!)
     }
 
 }
@@ -64,16 +80,7 @@ class OptionalAsyncExecutionStep<T>(
     private val callback: (Optional<Any>) -> T
 ) : ExecutionStep<T> {
 
-    override fun perform(arg : List<Any>?) : T {
-        return when {
-                arg.isNullOrEmpty() -> {
-                    callback(Optional.empty())
-                }
-                arg.size > 1 -> {
-                    throw JoinerExceptions.multipleEntitiesFound()
-                }
-                else -> callback(Optional.ofNullable(arg[0]))
-            }
-    }
+    override fun perform(arg: List<Any>?): T =
+        callback(Optional.ofNullable(extractAtMostOne(arg)))
 
 }

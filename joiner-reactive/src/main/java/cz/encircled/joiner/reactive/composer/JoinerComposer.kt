@@ -1,12 +1,10 @@
 package cz.encircled.joiner.reactive.composer
 
 import cz.encircled.joiner.query.JoinerQuery
-import cz.encircled.joiner.reactive.AsyncExecutionStep
-import cz.encircled.joiner.reactive.ExecutionStep
-import cz.encircled.joiner.reactive.ReactorJoiner
-import cz.encircled.joiner.reactive.SyncExecutionStep
+import cz.encircled.joiner.reactive.*
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
+import java.util.*
 
 /**
  * Composes multiple async functions into a single execution chain to run it in a single DB transaction
@@ -81,6 +79,14 @@ open class JoinerComposer<ENTITY, ENTITY_CONTAINER, PUBLISHER>(
     }
 
     /**
+     * Creates new composer with optional singular (Mono) result projection
+     */
+    protected fun <R> optional(callback: (Optional<ENTITY_CONTAINER>) -> Any): OptionalMonoJoinerComposer<R> {
+        steps.add(OptionalAsyncExecutionStep(callback as (Any?) -> Any))
+        return OptionalMonoJoinerComposer(steps)
+    }
+
+    /**
      * Creates new composer with plural (Flux) result projection
      */
     protected fun <R> plural(callback: (ENTITY_CONTAINER) -> Any): FluxJoinerComposer<R> {
@@ -97,11 +103,8 @@ open class JoinerComposer<ENTITY, ENTITY_CONTAINER, PUBLISHER>(
     }
 
     private fun startChain() {
-        if (isChainStarted) {
-            throw IllegalStateException("Multiple execution chains per single transaction are not supported!")
-        } else {
-            isChainStarted = true
-        }
+        if (isChainStarted) throw IllegalStateException("Multiple execution chains per single transaction are not supported!")
+        else isChainStarted = true
     }
 
 }

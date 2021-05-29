@@ -22,37 +22,40 @@ abstract class GenericHibernateReactiveJoiner(emf: EntityManagerFactory) {
 
     private val sessionFactory: Stage.SessionFactory = emf.unwrap(Stage.SessionFactory::class.java)
 
-    fun <T, P> executeComposed(c : JoinerComposer<T, *, P>) : CompletionStage<List<T>> {
-        val toStage: (List<Any>?, Stage.Session, ExecutionStep<*>) -> CompletionStage<*> =
-            { value, session, stepCreator ->
-                when (val step = stepCreator.perform(value)) {
-                    is JoinerQuery<*, *> -> {
-                        createQuery(session, step).resultList
-                    }
-                    is OuterScopeExecution -> {
-                        val completableFuture = CompletableFuture<Any>()
-                        step.perform(completableFuture)
-                        completableFuture
-                    }
-                    is List<*> -> session.persist(*step.stream().toArray()).thenApply {
-                        step.map { session.getReference(it) }
-                    }
-                    else -> session.persist(step).thenApply {
-                        listOf(session.getReference(step))
-                    }
-                }
-            }
-
+    fun <T, P> executeComposed(c: JoinerComposer<T, *, P>): CompletionStage<List<T>> {
         return sessionFactory.withTransaction { session, _ ->
-            var curr = toStage(null, session, c.steps[0])
+            var curr = executeChainStep(null, session, c.steps[0])
 
             (1 until c.steps.size).forEach { i ->
                 curr = curr.thenCompose { v ->
-                    toStage(v as List<Any>?, session, c.steps[i])
+                    executeChainStep(v as List<Any>?, session, c.steps[i])
                 }
             }
 
             curr as CompletionStage<List<T>>
+        }
+    }
+
+    /**
+     * @param value current result set
+     * @param session DB session with open transaction
+     * @param step chain step to be executed
+     */
+    protected fun executeChainStep(
+        value: List<Any>?,
+        session: Stage.Session,
+        step: ExecutionStep<*>
+    ): CompletionStage<*> {
+        return when (val stepResult = step.perform(value)) {
+            is CompletableFuture<*> -> stepResult
+
+            is JoinerQuery<*, *> -> createQuery(session, stepResult).resultList
+
+            is List<*> -> session.persistMultiple(stepResult)
+
+            else -> session.persist(stepResult).thenApply {
+                listOf(session.getReference(stepResult))
+            }
         }
     }
 
@@ -64,8 +67,7 @@ abstract class GenericHibernateReactiveJoiner(emf: EntityManagerFactory) {
 
     protected fun <T> doPersistMultiple(entities: Collection<T>): CompletionStage<List<T>> {
         return sessionFactory.withTransaction { session, _ ->
-            val asArray = entities.stream().toArray()
-            session.persist(*asArray).thenApply { entities.map { e -> session.getReference(e) } }
+            session.persistMultiple(entities)
         }
     }
 
@@ -111,6 +113,13 @@ abstract class GenericHibernateReactiveJoiner(emf: EntityManagerFactory) {
 
             query.setParameter(Integer.valueOf(key), value)
         }
+    }
+
+    /**
+     * Persist multiple entities at once
+     */
+    protected fun <T> Stage.Session.persistMultiple(entities: Collection<T>): CompletionStage<List<T>> {
+        return persist(*entities.stream().toArray()).thenApply { entities.map { getReference(it) } }
     }
 
 }

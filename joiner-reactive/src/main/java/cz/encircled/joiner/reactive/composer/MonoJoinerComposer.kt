@@ -2,7 +2,7 @@ package cz.encircled.joiner.reactive.composer
 
 import cz.encircled.joiner.reactive.ExecutionStep
 import cz.encircled.joiner.reactive.MonoOuterScopeMapper
-import cz.encircled.joiner.reactive.OptionalAsyncExecutionStep
+import cz.encircled.joiner.reactive.OptionalMonoOuterScopeMapper
 import cz.encircled.joiner.reactive.ReactorExtension.publish
 import cz.encircled.joiner.reactive.ReactorExtension.publishOptional
 import cz.encircled.joiner.reactive.ReactorJoiner
@@ -16,8 +16,9 @@ class MonoJoinerComposer<ENTITY>(
     /**
      * Transforms the item emitted by the previous step using given synchronous [mapper] function.
      */
-    fun <E : Any> map(mapper: (ENTITY) -> E): MonoJoinerComposer<E> = singular {
-        MonoOuterScopeMapper(it, mapper)
+    fun <E : Any> map(mapper: (ENTITY) -> E): MonoJoinerComposer<E> {
+        steps.add(MonoOuterScopeMapper(mapper))
+        return MonoJoinerComposer(steps)
     }
 
     override fun execute(r: ReactorJoiner): Mono<ENTITY> = Mono.create { mono ->
@@ -36,9 +37,7 @@ class OptionalMonoJoinerComposer<ENTITY>(
      * Transforms the item emitted by the previous step using given synchronous [mapper] function.
      */
     fun <E : Any> map(mapper: (Optional<ENTITY>) -> E): MonoJoinerComposer<E>  {
-        steps.add(OptionalAsyncExecutionStep {
-            MonoOuterScopeMapper(it as Optional<ENTITY>, mapper)
-        })
+        steps.add(OptionalMonoOuterScopeMapper(mapper))
         return MonoJoinerComposer(steps)
     }
 

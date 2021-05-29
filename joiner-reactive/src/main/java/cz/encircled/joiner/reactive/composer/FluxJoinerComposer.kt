@@ -13,8 +13,9 @@ class FluxJoinerComposer<ENTITY>(
     /**
      * Transforms the items emitted by the previous step using given synchronous [mapper] function.
      */
-    fun <E : Any> map(mapper: (ENTITY) -> E): FluxJoinerComposer<E> = plural {
-        FluxOuterScopeMapper(it, mapper)
+    fun <E : Any> map(mapper: (ENTITY) -> E): FluxJoinerComposer<E> {
+        steps.add(FluxOuterScopeMapper(mapper))
+        return FluxJoinerComposer(steps)
     }
 
     override fun execute(r: ReactorJoiner): Flux<ENTITY> = Flux.create { flux ->

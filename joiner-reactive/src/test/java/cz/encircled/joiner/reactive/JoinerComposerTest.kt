@@ -14,6 +14,7 @@ import reactor.test.StepVerifier
 import java.util.*
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 
 
 class JoinerComposerTest : AbstractReactorTest() {
@@ -27,6 +28,12 @@ class JoinerComposerTest : AbstractReactorTest() {
 
     @Test
     fun `multiple chains in single composer`() {
+        // This must work with no restrictions
+        reactorJoiner.transaction {
+            find(QUser.user1.all())
+                .find(QUser.user1.all())
+        }.collectList().block()
+
         assertThrows<IllegalStateException> {
             reactorJoiner.transaction {
                 find(QUser.user1.all())
@@ -191,6 +198,21 @@ class JoinerComposerTest : AbstractReactorTest() {
         }
 
         @Test
+        fun `basic flux chain plural to plural`() {
+            StepVerifier.create(reactorJoiner.transaction {
+                persist(User("TestName Flux 1"))
+                    .persist { user -> User("${user.name}2") }
+                    .find { QUser.user1.id from QUser.user1 where { it.name contains "Flux" } }
+                    .find { ids -> QUser.user1.name from QUser.user1 where { it.id isIn ids } }
+            })
+                .expectNext("TestName Flux 1")
+                .expectNext("TestName Flux 12")
+                .expectComplete()
+                .verify()
+        }
+
+
+        @Test
         fun testSimpleFluxMap() {
             val transaction = reactorJoiner.transaction {
                 persist(User("TestName"))
@@ -255,6 +277,23 @@ class JoinerComposerTest : AbstractReactorTest() {
         fun `return empty optional`() {
             StepVerifier.create(reactorJoiner.transaction {
                 findOneOptional(QUser.user1.all())
+            })
+                .expectNext(Optional.empty())
+                .verifyComplete()
+        }
+
+        @Test
+        fun `empty optional in chain`() {
+            StepVerifier.create(reactorJoiner.transaction {
+                findOneOptional(QUser.user1.all())
+                    .findOneOptional {
+                        assertFalse(it.isPresent)
+                        QUser.user1.all()
+                    }
+                    .findOneOptional {
+                        assertFalse(it.isPresent)
+                        QUser.user1.all()
+                    }
             })
                 .expectNext(Optional.empty())
                 .verifyComplete()
