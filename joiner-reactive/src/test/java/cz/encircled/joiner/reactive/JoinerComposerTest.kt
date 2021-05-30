@@ -1,5 +1,6 @@
 package cz.encircled.joiner.reactive
 
+import cz.encircled.joiner.exception.JoinerException
 import cz.encircled.joiner.kotlin.JoinerKtQueryBuilder.all
 import cz.encircled.joiner.kotlin.JoinerKtQueryBuilder.countOf
 import cz.encircled.joiner.kotlin.JoinerKtQueryBuilder.from
@@ -28,7 +29,7 @@ class JoinerComposerTest : AbstractReactorTest() {
 
     @Test
     fun `multiple chains in single composer`() {
-        // This must work with no restrictions
+        // This must work with
         reactorJoiner.transaction {
             find(QUser.user1.all())
                 .find(QUser.user1.all())
@@ -199,6 +200,66 @@ class JoinerComposerTest : AbstractReactorTest() {
                 .verify()
         }
 
+        @Test
+        fun `mono flatMap result`() {
+            val transaction = reactorJoiner.transaction {
+                persist(User("TestName"))
+                    .flatMap { Mono.just(it.name) }
+            }
+            StepVerifier.create(transaction)
+                .expectNext("TestName")
+                .verifyComplete()
+        }
+
+        @Test
+        fun `mono flatMap exception`() {
+            val transaction = reactorJoiner.transaction {
+                persist(User("TestName"))
+                    .flatMap { Mono.error(JoinerException("flat map")) }
+            }
+            StepVerifier.create(transaction)
+                .expectErrorMatches { it.message!!.contains("flat map") }
+                .verify()
+        }
+
+        @Test
+        fun `mono flatMap from optional`() {
+            val transaction = reactorJoiner.transaction {
+                findOneOptional(QUser.user1.all())
+                    .flatMap {
+                        assertFalse(it.isPresent)
+                        Mono.just("just")
+                    }
+            }
+            StepVerifier.create(transaction)
+                .expectNext("just")
+                .verifyComplete()
+        }
+
+        @Test
+        fun `mono flatMap empty`() {
+            val transaction = reactorJoiner.transaction {
+                findOne(QUser.user1.all())
+                    .flatMap { Mono.empty() }
+            }
+            StepVerifier.create(transaction)
+                .expectErrorMatches { it.hasCause("FindOne returned no result") }
+                .verify()
+        }
+
+        @Test
+        fun `mono flatMap intermediate`() {
+            val transaction = reactorJoiner.transaction {
+                persist(User("TestName"))
+                    .flatMap { Mono.just(it.name) }
+                    .findOne { name -> QUser.user1.all() where { it.name eq name } }
+                    .flatMap { Mono.just(it.name) }
+            }
+            StepVerifier.create(transaction)
+                .expectNext("TestName")
+                .verifyComplete()
+        }
+
     }
 
     @Nested
@@ -328,6 +389,53 @@ class JoinerComposerTest : AbstractReactorTest() {
                 .expectNext("TestName")
                 .expectNext("TestName2")
                 .verifyComplete()
+        }
+
+        @Test
+        fun `flux flatMap intermediate`() {
+            val transaction = reactorJoiner.transaction {
+                persist(listOf(User("TestName"), User("TestName2")))
+                    .find { QUser.user1.all() }
+                    .flatMap { Mono.just(it.name) }
+                    .find { names -> QUser.user1.name from QUser.user1 where { it.name isIn names } }
+            }
+            StepVerifier.create(transaction)
+                .expectNext("TestName")
+                .expectNext("TestName2")
+                .verifyComplete()
+        }
+
+        @Test
+        fun `flux flatMap from empty`() {
+            val transaction = reactorJoiner.transaction {
+                find(QUser.user1.all())
+                    .flatMap { Mono.just(it.name) }
+                    .map { it }
+            }
+            StepVerifier.create(transaction)
+
+                .verifyComplete()
+        }
+
+        @Test
+        fun `flux empty flatMap`() {
+            val transaction = reactorJoiner.transaction {
+                persist(listOf(User("1")))
+                    .flatMap { Mono.empty() }
+            }
+            StepVerifier.create(transaction)
+                .verifyComplete()
+        }
+
+        @Test
+        fun `flux flatMap exception`() {
+            val transaction = reactorJoiner.transaction {
+                persist(User("1"))
+                    .flatMap { Mono.error(JoinerException("flat map")) }
+            }
+            StepVerifier.create(transaction)
+                .expectErrorMatches { it.hasCause("flat map") }
+                .verify()
         }
 
         @Test

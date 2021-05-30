@@ -13,7 +13,7 @@ import java.util.concurrent.CompletableFuture
  */
 interface OuterScopeExecution<E> : ExecutionStep<CompletableFuture<List<E>>>
 
-class MonoOuterScopeExecution<T, E>(private val callback: (T) -> E) : OuterScopeExecution<E> {
+class MonoCallbackOuterScopeExecution<T, E>(private val callback: (T) -> E) : OuterScopeExecution<E> {
 
     override fun perform(arg: Any): CompletableFuture<List<E>> = reactor { f ->
         f.complete(listOf(callback(arg as T)))
@@ -23,7 +23,24 @@ class MonoOuterScopeExecution<T, E>(private val callback: (T) -> E) : OuterScope
 
 }
 
-class CallbackFluxOuterScopeExecution<T, E>(private val callback: (T) -> E) : OuterScopeExecution<E> {
+class AsyncMonoCallbackOuterScopeExecution<T, E>(private val callback: (T) -> Mono<E>) : OuterScopeExecution<E> {
+
+    override fun perform(arg: Any): CompletableFuture<List<E>> = reactor { f ->
+        callback(arg as T)
+            .doOnError {
+                f.completeExceptionally(it)
+            }
+            .subscribe { result ->
+                f.complete(listOf(result))
+            }
+    }
+
+    override fun convertResult(arg: List<Any>): Any = arg.getExactlyOne()
+
+}
+
+
+class FluxCallbackOuterScopeExecution<T, E>(private val callback: (T) -> E) : OuterScopeExecution<E> {
 
     override fun perform(arg: Any): CompletableFuture<List<E>> = reactor { f ->
         f.complete((arg as List<T>).map { callback(it) })
@@ -31,7 +48,7 @@ class CallbackFluxOuterScopeExecution<T, E>(private val callback: (T) -> E) : Ou
 
 }
 
-class AsyncCallbackFluxOuterScopeExecution<T, E>(private val callback: (T) -> Mono<E>) : OuterScopeExecution<E> {
+class AsyncFluxCallbackOuterScopeExecution<T, E>(private val callback: (T) -> Mono<E>) : OuterScopeExecution<E> {
 
     override fun perform(arg: Any): CompletableFuture<List<E>> = reactor { f ->
         Flux.fromStream((arg as List<T>).stream())

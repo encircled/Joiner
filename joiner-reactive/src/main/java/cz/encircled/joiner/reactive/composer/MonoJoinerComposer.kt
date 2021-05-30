@@ -1,7 +1,8 @@
 package cz.encircled.joiner.reactive.composer
 
+import cz.encircled.joiner.reactive.AsyncMonoCallbackOuterScopeExecution
 import cz.encircled.joiner.reactive.ExecutionStep
-import cz.encircled.joiner.reactive.MonoOuterScopeExecution
+import cz.encircled.joiner.reactive.MonoCallbackOuterScopeExecution
 import cz.encircled.joiner.reactive.ReactorExtension.publish
 import cz.encircled.joiner.reactive.ReactorExtension.publishOptional
 import cz.encircled.joiner.reactive.ReactorJoiner
@@ -16,7 +17,12 @@ class MonoJoinerComposer<ENTITY>(
      * Transforms the item emitted by the previous step using given synchronous [mapper] function.
      */
     fun <E : Any> map(mapper: (ENTITY) -> E): MonoJoinerComposer<E> {
-        steps.add(MonoOuterScopeExecution(mapper))
+        steps.add(MonoCallbackOuterScopeExecution(mapper))
+        return MonoJoinerComposer(steps)
+    }
+
+    fun <E : Any> flatMap(mapper: (ENTITY) -> Mono<E>): MonoJoinerComposer<E> {
+        steps.add(AsyncMonoCallbackOuterScopeExecution(mapper))
         return MonoJoinerComposer(steps)
     }
 
@@ -36,7 +42,12 @@ class OptionalMonoJoinerComposer<ENTITY>(
      * Transforms the item emitted by the previous step using given synchronous [mapper] function.
      */
     fun <E : Any> map(mapper: (Optional<ENTITY>) -> E): MonoJoinerComposer<E> {
-        steps.add(MonoOuterScopeExecution(mapper))
+        steps.add(MonoCallbackOuterScopeExecution(mapper))
+        return MonoJoinerComposer(steps)
+    }
+
+    fun <E : Any> flatMap(mapper: (Optional<ENTITY>) -> Mono<E>): MonoJoinerComposer<E> {
+        steps.add(AsyncMonoCallbackOuterScopeExecution(mapper))
         return MonoJoinerComposer(steps)
     }
 
