@@ -18,7 +18,7 @@ public class CountTest extends AbstractTest {
 
         entityManager.clear();
 
-        Long real = (Long) entityManager.createQuery("select count(u) from User u inner join u.groups").getSingleResult();
+        Long real = (Long) entityManager.createQuery("select count(u) from User u inner join u.groups g").getSingleResult();
 
         Assertions.assertEquals(real, count);
     }
