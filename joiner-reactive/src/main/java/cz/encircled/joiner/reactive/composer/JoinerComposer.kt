@@ -24,40 +24,61 @@ open class JoinerComposer<ENTITY, ENTITY_CONTAINER, PUBLISHER>(
 
     internal open fun executeChain(r: ReactorJoiner): PUBLISHER = throw IllegalStateException("Composer is empty")
 
-    fun <T> just(data: List<T>): FluxJoinerComposer<T> {
-        startChain()
-        steps.add(ComputedExecutionStep(CompletableFuture.completedFuture(data)))
+    /**
+     * Emit specified [items]
+     */
+    fun <T> just(items: List<T>): FluxJoinerComposer<T> {
+        markChainStarted()
+        steps.add(ComputedExecutionStep(CompletableFuture.completedFuture(items)))
         return FluxJoinerComposer(steps);
     }
 
-    fun <T> just(data: T): MonoJoinerComposer<T> {
-        startChain()
-        steps.add(MonoComputedExecutionStep(CompletableFuture.completedFuture(listOf(data))))
+    /**
+     * Emit specified [item]
+     */
+    fun <T> just(item: T): MonoJoinerComposer<T> {
+        markChainStarted()
+        steps.add(MonoComputedExecutionStep(CompletableFuture.completedFuture(listOf(item))))
         return MonoJoinerComposer(steps);
     }
 
+    /**
+     * Execute a select query and expect exactly one result
+     */
     fun <F, R> findOne(query: JoinerQuery<F, R>): MonoJoinerComposer<R> {
-        startChain()
+        markChainStarted()
         return singular(query)
     }
 
+    /**
+     * Execute a select query and expect at most one result
+     */
     fun <F, R> findOneOptional(query: JoinerQuery<F, R>): OptionalMonoJoinerComposer<R> {
-        startChain()
+        markChainStarted()
         return optional(query)
     }
 
+    /**
+     * Execute a select query
+     */
     fun <F, R> find(query: JoinerQuery<F, R>): FluxJoinerComposer<R> {
-        startChain()
+        markChainStarted()
         return plural(query)
     }
 
+    /**
+     * Persist a single entity, return a reference to persisted entity
+     */
     fun <E : Any> persist(entity: E): MonoJoinerComposer<E> {
-        startChain()
+        markChainStarted()
         return singular(entity)
     }
 
+    /**
+     * Persist multiple entities at once, return references to persisted entities
+     */
     fun <E : Any> persist(entity: List<E>): FluxJoinerComposer<E> {
-        startChain()
+        markChainStarted()
         return plural(entity)
     }
 
@@ -109,7 +130,7 @@ open class JoinerComposer<ENTITY, ENTITY_CONTAINER, PUBLISHER>(
         return FluxJoinerComposer(steps)
     }
 
-    private fun startChain() {
+    private fun markChainStarted() {
         if (isChainStarted) throw IllegalStateException("Multiple execution chains per single transaction are not supported!")
         else isChainStarted = true
     }

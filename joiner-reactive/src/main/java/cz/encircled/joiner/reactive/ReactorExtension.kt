@@ -55,7 +55,7 @@ internal object ReactorExtension {
     /**
      * Execute given `callback` in Reactor scope
      */
-    fun reactor(mono: MonoSink<*>, callback: () -> Unit): Disposable = Schedulers.boundedElastic().schedule {
+    inline fun reactor(mono: MonoSink<*>, crossinline callback: () -> Unit): Disposable = Schedulers.boundedElastic().schedule {
         try {
             callback()
         } catch (e: Throwable) {
@@ -66,7 +66,7 @@ internal object ReactorExtension {
     /**
      * Execute given `callback` in Reactor scope
      */
-    fun reactor(flux: FluxSink<*>, callback: () -> Unit): Disposable = Schedulers.boundedElastic().schedule {
+    inline fun reactor(flux: FluxSink<*>, crossinline callback: () -> Unit): Disposable = Schedulers.boundedElastic().schedule {
         try {
             callback()
         } catch (e: Throwable) {
@@ -77,7 +77,7 @@ internal object ReactorExtension {
     /**
      * Execute given `callback` in Reactor scope
      */
-    fun <T> reactor(callback: (CompletableFuture<T>) -> Unit): CompletableFuture<T> {
+    inline fun <T> reactor(crossinline callback: (CompletableFuture<T>) -> Unit): CompletableFuture<T> {
         val future = CompletableFuture<T>()
         Schedulers.boundedElastic().schedule {
             try {

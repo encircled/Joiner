@@ -39,7 +39,7 @@ class ReactorJoiner(emf: EntityManagerFactory) : GenericHibernateReactiveJoiner(
     }
 
     /**
-     * Execute a select and expect exactly one result, returned as a [Mono]
+     * Execute a select query and expect exactly one result, returned as a [Mono]
      */
     fun <T, R> findOne(query: JoinerQuery<T, R>): Mono<R> = Mono.create { mono ->
         doFind(query).handle { result, error ->
@@ -48,14 +48,14 @@ class ReactorJoiner(emf: EntityManagerFactory) : GenericHibernateReactiveJoiner(
     }
 
     /**
-     * Execute a select and expect at most one result, returned as a [Mono]
+     * Execute a select query and expect at most one result, returned as a [Mono]
      */
     fun <T, R> findOneOptional(query: JoinerQuery<T, R>): Mono<R> = Mono.create { mono ->
         doFind(query).handle { result, error -> mono.publish(result, error, true) }
     }
 
     /**
-     * Execute a select, returns result set as a Flux
+     * Execute a select query, returns result set as a Flux
      */
     fun <T, R> find(query: JoinerQuery<T, R>): Flux<R> = Flux.create { flux ->
         doFind(query).handle { result, error -> flux.publish(result, error) }

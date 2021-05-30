@@ -5,37 +5,45 @@ import cz.encircled.joiner.reactive.ReactorExtension.publish
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 
-class FluxJoinerComposer<ENTITY>(
-    steps: MutableList<ExecutionStep<*>>
-) : JoinerComposerWithReceiver<ENTITY, List<ENTITY>, Flux<ENTITY>>(steps) {
+class FluxJoinerComposer<T>(steps: MutableList<ExecutionStep<*>>) :
+    JoinerComposerWithReceiver<T, List<T>, Flux<T>>(steps) {
 
     /**
-     * Transforms the items emitted by the previous step using given synchronous [mapper] function.
+     * Transforms the items emitted by the previous step using synchronous [mapper] function.
      */
-    fun <E : Any> map(mapper: (ENTITY) -> E): FluxJoinerComposer<E> {
+    fun <E : Any> map(mapper: (T) -> E): FluxJoinerComposer<E> {
         steps.add(FluxCallbackOuterScopeExecution(mapper))
         return FluxJoinerComposer(steps)
     }
 
-    fun <E : Any> flatMap(mapper: (ENTITY) -> Mono<E>): FluxJoinerComposer<E> {
+    /**
+     * Asynchronously transforms the items emitted by the previous step using [mapper] function.
+     */
+    fun <E : Any> flatMap(mapper: (T) -> Mono<E>): FluxJoinerComposer<E> {
         steps.add(AsyncFluxCallbackOuterScopeExecution(mapper))
         return FluxJoinerComposer(steps)
     }
 
-    fun filter(predicate: (ENTITY) -> Boolean): FluxJoinerComposer<ENTITY> {
+    /**
+     * Test each emitted item against the [predicate], ignore items which does not pass
+     */
+    fun filter(predicate: (T) -> Boolean): FluxJoinerComposer<T> {
         // Filter is applied to all entities, thus use MonoOuterScopeExecution to receive the [List<ENTITY>] as an input arg
-        steps.add(MonoCallbackOuterScopeExecution<List<ENTITY>, List<ENTITY>> { e ->
+        steps.add(MonoCallbackOuterScopeExecution<List<T>, List<T>> { e ->
             e.filter { predicate(it) }
         })
         return FluxJoinerComposer(steps)
     }
 
-    fun collectToList(): MonoJoinerComposer<List<ENTITY>> {
-        steps.add(MonoCallbackOuterScopeExecution<List<ENTITY>, List<ENTITY>> { e -> e })
+    /**
+     * Collect all emitted items into a [List], which is then emitted as a [Mono]
+     */
+    fun collectToList(): MonoJoinerComposer<List<T>> {
+        steps.add(MonoCallbackOuterScopeExecution<List<T>, List<T>> { e -> e })
         return MonoJoinerComposer(steps)
     }
 
-    override fun executeChain(r: ReactorJoiner): Flux<ENTITY> = Flux.create { flux ->
+    override fun executeChain(r: ReactorJoiner): Flux<T> = Flux.create { flux ->
         r.executeComposed(this).handle { result, error ->
             flux.publish(result, error)
         }

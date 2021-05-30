@@ -9,24 +9,25 @@ import cz.encircled.joiner.reactive.ReactorJoiner
 import reactor.core.publisher.Mono
 import java.util.*
 
-class MonoJoinerComposer<ENTITY>(
-    steps: MutableList<ExecutionStep<*>>,
-) : JoinerComposerWithReceiver<ENTITY, ENTITY, Mono<ENTITY>>(steps) {
+class MonoJoinerComposer<T>(steps: MutableList<ExecutionStep<*>>) : JoinerComposerWithReceiver<T, T, Mono<T>>(steps) {
 
     /**
-     * Transforms the item emitted by the previous step using given synchronous [mapper] function.
+     * Transforms the item emitted by the previous step using synchronous [mapper] function.
      */
-    fun <E : Any> map(mapper: (ENTITY) -> E): MonoJoinerComposer<E> {
+    fun <E : Any> map(mapper: (T) -> E): MonoJoinerComposer<E> {
         steps.add(MonoCallbackOuterScopeExecution(mapper))
         return MonoJoinerComposer(steps)
     }
 
-    fun <E : Any> flatMap(mapper: (ENTITY) -> Mono<E>): MonoJoinerComposer<E> {
+    /**
+     * Asynchronously transforms the item emitted by the previous step using [mapper] function.
+     */
+    fun <E : Any> flatMap(mapper: (T) -> Mono<E>): MonoJoinerComposer<E> {
         steps.add(AsyncMonoCallbackOuterScopeExecution(mapper))
         return MonoJoinerComposer(steps)
     }
 
-    override fun executeChain(r: ReactorJoiner): Mono<ENTITY> = Mono.create { mono ->
+    override fun executeChain(r: ReactorJoiner): Mono<T> = Mono.create { mono ->
         r.executeComposed(this).handle { result, error ->
             mono.publish(result, error)
         }
