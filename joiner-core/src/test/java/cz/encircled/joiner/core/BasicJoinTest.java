@@ -1,14 +1,9 @@
 package cz.encircled.joiner.core;
 
 import com.querydsl.core.JoinType;
+import com.querydsl.core.Tuple;
 import cz.encircled.joiner.exception.JoinerException;
-import cz.encircled.joiner.model.Address;
-import cz.encircled.joiner.model.Group;
-import cz.encircled.joiner.model.QAddress;
-import cz.encircled.joiner.model.QGroup;
-import cz.encircled.joiner.model.QStatus;
-import cz.encircled.joiner.model.QUser;
-import cz.encircled.joiner.model.User;
+import cz.encircled.joiner.model.*;
 import cz.encircled.joiner.query.JoinerQuery;
 import cz.encircled.joiner.query.JoinerQueryBase;
 import cz.encircled.joiner.query.Q;
@@ -20,6 +15,8 @@ import org.junit.jupiter.api.Test;
 import javax.persistence.Persistence;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -29,6 +26,8 @@ import static org.junit.jupiter.api.Assertions.*;
  * @author Kisel on 21.01.2016.
  */
 public class BasicJoinTest extends AbstractTest {
+
+    public static final String USER_NO_ADDRESS = "user3";
 
     @Test
     public void testNestedJoinAlias() {
@@ -152,6 +151,48 @@ public class BasicJoinTest extends AbstractTest {
     }
 
     @Test
+    public void testRightJoin() {
+        JoinerQueryBase<Address, Tuple> q = Q.select(QUser.user1.name, QAddress.address.name)
+                .from(QAddress.address)
+                .joins(J.right(QUser.user1))
+                .where(QUser.user1.name.in("user1", USER_NO_ADDRESS));
+
+        if (isEclipse()) {
+            assertThrows(JoinerException.class, () -> joiner.find(q), "Right join is not supported in EclipseLink!");
+        } else {
+            List<Tuple> tuples = joiner.find(q);
+            assertEquals(3, tuples.size());
+
+            assertEquals("user1", tuples.get(0).get(QUser.user1.name));
+            assertEquals("user1street1", tuples.get(0).get(QAddress.address.name));
+
+            assertEquals("user1", tuples.get(1).get(QUser.user1.name));
+            assertEquals("user1street2", tuples.get(1).get(QAddress.address.name));
+
+            assertEquals(USER_NO_ADDRESS, tuples.get(2).get(QUser.user1.name));
+            assertNull(tuples.get(2).get(QAddress.address.name));
+        }
+    }
+
+    @Test
+    public void testFetchRightJoin() {
+        JoinerQueryBase<Address, Address> q = Q.from(QAddress.address)
+                .joins(J.right(QUser.user1))
+                .where(QUser.user1.name.isNotNull());
+
+        if (isEclipse()) {
+            assertThrows(JoinerException.class, () -> joiner.find(q), "Right join is not supported in EclipseLink!");
+        } else {
+            List<Address> addresses = joiner.find(q).stream().filter(Objects::nonNull).collect(Collectors.toList());
+
+            assertFalse(addresses.isEmpty());
+            for (Address address : addresses) {
+                assertTrue(isLoaded(address, "user"));
+            }
+        }
+    }
+
+    @Test
     public void nonCollisionAliasCollectionJoinTest() {
         joiner.find(Q.from(QGroup.group)
                 .joins(J.left(QStatus.status)));
@@ -247,6 +288,17 @@ public class BasicJoinTest extends AbstractTest {
         assertNotNull(query.getJoin(QGroup.group));
         assertEquals(2, query.getJoins().size());
         assertEquals(2, J.unrollChildrenJoins(query.getJoins()).size());
+    }
+
+    @Test
+    public void testInnerJoinManyToOne() {
+        List<Password> passwords = joiner.find(Q.from(QPassword.password).joins(J.inner(QNormalUser.normalUser)));
+
+        assertFalse(passwords.isEmpty());
+
+        for (Password password : passwords) {
+            assertTrue(isLoaded(password, "normalUser"));
+        }
     }
 
 }

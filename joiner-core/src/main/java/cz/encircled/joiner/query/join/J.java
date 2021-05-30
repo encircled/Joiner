@@ -93,6 +93,16 @@ public class J {
     }
 
     /**
+     * Add <b>right</b> join for given <code>path</code>
+     *
+     * @param path alias of object to be joined
+     * @return join description
+     */
+    public static JoinDescription right(EntityPath<?> path) {
+        return getBasicJoin(path).right();
+    }
+
+    /**
      * Add <b>left</b> join for given <code>path</code>
      *
      * @param path path to an object to be joined

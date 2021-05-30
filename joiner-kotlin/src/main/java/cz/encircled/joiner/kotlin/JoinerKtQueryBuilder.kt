@@ -5,6 +5,7 @@ import com.querydsl.core.types.Expression
 import com.querydsl.core.types.Path
 import com.querydsl.core.types.Predicate
 import com.querydsl.core.types.dsl.BooleanExpression
+import com.querydsl.core.types.dsl.NumberExpression
 import com.querydsl.core.types.dsl.SimpleExpression
 import com.querydsl.core.types.dsl.StringExpression
 import cz.encircled.joiner.query.JoinerQuery
@@ -64,6 +65,12 @@ interface ConditionOps {
 
     infix fun BooleanExpression.and(another: BooleanExpression): BooleanExpression = and(another)
     infix fun BooleanExpression.or(another: BooleanExpression): BooleanExpression = or(another)
+
+    // NUMBERS
+
+    infix fun <T> NumberExpression<T>.gt(to: T): BooleanExpression where T : Number, T : Comparable<*> = gt(to)
+
+    infix fun <T> NumberExpression<T>.lt(to: T): BooleanExpression where T : Number, T : Comparable<*> = lt(to)
 
 }
 

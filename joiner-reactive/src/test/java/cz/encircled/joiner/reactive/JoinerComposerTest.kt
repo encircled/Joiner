@@ -5,7 +5,7 @@ import cz.encircled.joiner.kotlin.JoinerKtQueryBuilder.all
 import cz.encircled.joiner.kotlin.JoinerKtQueryBuilder.countOf
 import cz.encircled.joiner.kotlin.JoinerKtQueryBuilder.from
 import cz.encircled.joiner.model.QStatus
-import cz.encircled.joiner.model.QUser
+import cz.encircled.joiner.model.QUser.user1
 import cz.encircled.joiner.model.User
 import cz.encircled.joiner.reactive.composer.JoinerComposer
 import org.junit.jupiter.api.Nested
@@ -31,14 +31,14 @@ class JoinerComposerTest : AbstractReactorTest() {
     fun `multiple chains in single composer`() {
         // This must work with
         reactorJoiner.transaction {
-            find(QUser.user1.all())
-                .find(QUser.user1.all())
+            find(user1.all())
+                .find(user1.all())
         }.collectList().block()
 
         assertThrows<IllegalStateException> {
             reactorJoiner.transaction {
-                find(QUser.user1.all())
-                find(QUser.user1.all())
+                find(user1.all())
+                find(user1.all())
             }
             Unit
         }
@@ -53,7 +53,7 @@ class JoinerComposerTest : AbstractReactorTest() {
                 persist(User("1"))
                     .persist(User("2"))
                     .persist(User("3"))
-                    .find(QUser.user1.name from QUser.user1)
+                    .find(user1.name from user1)
             })
                 .expectNext("1")
                 .expectNext("2")
@@ -77,7 +77,7 @@ class JoinerComposerTest : AbstractReactorTest() {
             StepVerifier.create(reactorJoiner.transaction {
                 persist(User("1"))
                     .findOne { u ->
-                        QUser.user1.all() where { it.id eq u.id }
+                        user1.all() where { it.id eq u.id }
                     }
             })
                 .expectNextMatches { it.name.equals("1") && it.id != null }
@@ -113,7 +113,7 @@ class JoinerComposerTest : AbstractReactorTest() {
                 .expectComplete()
                 .verify()
 
-            assertEquals(3, reactorJoiner.findOne(QUser.user1.countOf()).block())
+            assertEquals(3, reactorJoiner.findOne(user1.countOf()).block())
         }
 
         @Test
@@ -158,7 +158,7 @@ class JoinerComposerTest : AbstractReactorTest() {
                 persist(User("TestName"))
                     .persist(User("TestName 2"))
                     .findOne { user ->
-                        QUser.user1.all() where { it.id eq user.id }
+                        user1.all() where { it.id eq user.id }
                     }
             })
                 .expectNextMatches { user -> user.name.equals("TestName 2") }
@@ -181,7 +181,7 @@ class JoinerComposerTest : AbstractReactorTest() {
             StepVerifier.create(reactorJoiner.transaction {
                 persist(User("TestName"))
                     .persist(User("TestName"))
-                    .findOne(QUser.user1.all())
+                    .findOne(user1.all())
                     .map { it.name }
             })
                 .expectErrorMatches { it.hasCause("FindOne returned multiple result") }
@@ -193,7 +193,7 @@ class JoinerComposerTest : AbstractReactorTest() {
         @Test
         fun `mono error null result`() {
             StepVerifier.create(reactorJoiner.transaction {
-                findOne(QUser.user1.all())
+                findOne(user1.all())
                     .map { it.name }
             })
                 .expectErrorMatches { it.hasCause("FindOne returned no result") }
@@ -225,7 +225,7 @@ class JoinerComposerTest : AbstractReactorTest() {
         @Test
         fun `mono flatMap from optional`() {
             val transaction = reactorJoiner.transaction {
-                findOneOptional(QUser.user1.all())
+                findOneOptional(user1.all())
                     .flatMap {
                         assertFalse(it.isPresent)
                         Mono.just("just")
@@ -239,7 +239,7 @@ class JoinerComposerTest : AbstractReactorTest() {
         @Test
         fun `mono flatMap empty`() {
             val transaction = reactorJoiner.transaction {
-                findOne(QUser.user1.all())
+                findOne(user1.all())
                     .flatMap { Mono.empty() }
             }
             StepVerifier.create(transaction)
@@ -252,7 +252,7 @@ class JoinerComposerTest : AbstractReactorTest() {
             val transaction = reactorJoiner.transaction {
                 persist(User("TestName"))
                     .flatMap { Mono.just(it.name) }
-                    .findOne { name -> QUser.user1.all() where { it.name eq name } }
+                    .findOne { name -> user1.all() where { it.name eq name } }
                     .flatMap { Mono.just(it.name) }
             }
             StepVerifier.create(transaction)
@@ -270,7 +270,7 @@ class JoinerComposerTest : AbstractReactorTest() {
             reactorJoiner.persist(listOf(User("1"), User("2"))).collectList().block()
 
             StepVerifier.create(reactorJoiner.transaction {
-                find(QUser.user1.name from QUser.user1)
+                find(user1.name from user1)
             })
                 .expectNext("1")
                 .expectNext("2")
@@ -283,7 +283,7 @@ class JoinerComposerTest : AbstractReactorTest() {
             reactorJoiner.persist(listOf(User("1"), User("2"))).collectList().block()
 
             StepVerifier.create(reactorJoiner.transaction {
-                find(QUser.user1.name from QUser.user1)
+                find(user1.name from user1)
                     .collectToList()
             })
                 .expectNext(listOf("1", "2"))
@@ -294,7 +294,7 @@ class JoinerComposerTest : AbstractReactorTest() {
         @Test
         fun `flux empty collect to list`() {
             StepVerifier.create(reactorJoiner.transaction {
-                find(QUser.user1.name from QUser.user1)
+                find(user1.name from user1)
             })
                 .expectComplete()
                 .verify()
@@ -305,9 +305,9 @@ class JoinerComposerTest : AbstractReactorTest() {
             reactorJoiner.persist(listOf(User("1"), User("2"))).collectList().block()
 
             StepVerifier.create(reactorJoiner.transaction {
-                find(QUser.user1.name from QUser.user1)
+                find(user1.name from user1)
                     .collectToList()
-                    .find { names -> QUser.user1.all() where { it.name isIn names } }
+                    .find { names -> user1.all() where { it.name isIn names } }
             })
                 .expectNextMatches { it.name == "1" && it.id != null }
                 .expectNextMatches { it.name == "2" && it.id != null }
@@ -320,7 +320,7 @@ class JoinerComposerTest : AbstractReactorTest() {
             StepVerifier.create(reactorJoiner.transaction {
                 persist(User("TestName Flux 1"))
                     .persist { user -> User("${user.name}2") }
-                    .find { QUser.user1.name from QUser.user1 where { it.name contains "Flux" } }
+                    .find { user1.name from user1 where { it.name contains "Flux" } }
             })
                 .expectNext("TestName Flux 1")
                 .expectNext("TestName Flux 12")
@@ -354,8 +354,8 @@ class JoinerComposerTest : AbstractReactorTest() {
             StepVerifier.create(reactorJoiner.transaction {
                 persist(User("TestName Flux 1"))
                     .persist { user -> User("${user.name}2") }
-                    .find { QUser.user1.id from QUser.user1 where { it.name contains "Flux" } }
-                    .find { ids -> QUser.user1.name from QUser.user1 where { it.id isIn ids } }
+                    .find { user1.id from user1 where { it.name contains "Flux" } }
+                    .find { ids -> user1.name from user1 where { it.id isIn ids } }
             })
                 .expectNext("TestName Flux 1")
                 .expectNext("TestName Flux 12")
@@ -368,7 +368,7 @@ class JoinerComposerTest : AbstractReactorTest() {
             val transaction = reactorJoiner.transaction {
                 persist(User("TestName"))
                     .persist(User("TestName2"))
-                    .find { QUser.user1.all() }
+                    .find { user1.all() }
                     .map { it.name }
             }
             StepVerifier.create(transaction)
@@ -382,7 +382,7 @@ class JoinerComposerTest : AbstractReactorTest() {
             val transaction = reactorJoiner.transaction {
                 persist(User("TestName"))
                     .persist(User("TestName2"))
-                    .find { QUser.user1.all() }
+                    .find { user1.all() }
                     .flatMap { Mono.just(it.name) }
             }
             StepVerifier.create(transaction)
@@ -395,9 +395,9 @@ class JoinerComposerTest : AbstractReactorTest() {
         fun `flux flatMap intermediate`() {
             val transaction = reactorJoiner.transaction {
                 persist(listOf(User("TestName"), User("TestName2")))
-                    .find { QUser.user1.all() }
+                    .find { user1.all() }
                     .flatMap { Mono.just(it.name) }
-                    .find { names -> QUser.user1.name from QUser.user1 where { it.name isIn names } }
+                    .find { names -> user1.name from user1 where { it.name isIn names } }
             }
             StepVerifier.create(transaction)
                 .expectNext("TestName")
@@ -408,7 +408,7 @@ class JoinerComposerTest : AbstractReactorTest() {
         @Test
         fun `flux flatMap from empty`() {
             val transaction = reactorJoiner.transaction {
-                find(QUser.user1.all())
+                find(user1.all())
                     .flatMap { Mono.just(it.name) }
                     .map { it }
             }
@@ -459,9 +459,9 @@ class JoinerComposerTest : AbstractReactorTest() {
             val transaction = reactorJoiner.transaction {
                 persist(User("TestName"))
                     .persist(User("TestName2"))
-                    .find { QUser.user1.all() }
+                    .find { user1.all() }
                     .map { it.name }
-                    .findOne { names -> QUser.user1.all() where { it.name eq names[0] } }
+                    .findOne { names -> user1.all() where { it.name eq names[0] } }
             }
             StepVerifier.create(transaction)
                 .expectNextMatches { it.name == "TestName" && it.id != null }
@@ -473,9 +473,9 @@ class JoinerComposerTest : AbstractReactorTest() {
             val transaction = reactorJoiner.transaction {
                 persist(User("TestName"))
                     .persist(User("TestName2"))
-                    .find { QUser.user1.all() }
+                    .find { user1.all() }
                     .map { it.name }
-                    .find { names -> QUser.user1.all() where { it.name isIn names } }
+                    .find { names -> user1.all() where { it.name isIn names } }
             }
             StepVerifier.create(transaction)
                 .expectNextMatches { it.name == "TestName" && it.id != null }
@@ -489,7 +489,7 @@ class JoinerComposerTest : AbstractReactorTest() {
                 persist(User("1"))
                     .persist(User("3").apply { id = 1 }) // This should fail during hibernate persist
                     .find {
-                        QUser.user1.all()
+                        user1.all()
                     }
             })
                 .expectErrorMatches { it.message!!.contains("detached entity passed") }
@@ -503,7 +503,7 @@ class JoinerComposerTest : AbstractReactorTest() {
             StepVerifier.create(reactorJoiner.transaction {
                 persist(User("3"))
                     .find {
-                        QUser.user1.all()
+                        user1.all()
                     }
             })
                 .expectNextMatches { it.name == "1" }
@@ -531,7 +531,7 @@ class JoinerComposerTest : AbstractReactorTest() {
                 persist(listOf(User("1"), User("2"), User("3")))
                     .filter { it.name != "2" }
                     .map { it.id }
-                    .find { ids -> QUser.user1.name from QUser.user1 where { it.id isIn ids } }
+                    .find { ids -> user1.name from user1 where { it.id isIn ids } }
             })
                 .expectNext("1")
                 .expectNext("3")
@@ -548,9 +548,9 @@ class JoinerComposerTest : AbstractReactorTest() {
         fun `map empty optional to value`() {
             StepVerifier.create(reactorJoiner.transaction {
                 persist(User("Test"))
-                    .findOneOptional(QUser.user1.all() where { it.name eq "Not exists" })
+                    .findOneOptional(user1.all() where { it.name eq "Not exists" })
                     .map { o -> o.orElse(User("Test")).name }
-                    .findOne { name -> QUser.user1.all() where { it.name eq name } }
+                    .findOne { name -> user1.all() where { it.name eq name } }
             })
                 .expectNextMatches { it.name.equals("Test") }
                 .verifyComplete()
@@ -559,7 +559,7 @@ class JoinerComposerTest : AbstractReactorTest() {
         @Test
         fun `return empty optional`() {
             StepVerifier.create(reactorJoiner.transaction {
-                findOneOptional(QUser.user1.all())
+                findOneOptional(user1.all())
             })
                 .expectNext(Optional.empty())
                 .verifyComplete()
@@ -568,14 +568,14 @@ class JoinerComposerTest : AbstractReactorTest() {
         @Test
         fun `empty optional in chain`() {
             StepVerifier.create(reactorJoiner.transaction {
-                findOneOptional(QUser.user1.all())
+                findOneOptional(user1.all())
                     .findOneOptional {
                         assertFalse(it.isPresent)
-                        QUser.user1.all()
+                        user1.all()
                     }
                     .findOneOptional {
                         assertFalse(it.isPresent)
-                        QUser.user1.all()
+                        user1.all()
                     }
             })
                 .expectNext(Optional.empty())
@@ -586,7 +586,7 @@ class JoinerComposerTest : AbstractReactorTest() {
         fun `optional has value`() {
             StepVerifier.create(reactorJoiner.transaction {
                 persist(User("1"))
-                    .findOneOptional(QUser.user1.name from QUser.user1)
+                    .findOneOptional(user1.name from user1)
             })
                 .expectNext(Optional.of("1"))
                 .verifyComplete()
@@ -596,7 +596,7 @@ class JoinerComposerTest : AbstractReactorTest() {
         fun `optional has error`() {
             StepVerifier.create(reactorJoiner.transaction {
                 persist(User("1"))
-                    .findOneOptional(QUser.user1.name from QStatus.status)
+                    .findOneOptional(user1.name from QStatus.status)
             })
                 .expectErrorMatches { it.message!!.contains("QuerySyntaxException") }
                 .verify()
@@ -606,7 +606,7 @@ class JoinerComposerTest : AbstractReactorTest() {
         fun `optional has value intermediate`() {
             StepVerifier.create(reactorJoiner.transaction {
                 persist(User("1"))
-                    .findOneOptional(QUser.user1.name from QUser.user1)
+                    .findOneOptional(user1.name from user1)
                     .map { it.get() }
             })
                 .expectNext("1")
@@ -618,7 +618,7 @@ class JoinerComposerTest : AbstractReactorTest() {
             StepVerifier.create(reactorJoiner.transaction {
                 persist(User("1"))
                     .persist(User("2"))
-                    .findOneOptional(QUser.user1.all())
+                    .findOneOptional(user1.all())
             })
                 .expectErrorMatches { it.hasCause("FindOne returned multiple result") }
                 .verify()
@@ -629,7 +629,7 @@ class JoinerComposerTest : AbstractReactorTest() {
             StepVerifier.create(reactorJoiner.transaction {
                 persist(User("1"))
                     .persist(User("2"))
-                    .findOneOptional(QUser.user1.all())
+                    .findOneOptional(user1.all())
                     .map { it.get() }
             })
                 .expectErrorMatches { it.hasCause("FindOne returned multiple result") }
@@ -640,7 +640,7 @@ class JoinerComposerTest : AbstractReactorTest() {
         fun `optional has value to map`() {
             StepVerifier.create(reactorJoiner.transaction {
                 persist(User("1"))
-                    .findOneOptional(QUser.user1.name from QUser.user1)
+                    .findOneOptional(user1.name from user1)
                     .map { "${it.get()}1" }
             })
                 .expectNext("11")
@@ -651,8 +651,8 @@ class JoinerComposerTest : AbstractReactorTest() {
         fun `findOne after empty optional`() {
             StepVerifier.create(reactorJoiner.transaction {
                 persist(User("1"))
-                    .findOneOptional(QUser.user1.name from QUser.user1 where { it.name eq "2" })
-                    .findOne { optional -> QUser.user1.all() where { QUser.user1.name eq optional.orElse("1") } }
+                    .findOneOptional(user1.name from user1 where { it.name eq "2" })
+                    .findOne { optional -> user1.all() where { user1.name eq optional.orElse("1") } }
             })
                 .expectNextMatches { it.name == "1" }
                 .verifyComplete()
@@ -662,8 +662,8 @@ class JoinerComposerTest : AbstractReactorTest() {
         fun `find after empty optional`() {
             StepVerifier.create(reactorJoiner.transaction {
                 persist(User("1"))
-                    .findOneOptional(QUser.user1.name from QUser.user1 where { it.name eq "2" })
-                    .find { optional -> QUser.user1.all() where { QUser.user1.name eq optional.orElse("1") } }
+                    .findOneOptional(user1.name from user1 where { it.name eq "2" })
+                    .find { optional -> user1.all() where { user1.name eq optional.orElse("1") } }
             })
                 .expectNextMatches { it.name == "1" }
                 .verifyComplete()

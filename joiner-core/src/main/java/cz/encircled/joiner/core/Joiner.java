@@ -1,7 +1,6 @@
 package cz.encircled.joiner.core;
 
 import com.google.common.collect.ArrayListMultimap;
-import com.querydsl.core.JoinType;
 import com.querydsl.core.types.EntityPath;
 import com.querydsl.core.types.Expression;
 import com.querydsl.core.types.Order;
@@ -249,9 +248,6 @@ public class Joiner {
         for (JoinDescription join : joins) {
             joinerVendorRepository.addJoin(query, join);
             if (doFetch && join.isFetch()) {
-                if (join.getJoinType().equals(JoinType.RIGHTJOIN)) {
-                    throw new JoinerException("Fetch is not supported for right join!");
-                }
                 joinerVendorRepository.addFetch(query, join, joins, rootPath);
             }
         }

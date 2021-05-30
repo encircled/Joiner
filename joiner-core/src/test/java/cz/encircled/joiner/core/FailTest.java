@@ -46,10 +46,12 @@ public class FailTest extends AbstractTest {
     }
 
     @Test
-    public void testRightJoinFetch() {
-        assertThrows(JoinerException.class, () -> {
-            joiner.find(Q.from(QGroup.group).joins(J.left(QUser.user1).right()));
-        });
+    public void testRightJoinFetch_Eclipse() {
+        if (isEclipse()) {
+            assertThrows(JoinerException.class, () -> {
+                joiner.find(Q.from(QGroup.group).joins(J.left(QUser.user1).right()));
+            });
+        }
     }
 
     @Test
