@@ -377,16 +377,13 @@ Sample queries, executed in a single DB transaction:
  */
 fun createSuperUsersIsApplicable(ids : List<Long>): Flux<SuperUser> {
     return reactorJoiner.transaction { 
-        find(QUser.user1.all() where { it.id isIn ids })
-            .filter(::isUserApplicable)
-            .map { user -> SuperUser(user.name) }
+        find(user.name from user where { it.id isIn ids })
+            .filter { name -> ... }
+            .map { name -> SuperUser(name) }
             .persistMultiple { it }
     }
 }
 
-fun isUserApplicable(user: User) : Boolean {
-    TODO("Some logic...")
-}
 ```
 
 ## Maven dependencies
