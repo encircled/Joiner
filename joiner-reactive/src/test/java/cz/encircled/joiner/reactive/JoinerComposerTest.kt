@@ -132,7 +132,7 @@ class JoinerComposerTest : AbstractReactorTest() {
     inner class MonoResult {
 
         @Test
-        fun `initial just list`() {
+        fun `initial just`() {
             StepVerifier.create(reactorJoiner.transaction {
                 just(1)
             })
@@ -143,11 +143,10 @@ class JoinerComposerTest : AbstractReactorTest() {
         @Test
         fun `initial just chain`() {
             StepVerifier.create(reactorJoiner.transaction {
-                just(listOf("1", "2"))
-                    .persistMultiple { it.map { name -> User(name) } }
+                just("1")
+                    .persist { User(it) }
             })
                 .expectNextMatches { it.name == "1" && it.id != null }
-                .expectNextMatches { it.name == "2" && it.id != null }
                 .verifyComplete()
         }
 
@@ -310,6 +309,20 @@ class JoinerComposerTest : AbstractReactorTest() {
                     .persist(User("TestName2"))
                     .find { QUser.user1.all() }
                     .map { it.name }
+            }
+            StepVerifier.create(transaction)
+                .expectNext("TestName")
+                .expectNext("TestName2")
+                .verifyComplete()
+        }
+
+        @Test
+        fun `flux flatMap result`() {
+            val transaction = reactorJoiner.transaction {
+                persist(User("TestName"))
+                    .persist(User("TestName2"))
+                    .find { QUser.user1.all() }
+                    .flatMap { Mono.just(it.name) }
             }
             StepVerifier.create(transaction)
                 .expectNext("TestName")

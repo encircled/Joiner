@@ -2,6 +2,8 @@ package cz.encircled.joiner.reactive
 
 import cz.encircled.joiner.reactive.ReactorExtension.getExactlyOne
 import cz.encircled.joiner.reactive.ReactorExtension.reactor
+import reactor.core.publisher.Flux
+import reactor.core.publisher.Mono
 import java.util.concurrent.CompletableFuture
 
 /**
@@ -21,18 +23,7 @@ class MonoOuterScopeExecution<T, E>(private val callback: (T) -> E) : OuterScope
 
 }
 
-class SyncMonoOuterScopeExecution<E>(private val data: E) : OuterScopeExecution<E> {
-
-    override fun perform(arg: Any): CompletableFuture<List<E>> {
-        return CompletableFuture.completedFuture(listOf(data))
-    }
-
-    override fun convertResult(arg: List<Any>): Any = arg.getExactlyOne()
-
-}
-
-
-class FluxOuterScopeExecution<T, E>(private val callback: (T) -> E) : OuterScopeExecution<E> {
+class CallbackFluxOuterScopeExecution<T, E>(private val callback: (T) -> E) : OuterScopeExecution<E> {
 
     override fun perform(arg: Any): CompletableFuture<List<E>> = reactor { f ->
         f.complete((arg as List<T>).map { callback(it) })
@@ -40,10 +31,15 @@ class FluxOuterScopeExecution<T, E>(private val callback: (T) -> E) : OuterScope
 
 }
 
-class SyncFluxOuterScopeExecution<E>(private val data: List<E>) : OuterScopeExecution<E> {
+class AsyncCallbackFluxOuterScopeExecution<T, E>(private val callback: (T) -> Mono<E>) : OuterScopeExecution<E> {
 
-    override fun perform(arg: Any): CompletableFuture<List<E>> {
-        return CompletableFuture.completedFuture(data)
+    override fun perform(arg: Any): CompletableFuture<List<E>> = reactor { f ->
+        Flux.fromStream((arg as List<T>).stream())
+            .flatMap(callback)
+            .collectList()
+            .subscribe { result ->
+                f.complete(result)
+            }
     }
 
 }

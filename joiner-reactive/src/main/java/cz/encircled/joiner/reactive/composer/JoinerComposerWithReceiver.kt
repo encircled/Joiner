@@ -3,7 +3,7 @@ package cz.encircled.joiner.reactive.composer
 import cz.encircled.joiner.query.JoinerQuery
 import cz.encircled.joiner.reactive.ExecutionStep
 
-// TODO flatMap
+// TODO flatMap, inline funs, addStep type safety
 open class JoinerComposerWithReceiver<ENTITY, ENTITY_CONTAINER, PUBLISHER>(
     steps: MutableList<ExecutionStep<*>>
 ) : JoinerComposer<ENTITY, ENTITY_CONTAINER, PUBLISHER>(steps) {

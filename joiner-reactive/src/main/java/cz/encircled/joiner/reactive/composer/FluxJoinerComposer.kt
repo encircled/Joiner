@@ -1,11 +1,9 @@
 package cz.encircled.joiner.reactive.composer
 
-import cz.encircled.joiner.reactive.ExecutionStep
-import cz.encircled.joiner.reactive.FluxOuterScopeExecution
-import cz.encircled.joiner.reactive.MonoOuterScopeExecution
+import cz.encircled.joiner.reactive.*
 import cz.encircled.joiner.reactive.ReactorExtension.publish
-import cz.encircled.joiner.reactive.ReactorJoiner
 import reactor.core.publisher.Flux
+import reactor.core.publisher.Mono
 
 class FluxJoinerComposer<ENTITY>(
     steps: MutableList<ExecutionStep<*>>
@@ -15,7 +13,12 @@ class FluxJoinerComposer<ENTITY>(
      * Transforms the items emitted by the previous step using given synchronous [mapper] function.
      */
     fun <E : Any> map(mapper: (ENTITY) -> E): FluxJoinerComposer<E> {
-        steps.add(FluxOuterScopeExecution(mapper))
+        steps.add(CallbackFluxOuterScopeExecution(mapper))
+        return FluxJoinerComposer(steps)
+    }
+
+    fun <E : Any> flatMap(mapper: (ENTITY) -> Mono<E>): FluxJoinerComposer<E> {
+        steps.add(AsyncCallbackFluxOuterScopeExecution(mapper))
         return FluxJoinerComposer(steps)
     }
 

@@ -4,6 +4,7 @@ import cz.encircled.joiner.query.JoinerQuery
 import cz.encircled.joiner.reactive.*
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
+import java.util.concurrent.CompletableFuture
 
 /**
  * Composes multiple async functions into a single execution chain to run it in a single DB transaction
@@ -25,13 +26,13 @@ open class JoinerComposer<ENTITY, ENTITY_CONTAINER, PUBLISHER>(
 
     fun <T> just(data: List<T>): FluxJoinerComposer<T> {
         startChain()
-        steps.add(SyncFluxOuterScopeExecution(data))
+        steps.add(ComputedExecutionStep(CompletableFuture.completedFuture(data)))
         return FluxJoinerComposer(steps);
     }
 
     fun <T> just(data: T): MonoJoinerComposer<T> {
         startChain()
-        steps.add(SyncMonoOuterScopeExecution(data))
+        steps.add(MonoComputedExecutionStep(CompletableFuture.completedFuture(listOf(data))))
         return MonoJoinerComposer(steps);
     }
 
@@ -64,7 +65,7 @@ open class JoinerComposer<ENTITY, ENTITY_CONTAINER, PUBLISHER>(
      * Creates new composer with singular (Mono) result projection
      */
     protected fun <R> singular(callback: (ENTITY_CONTAINER) -> Any): MonoJoinerComposer<R> {
-        steps.add(MonoAsyncExecutionStep(callback))
+        steps.add(MonoCallbackExecutionStep(callback))
         return MonoJoinerComposer(steps)
     }
 
@@ -72,7 +73,7 @@ open class JoinerComposer<ENTITY, ENTITY_CONTAINER, PUBLISHER>(
      * Creates new composer with singular (Mono) result projection
      */
     protected fun <R> singular(value: Any): MonoJoinerComposer<R> {
-        steps.add(MonoSyncExecutionStep(value))
+        steps.add(MonoComputedExecutionStep(value))
         return MonoJoinerComposer(steps)
     }
 
@@ -80,7 +81,7 @@ open class JoinerComposer<ENTITY, ENTITY_CONTAINER, PUBLISHER>(
      * Creates new composer with optional singular (Mono) result projection
      */
     protected fun <R> optional(value: Any): OptionalMonoJoinerComposer<R> {
-        steps.add(OptionalSyncExecutionStep(value))
+        steps.add(OptionalComputedExecutionStep(value))
         return OptionalMonoJoinerComposer(steps)
     }
 
@@ -88,7 +89,7 @@ open class JoinerComposer<ENTITY, ENTITY_CONTAINER, PUBLISHER>(
      * Creates new composer with optional singular (Mono) result projection
      */
     protected fun <R> optional(callback: (ENTITY_CONTAINER) -> Any): OptionalMonoJoinerComposer<R> {
-        steps.add(OptionalAsyncExecutionStep(callback))
+        steps.add(OptionalCallbackExecutionStep(callback))
         return OptionalMonoJoinerComposer(steps)
     }
 
@@ -96,7 +97,7 @@ open class JoinerComposer<ENTITY, ENTITY_CONTAINER, PUBLISHER>(
      * Creates new composer with plural (Flux) result projection
      */
     protected fun <R> plural(callback: (ENTITY_CONTAINER) -> Any): FluxJoinerComposer<R> {
-        steps.add(AsyncExecutionStep(callback))
+        steps.add(CallbackExecutionStep(callback))
         return FluxJoinerComposer(steps)
     }
 
@@ -104,7 +105,7 @@ open class JoinerComposer<ENTITY, ENTITY_CONTAINER, PUBLISHER>(
      * Creates new composer with plural (Flux) result projection
      */
     protected fun <R> plural(value: Any): FluxJoinerComposer<R> {
-        steps.add(SyncExecutionStep(value))
+        steps.add(ComputedExecutionStep(value))
         return FluxJoinerComposer(steps)
     }
 

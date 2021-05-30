@@ -31,40 +31,40 @@ interface ExecutionStep<T> {
 /**
  * Execution step which returns pre-computed [value] with plural result (e.g. *FindMultiple* query)
  */
-open class SyncExecutionStep<T>(private val value: T) : ExecutionStep<T> {
+open class ComputedExecutionStep<T>(private val value: T) : ExecutionStep<T> {
     override fun perform(arg: Any): T = value
 }
 
 /**
  * Execution step which returns pre-computed [value]  with singular result (e.g. *FindOne* query)
  */
-class MonoSyncExecutionStep<T>(value: T) : SyncExecutionStep<T>(value) {
+class MonoComputedExecutionStep<T>(value: T) : ComputedExecutionStep<T>(value) {
     override fun convertResult(arg: List<Any>): Any = arg.getExactlyOne()
 }
 
 /**
  * Execution step which returns pre-computed [value] with optional singular result (e.g. *FindOneOptional* query)
  */
-class OptionalSyncExecutionStep<T>(value: T) : SyncExecutionStep<T>(value) {
+class OptionalComputedExecutionStep<T>(value: T) : ComputedExecutionStep<T>(value) {
     override fun convertResult(arg: List<Any>): Any = Optional.ofNullable(arg.getAtMostOne())
 }
 
 /**
- * Execution step which asynchronously calls a user [callback] with plural result (e.g. *FindMultiple* query)
+ * Execution step which calls a user [callback] with plural result (e.g. *FindMultiple* query)
  */
-open class AsyncExecutionStep<F, T>(private val callback: (F) -> T) : ExecutionStep<T> {
+open class CallbackExecutionStep<F, T>(private val callback: (F) -> T) : ExecutionStep<T> {
     override fun perform(arg: Any): T = callback(arg as F)
 }
 /**
- * Execution step which asynchronously calls a user [callback] with singular result (e.g. *FindOne* query)
+ * Execution step which calls a user [callback] with singular result (e.g. *FindOne* query)
  */
-class MonoAsyncExecutionStep<F, T>(callback: (F) -> T) : AsyncExecutionStep<F, T>(callback) {
+class MonoCallbackExecutionStep<F, T>(callback: (F) -> T) : CallbackExecutionStep<F, T>(callback) {
     override fun convertResult(arg: List<Any>): Any = arg.getExactlyOne()
 }
 
 /**
- * Execution step which asynchronously calls a user [callback] with optional singular result (e.g. *FindOneOptional* query)
+ * Execution step which calls a user [callback] with optional singular result (e.g. *FindOneOptional* query)
  */
-class OptionalAsyncExecutionStep<F, T>(callback: (F) -> T) : AsyncExecutionStep<F, T>(callback) {
+class OptionalCallbackExecutionStep<F, T>(callback: (F) -> T) : CallbackExecutionStep<F, T>(callback) {
     override fun convertResult(arg: List<Any>): Any = Optional.ofNullable(arg.getAtMostOne())
 }
