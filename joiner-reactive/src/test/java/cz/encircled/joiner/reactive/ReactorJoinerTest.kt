@@ -78,6 +78,15 @@ class ReactorJoinerTest : AbstractReactorTest() {
         }
 
         @Test
+        fun `find one execution exception`() {
+            reactorJoiner.persist(User("Test Name")).block()
+
+            StepVerifier.create(reactorJoiner.findOne(QUser.user1.name from QStatus.status))
+                .expectErrorMatches { it.message!!.contains("QuerySyntaxException") }
+                .verify()
+        }
+
+        @Test
         fun `find one empty`() {
             StepVerifier.create(reactorJoiner.findOne(QUser.user1.name from QUser.user1))
                 .expectErrorMatches { it.hasCause(JoinerExceptions.entityNotFound().message!!) }
@@ -107,6 +116,55 @@ class ReactorJoinerTest : AbstractReactorTest() {
                 .verifyComplete()
 
             StepVerifier.create(reactorJoiner.findOne(QUser.user1.countOf() where { it.name ne "1" }))
+                .expectNext(1)
+                .verifyComplete()
+        }
+
+    }
+
+    @Nested
+    inner class FindOneOptional {
+
+        @Test
+        fun `find one success`() {
+            reactorJoiner.persist(User("Test Name")).block()
+
+            StepVerifier.create(reactorJoiner.findOneOptional(QUser.user1.name from QUser.user1 where { it.name eq "Test Name" }))
+                .expectNext("Test Name")
+                .expectComplete()
+                .verify()
+        }
+
+        @Test
+        fun `find one empty`() {
+            StepVerifier.create(reactorJoiner.findOneOptional(QUser.user1.name from QUser.user1))
+                .expectComplete()
+                .verify()
+        }
+
+        @Test
+        fun `find one multiple results`() {
+            reactorJoiner.persist(User("Test Name")).block()
+            reactorJoiner.persist(User("Test Name 2")).block()
+
+            StepVerifier.create(reactorJoiner.findOneOptional(QUser.user1.name from QUser.user1))
+                .expectError(JoinerException::class.java)
+                .verify()
+        }
+
+        @Test
+        fun `count query success`() {
+            StepVerifier.create(reactorJoiner.findOneOptional(QUser.user1.countOf()))
+                .expectNext(0)
+                .verifyComplete()
+
+            reactorJoiner.persist(listOf(User("1"), User("2"))).collectList().block()
+
+            StepVerifier.create(reactorJoiner.findOneOptional(QUser.user1.countOf()))
+                .expectNext(2)
+                .verifyComplete()
+
+            StepVerifier.create(reactorJoiner.findOneOptional(QUser.user1.countOf() where { it.name ne "1" }))
                 .expectNext(1)
                 .verifyComplete()
         }

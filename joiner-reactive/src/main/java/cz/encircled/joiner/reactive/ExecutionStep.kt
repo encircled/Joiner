@@ -1,86 +1,70 @@
 package cz.encircled.joiner.reactive
 
-import cz.encircled.joiner.exception.JoinerExceptions
+import cz.encircled.joiner.reactive.ReactorExtension.getAtMostOne
+import cz.encircled.joiner.reactive.ReactorExtension.getExactlyOne
 import java.util.*
 
 /**
- * Represents a single execution step in a chain
+ * A single execution step in a chain, represented as a pre-computed value or a callback provided by user.
+ *
+ * Result of the [ExecutionStep] will be then asynchronously processed by Joiner as follows:
+ * - return as is, if the result is a [java.util.concurrent.CompletableFuture], for cases like: map, filter etc
+ * - run the DB query, if the result is a [cz.encircled.joiner.query.JoinerQuery]
+ * - otherwise, do persist an entity (or list of entities) and return its reference
  */
 interface ExecutionStep<T> {
 
-    fun perform(arg: List<Any>?): T
+    /**
+     * Execute a user callback or return pre-computed value
+     */
+    fun perform(arg: Any): T
 
-    fun <T> extractExactlyOne(arg: List<Any>?): T {
-        return when {
-            arg.isNullOrEmpty() -> {
-                throw JoinerExceptions.entityNotFound()
-            }
-            arg.size > 1 -> {
-                throw JoinerExceptions.multipleEntitiesFound()
-            }
-            else -> arg[0] as T
-        }
-    }
-
-    fun <T> extractAtMostOne(arg: List<Any>?): T? {
-        return when {
-            arg.isNullOrEmpty() -> null
-            arg.size > 1 -> {
-                throw JoinerExceptions.multipleEntitiesFound()
-            }
-            else -> arg[0] as T
-        }
-    }
+    /**
+     * Convert step result if needed (e.g. wrap as [Optional] in case of nullable steps, or extract a singular value in case of *findOne*)
+     *
+     * @param arg initial step result, always passed as a [List], even in case of functions like *findOne*
+     */
+    fun convertResult(arg: List<Any>): Any = arg
 
 }
 
 /**
- * Execution step which returns static [value]
+ * Execution step which returns pre-computed [value] with plural result (e.g. *FindMultiple* query)
  */
-class SyncExecutionStep<T>(
-    /**
-     * Passed by the user
-     */
-    private val value: T
-) : ExecutionStep<T> {
-
-    override fun perform(arg: List<Any>?): T = value
-
+open class SyncExecutionStep<T>(private val value: T) : ExecutionStep<T> {
+    override fun perform(arg: Any): T = value
 }
 
 /**
- * Represents an async function, passed by the user
+ * Execution step which returns pre-computed [value]  with singular result (e.g. *FindOne* query)
  */
-class AsyncExecutionStep<T>(
-    /**
-     * Defines whether target step expects a singular or plural input parameter
-     */
-    private val isMono: Boolean,
-
-    /**
-     * Function to be executed
-     */
-    private val callback: (Any) -> T
-) : ExecutionStep<T> {
-
-    override fun perform(arg: List<Any>?): T {
-        return if (isMono) callback(extractExactlyOne(arg))
-        else callback(arg!!)
-    }
-
+class MonoSyncExecutionStep<T>(value: T) : SyncExecutionStep<T>(value) {
+    override fun convertResult(arg: List<Any>): Any = arg.getExactlyOne()
 }
 
 /**
- * Represents an async function, passed by the user
+ * Execution step which returns pre-computed [value] with optional singular result (e.g. *FindOneOptional* query)
  */
-class OptionalAsyncExecutionStep<T>(
-    /**
-     * Function to be executed
-     */
-    private val callback: (Optional<Any>) -> T
-) : ExecutionStep<T> {
+class OptionalSyncExecutionStep<T>(value: T) : SyncExecutionStep<T>(value) {
+    override fun convertResult(arg: List<Any>): Any = Optional.ofNullable(arg.getAtMostOne())
+}
 
-    override fun perform(arg: List<Any>?): T =
-        callback(Optional.ofNullable(extractAtMostOne(arg)))
+/**
+ * Execution step which asynchronously calls a user [callback] with plural result (e.g. *FindMultiple* query)
+ */
+open class AsyncExecutionStep<F, T>(private val callback: (F) -> T) : ExecutionStep<T> {
+    override fun perform(arg: Any): T = callback(arg as F)
+}
+/**
+ * Execution step which asynchronously calls a user [callback] with singular result (e.g. *FindOne* query)
+ */
+class MonoAsyncExecutionStep<F, T>(callback: (F) -> T) : AsyncExecutionStep<F, T>(callback) {
+    override fun convertResult(arg: List<Any>): Any = arg.getExactlyOne()
+}
 
+/**
+ * Execution step which asynchronously calls a user [callback] with optional singular result (e.g. *FindOneOptional* query)
+ */
+class OptionalAsyncExecutionStep<F, T>(callback: (F) -> T) : AsyncExecutionStep<F, T>(callback) {
+    override fun convertResult(arg: List<Any>): Any = Optional.ofNullable(arg.getAtMostOne())
 }

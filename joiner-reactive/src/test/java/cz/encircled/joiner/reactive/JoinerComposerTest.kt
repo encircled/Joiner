@@ -22,7 +22,7 @@ class JoinerComposerTest : AbstractReactorTest() {
     @Test
     fun `empty composer`() {
         assertThrows<IllegalStateException> {
-            JoinerComposer<Any, Any, Mono<Any>>(true, ArrayList()).execute(reactorJoiner)
+            JoinerComposer<Any, Any, Mono<Any>>(ArrayList()).executeChain(reactorJoiner)
         }
     }
 
@@ -65,6 +65,19 @@ class JoinerComposerTest : AbstractReactorTest() {
         fun `persist single entity`() {
             StepVerifier.create(reactorJoiner.transaction {
                 persist(User("1"))
+            })
+                .expectNextMatches { it.name.equals("1") && it.id != null }
+                .expectComplete()
+                .verify()
+        }
+
+        @Test
+        fun `test delete me`() {
+            StepVerifier.create(reactorJoiner.transaction {
+                persist(User("1"))
+                    .findOne { u ->
+                        QUser.user1.all() where { it.id eq u.id }
+                    }
             })
                 .expectNextMatches { it.name.equals("1") && it.id != null }
                 .expectComplete()
@@ -117,6 +130,27 @@ class JoinerComposerTest : AbstractReactorTest() {
 
     @Nested
     inner class MonoResult {
+
+        @Test
+        fun `initial just list`() {
+            StepVerifier.create(reactorJoiner.transaction {
+                just(1)
+            })
+                .expectNext(1)
+                .verifyComplete()
+        }
+
+        @Test
+        fun `initial just chain`() {
+            StepVerifier.create(reactorJoiner.transaction {
+                just(listOf("1", "2"))
+                    .persistMultiple { it.map { name -> User(name) } }
+            })
+                .expectNextMatches { it.name == "1" && it.id != null }
+                .expectNextMatches { it.name == "2" && it.id != null }
+                .verifyComplete()
+        }
+
 
         @Test
         fun `mono success find one`() {
@@ -185,6 +219,43 @@ class JoinerComposerTest : AbstractReactorTest() {
         }
 
         @Test
+        fun `flux collect to list result`() {
+            reactorJoiner.persist(listOf(User("1"), User("2"))).collectList().block()
+
+            StepVerifier.create(reactorJoiner.transaction {
+                find(QUser.user1.name from QUser.user1)
+                    .collectToList()
+            })
+                .expectNext(listOf("1", "2"))
+                .expectComplete()
+                .verify()
+        }
+
+        @Test
+        fun `flux empty collect to list`() {
+            StepVerifier.create(reactorJoiner.transaction {
+                find(QUser.user1.name from QUser.user1)
+            })
+                .expectComplete()
+                .verify()
+        }
+
+        @Test
+        fun `flux collect to list intermediate`() {
+            reactorJoiner.persist(listOf(User("1"), User("2"))).collectList().block()
+
+            StepVerifier.create(reactorJoiner.transaction {
+                find(QUser.user1.name from QUser.user1)
+                    .collectToList()
+                    .find { names -> QUser.user1.all() where { it.name isIn names } }
+            })
+                .expectNextMatches { it.name == "1" && it.id != null }
+                .expectNextMatches { it.name == "2" && it.id != null }
+                .expectComplete()
+                .verify()
+        }
+
+        @Test
         fun `basic flux chain`() {
             StepVerifier.create(reactorJoiner.transaction {
                 persist(User("TestName Flux 1"))
@@ -195,6 +266,27 @@ class JoinerComposerTest : AbstractReactorTest() {
                 .expectNext("TestName Flux 12")
                 .expectComplete()
                 .verify()
+        }
+
+        @Test
+        fun `initial just list`() {
+            StepVerifier.create(reactorJoiner.transaction {
+                just(listOf(1, 2))
+            })
+                .expectNext(1)
+                .expectNext(2)
+                .verifyComplete()
+        }
+
+        @Test
+        fun `initial just chain`() {
+            StepVerifier.create(reactorJoiner.transaction {
+                just(listOf("1", "2"))
+                    .persistMultiple { it.map { name -> User(name) } }
+            })
+                .expectNextMatches { it.name == "1" && it.id != null }
+                .expectNextMatches { it.name == "2" && it.id != null }
+                .verifyComplete()
         }
 
         @Test
@@ -211,9 +303,8 @@ class JoinerComposerTest : AbstractReactorTest() {
                 .verify()
         }
 
-
         @Test
-        fun testSimpleFluxMap() {
+        fun `flux map result`() {
             val transaction = reactorJoiner.transaction {
                 persist(User("TestName"))
                     .persist(User("TestName2"))
@@ -223,6 +314,51 @@ class JoinerComposerTest : AbstractReactorTest() {
             StepVerifier.create(transaction)
                 .expectNext("TestName")
                 .expectNext("TestName2")
+                .verifyComplete()
+        }
+
+        @Test
+        fun `flux multiple map and filter`() {
+            val transaction = reactorJoiner.transaction {
+                persist(listOf(User("TestName"), User("TestName2")))
+                    .map { it.name }
+                    .filter { true }
+                    .map { it }
+                    .filter { true }
+                    .map { it }
+            }
+            StepVerifier.create(transaction)
+                .expectNext("TestName")
+                .expectNext("TestName2")
+                .verifyComplete()
+        }
+
+        @Test
+        fun `map to mono intermediate`() {
+            val transaction = reactorJoiner.transaction {
+                persist(User("TestName"))
+                    .persist(User("TestName2"))
+                    .find { QUser.user1.all() }
+                    .map { it.name }
+                    .findOne { names -> QUser.user1.all() where { it.name eq names[0] } }
+            }
+            StepVerifier.create(transaction)
+                .expectNextMatches { it.name == "TestName" && it.id != null }
+                .verifyComplete()
+        }
+
+        @Test
+        fun `map to flux intermediate`() {
+            val transaction = reactorJoiner.transaction {
+                persist(User("TestName"))
+                    .persist(User("TestName2"))
+                    .find { QUser.user1.all() }
+                    .map { it.name }
+                    .find { names -> QUser.user1.all() where { it.name isIn names } }
+            }
+            StepVerifier.create(transaction)
+                .expectNextMatches { it.name == "TestName" && it.id != null }
+                .expectNextMatches { it.name == "TestName2" && it.id != null }
                 .verifyComplete()
         }
 
@@ -240,7 +376,7 @@ class JoinerComposerTest : AbstractReactorTest() {
         }
 
         @Test
-        fun testTransactionWithFindAllAsFlux() {
+        fun `find all flux result`() {
             reactorJoiner.persist(listOf(User("1"), User("2"))).blockLast()
 
             StepVerifier.create(reactorJoiner.transaction {
@@ -252,6 +388,32 @@ class JoinerComposerTest : AbstractReactorTest() {
                 .expectNextMatches { it.name == "1" }
                 .expectNextMatches { it.name == "2" }
                 .expectNextMatches { it.name == "3" }
+                .expectComplete()
+                .verify()
+        }
+
+        @Test
+        fun `test filter`() {
+            StepVerifier.create(reactorJoiner.transaction {
+                just(listOf(1, 2, 3, 4))
+                    .filter { it % 2 == 0 }
+            })
+                .expectNext(2)
+                .expectNext(4)
+                .expectComplete()
+                .verify()
+        }
+
+        @Test
+        fun `test filter intermediate`() {
+            StepVerifier.create(reactorJoiner.transaction {
+                persist(listOf(User("1"), User("2"), User("3")))
+                    .filter { it.name != "2" }
+                    .map { it.id }
+                    .find { ids -> QUser.user1.name from QUser.user1 where { it.id isIn ids } }
+            })
+                .expectNext("1")
+                .expectNext("3")
                 .expectComplete()
                 .verify()
         }
@@ -361,6 +523,28 @@ class JoinerComposerTest : AbstractReactorTest() {
                     .map { "${it.get()}1" }
             })
                 .expectNext("11")
+                .verifyComplete()
+        }
+
+        @Test
+        fun `findOne after empty optional`() {
+            StepVerifier.create(reactorJoiner.transaction {
+                persist(User("1"))
+                    .findOneOptional(QUser.user1.name from QUser.user1 where { it.name eq "2" })
+                    .findOne { optional -> QUser.user1.all() where { QUser.user1.name eq optional.orElse("1") } }
+            })
+                .expectNextMatches { it.name == "1" }
+                .verifyComplete()
+        }
+
+        @Test
+        fun `find after empty optional`() {
+            StepVerifier.create(reactorJoiner.transaction {
+                persist(User("1"))
+                    .findOneOptional(QUser.user1.name from QUser.user1 where { it.name eq "2" })
+                    .find { optional -> QUser.user1.all() where { QUser.user1.name eq optional.orElse("1") } }
+            })
+                .expectNextMatches { it.name == "1" }
                 .verifyComplete()
         }
 

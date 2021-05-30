@@ -4,21 +4,15 @@ import cz.encircled.joiner.query.JoinerQuery
 import cz.encircled.joiner.reactive.*
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
-import java.util.*
 
 /**
  * Composes multiple async functions into a single execution chain to run it in a single DB transaction
  *
  * @param ENTITY class of result entity
- * @param ENTITY_CONTAINER class of entity container (i.e. List) in case of plural result, otherwise same as [ENTITY]
+ * @param ENTITY_CONTAINER class of entity container (i.e. [List<ENTITY>] in case of plural result), otherwise same as [ENTITY]
  * @param PUBLISHER type of result publisher: [Mono] for singular result, [Flux] for plural
  */
 open class JoinerComposer<ENTITY, ENTITY_CONTAINER, PUBLISHER>(
-    /**
-     * Defines whether final result set is singular or plural
-     */
-    private val isMono: Boolean,
-
     /**
      * List of async steps to be executed
      */
@@ -27,7 +21,19 @@ open class JoinerComposer<ENTITY, ENTITY_CONTAINER, PUBLISHER>(
 
     private var isChainStarted = false
 
-    internal open fun execute(r: ReactorJoiner): PUBLISHER = throw IllegalStateException("Composer is empty")
+    internal open fun executeChain(r: ReactorJoiner): PUBLISHER = throw IllegalStateException("Composer is empty")
+
+    fun <T> just(data: List<T>): FluxJoinerComposer<T> {
+        startChain()
+        steps.add(SyncFluxOuterScopeExecution(data))
+        return FluxJoinerComposer(steps);
+    }
+
+    fun <T> just(data: T): MonoJoinerComposer<T> {
+        startChain()
+        steps.add(SyncMonoOuterScopeExecution(data))
+        return MonoJoinerComposer(steps);
+    }
 
     fun <F, R> findOne(query: JoinerQuery<F, R>): MonoJoinerComposer<R> {
         startChain()
@@ -49,7 +55,7 @@ open class JoinerComposer<ENTITY, ENTITY_CONTAINER, PUBLISHER>(
         return singular(entity)
     }
 
-    fun <E : Any> persist(entity: List<E>): FluxJoinerComposer<E>  {
+    fun <E : Any> persist(entity: List<E>): FluxJoinerComposer<E> {
         startChain()
         return plural(entity)
     }
@@ -58,7 +64,7 @@ open class JoinerComposer<ENTITY, ENTITY_CONTAINER, PUBLISHER>(
      * Creates new composer with singular (Mono) result projection
      */
     protected fun <R> singular(callback: (ENTITY_CONTAINER) -> Any): MonoJoinerComposer<R> {
-        steps.add(AsyncExecutionStep(isMono, callback as (Any?) -> Any))
+        steps.add(MonoAsyncExecutionStep(callback))
         return MonoJoinerComposer(steps)
     }
 
@@ -66,7 +72,7 @@ open class JoinerComposer<ENTITY, ENTITY_CONTAINER, PUBLISHER>(
      * Creates new composer with singular (Mono) result projection
      */
     protected fun <R> singular(value: Any): MonoJoinerComposer<R> {
-        steps.add(SyncExecutionStep(value))
+        steps.add(MonoSyncExecutionStep(value))
         return MonoJoinerComposer(steps)
     }
 
@@ -74,15 +80,15 @@ open class JoinerComposer<ENTITY, ENTITY_CONTAINER, PUBLISHER>(
      * Creates new composer with optional singular (Mono) result projection
      */
     protected fun <R> optional(value: Any): OptionalMonoJoinerComposer<R> {
-        steps.add(SyncExecutionStep(value))
+        steps.add(OptionalSyncExecutionStep(value))
         return OptionalMonoJoinerComposer(steps)
     }
 
     /**
      * Creates new composer with optional singular (Mono) result projection
      */
-    protected fun <R> optional(callback: (Optional<ENTITY_CONTAINER>) -> Any): OptionalMonoJoinerComposer<R> {
-        steps.add(OptionalAsyncExecutionStep(callback as (Any?) -> Any))
+    protected fun <R> optional(callback: (ENTITY_CONTAINER) -> Any): OptionalMonoJoinerComposer<R> {
+        steps.add(OptionalAsyncExecutionStep(callback))
         return OptionalMonoJoinerComposer(steps)
     }
 
@@ -90,7 +96,7 @@ open class JoinerComposer<ENTITY, ENTITY_CONTAINER, PUBLISHER>(
      * Creates new composer with plural (Flux) result projection
      */
     protected fun <R> plural(callback: (ENTITY_CONTAINER) -> Any): FluxJoinerComposer<R> {
-        steps.add(AsyncExecutionStep(isMono, callback as (Any?) -> Any))
+        steps.add(AsyncExecutionStep(callback))
         return FluxJoinerComposer(steps)
     }
 

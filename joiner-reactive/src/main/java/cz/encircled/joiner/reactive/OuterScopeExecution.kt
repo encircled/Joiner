@@ -1,41 +1,49 @@
 package cz.encircled.joiner.reactive
 
+import cz.encircled.joiner.reactive.ReactorExtension.getExactlyOne
 import cz.encircled.joiner.reactive.ReactorExtension.reactor
-import java.util.*
 import java.util.concurrent.CompletableFuture
 
 /**
- * Represents a function, which must be executed in the outer scope (i.e. outside of the DB executor)
+ * An [ExecutionStep], which is computed in the outer scope (i.e. outside of the DB threads)
+ *
+ * @see ExecutionStep
  */
-interface OuterScopeExecution<E : CompletableFuture<*>> : ExecutionStep<CompletableFuture<*>>
+interface OuterScopeExecution<E> : ExecutionStep<CompletableFuture<List<E>>>
 
-class MonoOuterScopeMapper<T, E>(private val callback: (T) -> E) : OuterScopeExecution<CompletableFuture<List<E>>> {
+class MonoOuterScopeExecution<T, E>(private val callback: (T) -> E) : OuterScopeExecution<E> {
 
-    override fun perform(arg: List<Any>?): CompletableFuture<List<E>> {
-        return reactor(CompletableFuture<List<E>>()) { f ->
-                f.complete(listOf(callback(extractExactlyOne(arg))))
-        }
+    override fun perform(arg: Any): CompletableFuture<List<E>> = reactor { f ->
+        f.complete(listOf(callback(arg as T)))
+    }
+
+    override fun convertResult(arg: List<Any>): Any = arg.getExactlyOne()
+
+}
+
+class SyncMonoOuterScopeExecution<E>(private val data: E) : OuterScopeExecution<E> {
+
+    override fun perform(arg: Any): CompletableFuture<List<E>> {
+        return CompletableFuture.completedFuture(listOf(data))
+    }
+
+    override fun convertResult(arg: List<Any>): Any = arg.getExactlyOne()
+
+}
+
+
+class FluxOuterScopeExecution<T, E>(private val callback: (T) -> E) : OuterScopeExecution<E> {
+
+    override fun perform(arg: Any): CompletableFuture<List<E>> = reactor { f ->
+        f.complete((arg as List<T>).map { callback(it) })
     }
 
 }
 
-class OptionalMonoOuterScopeMapper<T, E>(private val callback: (Optional<T>) -> E) :
-    OuterScopeExecution<CompletableFuture<List<E>>> {
+class SyncFluxOuterScopeExecution<E>(private val data: List<E>) : OuterScopeExecution<E> {
 
-    override fun perform(arg: List<Any>?): CompletableFuture<List<E>> {
-        return reactor(CompletableFuture<List<E>>()) { f ->
-            f.complete(listOf(callback(Optional.ofNullable(extractAtMostOne(arg)))))
-        }
-    }
-
-}
-
-class FluxOuterScopeMapper<T, E>(private val callback: (T) -> E) : OuterScopeExecution<CompletableFuture<List<E>>> {
-
-    override fun perform(arg: List<Any>?): CompletableFuture<List<E>> {
-        return reactor(CompletableFuture<List<E>>()) { f ->
-            f.complete(arg!!.map { callback(it as T) })
-        }
+    override fun perform(arg: Any): CompletableFuture<List<E>> {
+        return CompletableFuture.completedFuture(data)
     }
 
 }

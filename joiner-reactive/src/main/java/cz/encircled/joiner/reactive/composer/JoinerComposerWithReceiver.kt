@@ -2,22 +2,22 @@ package cz.encircled.joiner.reactive.composer
 
 import cz.encircled.joiner.query.JoinerQuery
 import cz.encircled.joiner.reactive.ExecutionStep
-import java.util.*
 
+// TODO flatMap
 open class JoinerComposerWithReceiver<ENTITY, ENTITY_CONTAINER, PUBLISHER>(
-    isMono: Boolean,
     steps: MutableList<ExecutionStep<*>>
-) : JoinerComposer<ENTITY, ENTITY_CONTAINER, PUBLISHER>(isMono, steps) {
+) : JoinerComposer<ENTITY, ENTITY_CONTAINER, PUBLISHER>(steps) {
 
-    fun <F, R> findOne(query: (ENTITY_CONTAINER) -> JoinerQuery<F, R>): MonoJoinerComposer<R> = singular {
+    open fun <F, R> findOne(query: (ENTITY_CONTAINER) -> JoinerQuery<F, R>): MonoJoinerComposer<R> = singular {
         query(it)
     }
 
-    fun <F, R> findOneOptional(query: (Optional<ENTITY_CONTAINER>) -> JoinerQuery<F, R>): OptionalMonoJoinerComposer<R> = optional {
-        query(it)
-    }
+    fun <F, R> findOneOptional(query: (ENTITY_CONTAINER) -> JoinerQuery<F, R>): OptionalMonoJoinerComposer<R> =
+        optional {
+            query(it)
+        }
 
-    fun <F, R> find(query: (ENTITY_CONTAINER) -> JoinerQuery<F, R>): FluxJoinerComposer<R> = plural {
+    open fun <F, R> find(query: (ENTITY_CONTAINER) -> JoinerQuery<F, R>): FluxJoinerComposer<R> = plural {
         query(it)
     }
 

@@ -17,7 +17,7 @@ class ReactorJoiner(emf: EntityManagerFactory) : GenericHibernateReactiveJoiner(
      * Execute multiple statements in a single DB transaction
      */
     fun <T, P> transaction(init: JoinerComposer<*, *, *>.() -> JoinerComposer<T, *, P>): P {
-        return JoinerComposer<T, T, P>(true, ArrayList()).init().execute(this)
+        return JoinerComposer<T, T, P>(ArrayList()).init().executeChain(this)
     }
 
     /**
@@ -39,19 +39,20 @@ class ReactorJoiner(emf: EntityManagerFactory) : GenericHibernateReactiveJoiner(
     }
 
     /**
-     * Execute a select and expect exactly one result, returned as a Mono
+     * Execute a select and expect exactly one result, returned as a [Mono]
      */
     fun <T, R> findOne(query: JoinerQuery<T, R>): Mono<R> = Mono.create { mono ->
-        doFind(query).handle { result, error -> mono.publish(result, error) }
+        doFind(query).handle { result, error ->
+            mono.publish(result, error)
+        }
     }
 
-/*    *//**
-     * Execute a select and expect at most one result, returned as a Mono
-     * TODO test
-     *//*
-    fun <T, R> findOneOptional(query: JoinerQuery<T, R>): Mono<Optional<R>> = Mono.create { mono ->
-        doFind(query).handle { result, error -> mono.publishOptional(result, error) }
-    }*/
+    /**
+     * Execute a select and expect at most one result, returned as a [Mono]
+     */
+    fun <T, R> findOneOptional(query: JoinerQuery<T, R>): Mono<R> = Mono.create { mono ->
+        doFind(query).handle { result, error -> mono.publish(result, error, true) }
+    }
 
     /**
      * Execute a select, returns result set as a Flux
@@ -61,7 +62,7 @@ class ReactorJoiner(emf: EntityManagerFactory) : GenericHibernateReactiveJoiner(
     }
 
     fun remove(entity: Any): Mono<Boolean> = Mono.create { mono ->
-        doRemove(entity).handle { _, error -> mono.publish(listOf(true), error) }
+        doRemove(entity).handle { _, error -> mono.publish(true, error) }
     }
 
 }

@@ -29,6 +29,7 @@ Joiner offers following extra features:
 - [Sorting](#sorting)
 - [Query features](#query-features)
 - [Kotlin API showcase](#kotlin-api-showcase)
+- [Reactive API](#reactive-api)
 - [Maven dependencies](#maven-dependencies)
 
 # Example setup
@@ -366,7 +367,27 @@ interface `cz.encircled.joiner.kotlin.JoinOps` like `class YourRepository : Join
 Joiner provides reactive API (currently Project Reactor) by using Hibernate Reactive under the hood.
 
 Reactive API is available via `cz.encircled.joiner.reactive.ReactorJoiner` class, providing flux/mono functions for
-insert and search operations. See full demo app in `example` folder
+insert and search operations. See full demo app in the `example` folder
+
+Sample queries, executed in a single DB transaction:
+
+```kotlin
+/**
+ * Create super users for applicable users
+ */
+fun createSuperUsersIsApplicable(ids : List<Long>): Flux<SuperUser> {
+    return reactorJoiner.transaction { 
+        find(QUser.user1.all() where { it.id isIn ids })
+            .filter(::isUserApplicable)
+            .map { user -> SuperUser(user.name) }
+            .persistMultiple { it }
+    }
+}
+
+fun isUserApplicable(user: User) : Boolean {
+    TODO("Some logic...")
+}
+```
 
 ## Maven dependencies
 

@@ -22,17 +22,17 @@ abstract class GenericHibernateReactiveJoiner(emf: EntityManagerFactory) {
 
     private val sessionFactory: Stage.SessionFactory = emf.unwrap(Stage.SessionFactory::class.java)
 
-    fun <T, P> executeComposed(c: JoinerComposer<T, *, P>): CompletionStage<List<T>> {
+    fun <T, C, P> executeComposed(c: JoinerComposer<T, C, P>): CompletionStage<C> {
         return sessionFactory.withTransaction { session, _ ->
-            var curr = executeChainStep(null, session, c.steps[0])
+            var curr = executeChainStep(false, session, c.steps[0])
 
             (1 until c.steps.size).forEach { i ->
                 curr = curr.thenCompose { v ->
-                    executeChainStep(v as List<Any>?, session, c.steps[i])
+                    executeChainStep(v, session, c.steps[i])
                 }
             }
 
-            curr as CompletionStage<List<T>>
+            curr as CompletionStage<C>
         }
     }
 
@@ -42,19 +42,25 @@ abstract class GenericHibernateReactiveJoiner(emf: EntityManagerFactory) {
      * @param step chain step to be executed
      */
     protected fun executeChainStep(
-        value: List<Any>?,
+        value: Any,
         session: Stage.Session,
         step: ExecutionStep<*>
     ): CompletionStage<*> {
         return when (val stepResult = step.perform(value)) {
-            is CompletableFuture<*> -> stepResult
+            is CompletableFuture<*> -> stepResult.thenApply {
+                step.convertResult(it as List<Any>)
+            }
 
-            is JoinerQuery<*, *> -> createQuery(session, stepResult).resultList
+            is JoinerQuery<*, *> -> createQuery(session, stepResult).resultList.thenApplyAsync {
+                step.convertResult(it as List<Any>)
+            }
 
-            is List<*> -> session.persistMultiple(stepResult)
+            is List<*> -> session.persistMultiple(stepResult).thenApply {
+                step.convertResult(it as List<Any>)
+            }
 
             else -> session.persist(stepResult).thenApply {
-                listOf(session.getReference(stepResult))
+                step.convertResult(listOf(session.getReference(stepResult)) as List<Any>)
             }
         }
     }
