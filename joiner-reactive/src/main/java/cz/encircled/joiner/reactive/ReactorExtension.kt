@@ -8,7 +8,7 @@ import reactor.core.scheduler.Schedulers
 import java.util.*
 import java.util.concurrent.CompletableFuture
 
-internal object ReactorExtension {
+object ReactorExtension {
 
     /**
      * Expect exactly one result and publish it to mono
