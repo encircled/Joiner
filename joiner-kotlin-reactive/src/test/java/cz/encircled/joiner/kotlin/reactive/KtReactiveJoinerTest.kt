@@ -40,7 +40,7 @@ class KtReactiveJoinerTest : AbstractKtReactiveTest() {
     }
 
     @Test
-    fun `save nd get multiple`() {
+    fun `save and get multiple`() {
         runBlocking {
             val persisted = joiner.persist(listOf(User("1"), User("2"), User("3")))
             assertEquals(3, persisted.size)

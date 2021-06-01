@@ -3,13 +3,13 @@
 
 # Overview
 
-Joiner is a Java library which allows to create type-safe JPA queries. It is focused on applications with complex domain model, which require a lot of work with query joins.
+Joiner is a Java library which allows creating type-safe JPA queries. It is focused on applications with complex domain model, which require a lot of work with query joins.
 
 Joiner can be used instead of or together with QueryDSL. Joiner uses QueryDSL APT maven plugin for entity metamodel
 generation. See more about QueryDSL installation
 at [QueryDSL](http://www.querydsl.com/static/querydsl/latest/reference/html/ch02.html#jpa_integration).
 
-Joiner offers Java and Kotlin API, which is described below
+Joiner offers Java, Kotlin and reactive API, which are described below
 
 Joiner offers following extra features:
 
@@ -19,7 +19,7 @@ Joiner offers following extra features:
 
 ### Readme
 
-- [Example setup](#example-setup)
+- [TL;DR](#tldr)
 - [Basic query](#basic-query)
 - [Basic joins](#basic-join)
 - [Customizing a join](#customizing-a-join)
@@ -30,26 +30,57 @@ Joiner offers following extra features:
 - [Query features](#query-features)
 - [Kotlin API showcase](#kotlin-api-showcase)
 - [Reactive API](#reactive-api)
+- [Example setup](#example-setup)
 - [Maven dependencies](#maven-dependencies)
 
-# Example setup
+# TL;DR
 
-All you need is an instance of entity manager, setup of Joiner is as simple as:
+Ultimately, all the queries are type-safe, support auto-completion and look like:
 
-```java
-Joiner joiner = new Joiner(getEntityManager());
-
-joiner.find(Q.from(QUser.user)
-        .where(QUser.user.name.isNotNull()));
+- Kotlin version
+```kotlin
+val names = joiner.find(user.name from user
+                            innerJoin group
+                            leftJoin status
+                 
+                            where { status.type eq "active" or group.name eq "superUsers" }
+                 
+                            asc group.name
+                            limit 5
+                      )
 ```
 
-or in Kotlin
+- Java version
+```java
+List<String> names = joiner.find(Q.select(user.name).from(user)
+                                          .joins(J.inner(group))
+                                          .joins(status)
+                                          .where(status.type.eq("active").or(group.name.eq("superUsers")))
+                                          .asc(group.name)
+                                          .limit(5)
+                                  )
+```
 
+- Project Reactor Kotlin version
 ```kotlin
-val joiner: Joiner = Joiner(getEntityManager())
+val names : Flux<String> = joiner.find(user.name from user
+                                                innerJoin group
+                                                leftJoin status
+                                     
+                                                where { status.type eq "active" or group.name eq "superUsers" }
+                                     
+                                                asc group.name
+                                                limit 5
+                                        )
+                                  .filter { name -> /* whatever */ }
+                                  .flatMap { name -> /* async whatever returning Mono */ }
+```
 
-joiner.find(QUser.user.all()
-        where { it.name eq "John" })
+- Kotlin coroutines version
+```kotlin
+val names = runBlocking {
+      joiner.find(user.name from user ...)
+}
 ```
 
 # Features
@@ -386,6 +417,57 @@ fun createSuperUsersIsApplicable(ids : List<Long>): Flux<SuperUser> {
 
 ```
 
+# Example setup
+
+As per [QueryDSL documentation](http://www.querydsl.com/static/querydsl/latest/reference/html/ch02.html#jpa_integration),
+`apt-maven-plugin` must be used to generate a metamodel of entities (so called Q-classes).
+
+Then all you need is an instance of JPA entity manager (via `Hibernate` or `Eclipselink`), setup of Joiner is as simple as:
+
+```java
+Joiner joiner = new Joiner(getEntityManager());
+
+joiner.find(Q.from(QUser.user)
+        .where(QUser.user.name.isNotNull()));
+```
+
+or in Kotlin
+
+```kotlin
+val joiner: Joiner = Joiner(getEntityManager())
+
+joiner.find(QUser.user.all()
+        where { it.name eq "John" })
+```
+
+## Reactive setup
+
+Reactive API supports Hibernate only, its initialization is very similar and requires `javax.persistence.EntityManagerFactory`:
+```java
+ReactorJoiner joiner = new ReactorJoiner(getEntityManagerFactory())
+...
+```
+
+Also, to set up Reactive Joiner, you must have following dependencies on the classpath:
+
+Eclipse vertx driver for target database, for instance for mysql:
+```xml
+<dependency>
+    <groupId>io.vertx</groupId>
+    <artifactId>vertx-mysql-client</artifactId>
+    <version>${vertx.version}</version>
+</dependency>
+```
+
+In case of Project Reactor Joiner, you must have it on the classpath as well:
+```xml
+<dependency>
+    <groupId>io.projectreactor</groupId>
+    <artifactId>reactor-core</artifactId>
+    <version>${reactor.version}</version>
+</dependency>
+```
+
 ## Maven dependencies
 
 ### Core module
@@ -429,13 +511,24 @@ fun createSuperUsersIsApplicable(ids : List<Long>): Flux<SuperUser> {
 </dependency>
 ```
 
-### Reactive module
+### Project Reactor module
 
 ```xml
 
 <dependency>
   <groupId>cz.encircled</groupId>
   <artifactId>joiner-reactive</artifactId>
+  <version>${joiner.version}</version>
+</dependency>
+```
+
+### Kotlin coroutines module
+
+```xml
+
+<dependency>
+  <groupId>cz.encircled</groupId>
+  <artifactId>joiner-kotlin-reactive</artifactId>
   <version>${joiner.version}</version>
 </dependency>
 ```

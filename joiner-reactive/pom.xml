@@ -26,7 +26,7 @@
         <dependency>
             <groupId>org.hibernate.reactive</groupId>
             <artifactId>hibernate-reactive-core</artifactId>
-            <version>1.0.0.CR4</version>
+            <version>1.0.0.CR5</version>
         </dependency>
         <dependency>
             <groupId>com.querydsl</groupId>

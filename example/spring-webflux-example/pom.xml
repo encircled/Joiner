@@ -55,11 +55,6 @@
             <artifactId>mariaDB4j</artifactId>
             <version>2.4.0</version>
         </dependency>
-        <dependency>
-            <groupId>org.hibernate</groupId>
-            <artifactId>hibernate-core</artifactId>
-            <version>5.4.31.Final</version>
-        </dependency>
 
         <!-- Generic Spring & Kotlin stuff -->
         <dependency>
