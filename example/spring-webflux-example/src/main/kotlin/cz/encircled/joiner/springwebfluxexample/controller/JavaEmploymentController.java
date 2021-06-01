@@ -1,7 +1,9 @@
-package cz.encircled.joiner.springwebfluxexample;
+package cz.encircled.joiner.springwebfluxexample.controller;
 
 import cz.encircled.joiner.query.Q;
 import cz.encircled.joiner.reactive.ReactorJoiner;
+import cz.encircled.joiner.springwebfluxexample.Employment;
+import cz.encircled.joiner.springwebfluxexample.QEmployment;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
