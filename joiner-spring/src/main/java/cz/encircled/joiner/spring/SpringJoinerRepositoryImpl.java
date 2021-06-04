@@ -37,7 +37,7 @@ public abstract class SpringJoinerRepositoryImpl<T> implements SpringJoinerRepos
 
         Long count = getTotalCount(request);
 
-        List<R> content = delegate.find(request.addFeatures(new PageableFeature(pageable)));
+        List<R> content = delegate.find(request.copy().addFeatures(new PageableFeature(pageable)));
 
         return new PageImpl<>(content, pageable, count);
     }
@@ -48,7 +48,7 @@ public abstract class SpringJoinerRepositoryImpl<T> implements SpringJoinerRepos
     }
 
     private <R, U extends T> Long getTotalCount(JoinerQuery<U, R> request) {
-        JoinerQueryBase<?, Long> countRequest = (JoinerQueryBase) request.copy();
+        JoinerQueryBase<?, Long> countRequest = (JoinerQueryBase<?, Long>) request.copy();
         countRequest.count();
 
         // Fetch is not allowed for count queries
