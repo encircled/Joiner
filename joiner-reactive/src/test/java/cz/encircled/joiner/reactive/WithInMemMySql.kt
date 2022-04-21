@@ -1,11 +1,11 @@
 package cz.encircled.joiner.reactive
 
 import ch.vorburger.mariadb4j.DB
+import cz.encircled.joiner.TestWithLogging
 import cz.encircled.joiner.exception.JoinerException
 import cz.encircled.joiner.kotlin.JoinerKtQueryBuilder.all
 import cz.encircled.joiner.model.QUser
 import org.junit.jupiter.api.AfterAll
-import org.junit.jupiter.api.BeforeAll
 import javax.persistence.EntityManagerFactory
 import javax.persistence.Persistence
 import kotlin.test.BeforeTest
@@ -13,7 +13,7 @@ import kotlin.test.BeforeTest
 private var db: DB? = null
 private lateinit var emf: EntityManagerFactory
 
-open class WithInMemMySql {
+open class WithInMemMySql : TestWithLogging() {
 
     lateinit var reactorJoiner: ReactorJoiner
 
