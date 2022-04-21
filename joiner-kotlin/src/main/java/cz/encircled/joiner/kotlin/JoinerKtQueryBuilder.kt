@@ -5,18 +5,14 @@ import com.querydsl.core.types.Expression
 import com.querydsl.core.types.Path
 import com.querydsl.core.types.Predicate
 import com.querydsl.core.types.dsl.BooleanExpression
-import com.querydsl.core.types.dsl.NumberExpression
 import com.querydsl.core.types.dsl.SimpleExpression
-import com.querydsl.core.types.dsl.StringExpression
 import cz.encircled.joiner.query.JoinerQuery
 import cz.encircled.joiner.query.Q
-import cz.encircled.joiner.query.join.J
-import cz.encircled.joiner.query.join.JoinDescription
 
 /**
  * List of missing stuff in Kt:
  * - distinct
- * - some operators
+ * - missing operators
  * - join (non)fetch
  * - query features
  */
@@ -27,103 +23,9 @@ data class PredicateContinuation<T>(
 
 open class KConditionOps : ConditionOps
 
-interface ConditionOps {
 
-    infix fun StringExpression.contains(to: String): BooleanExpression = contains(to)
-
-    infix fun <T> SimpleExpression<T>.eq(to: T): BooleanExpression = eq(to)
-
-    infix fun <T> SimpleExpression<T>.isIn(to: Collection<T>): BooleanExpression = `in`(to)
-
-    infix fun <T> SimpleExpression<T>.notIn(to: Collection<T>): BooleanExpression = notIn(to)
-
-    infix fun <T> SimpleExpression<T>.ne(to: T): BooleanExpression = ne(to)
-
-    infix fun <T> PredicateContinuation<T>.eq(to: T): BooleanExpression {
-        return t.invoke { it.eq(to) }
-    }
-
-    infix fun <T> PredicateContinuation<T>.ne(to: T): BooleanExpression {
-        return t.invoke { it.ne(to) }
-    }
-
-    infix fun <T> PredicateContinuation<T>.isIn(to: Collection<T>): BooleanExpression {
-        return t.invoke { it.`in`(to) }
-    }
-
-    infix fun <T> PredicateContinuation<T>.notIn(to: Collection<T>): BooleanExpression {
-        return t.invoke { it.notIn(to) }
-    }
-
-    infix fun <T> BooleanExpression.and(exp: SimpleExpression<T>): PredicateContinuation<T> {
-        return PredicateContinuation { this.and(it.invoke(exp)) }
-    }
-
-    infix fun <T> BooleanExpression.or(exp: SimpleExpression<T>): PredicateContinuation<T> {
-        return PredicateContinuation { this.or(it.invoke(exp)) }
-    }
-
-    infix fun BooleanExpression.and(another: BooleanExpression): BooleanExpression = and(another)
-    infix fun BooleanExpression.or(another: BooleanExpression): BooleanExpression = or(another)
-
-    // NUMBERS
-
-    infix fun <T> NumberExpression<T>.gt(to: T): BooleanExpression where T : Number, T : Comparable<*> = gt(to)
-
-    infix fun <T> NumberExpression<T>.lt(to: T): BooleanExpression where T : Number, T : Comparable<*> = lt(to)
-
-}
 
 object JoinerKtOps : ConditionOps, JoinOps
-
-interface JoinOps {
-
-    infix fun JoinDescription.leftJoin(p: EntityPath<*>): JoinDescription {
-        return this.nested(J.left(p))
-    }
-
-    infix fun JoinDescription.innerJoin(p: EntityPath<*>): JoinDescription {
-        return this.nested(J.inner(p))
-    }
-
-    infix fun EntityPath<*>.leftJoin(p: EntityPath<*>): JoinDescription {
-        return JoinDescription(this).nested(J.left(p))
-    }
-
-    infix fun EntityPath<*>.leftJoin(p: JoinDescription): JoinDescription {
-        return JoinDescription(this).nested(p.left())
-    }
-
-    infix fun EntityPath<*>.innerJoin(p: JoinDescription): JoinDescription {
-        return JoinDescription(this).nested(p.inner())
-    }
-
-    infix fun EntityPath<*>.innerJoin(p: EntityPath<*>): JoinDescription {
-        return JoinDescription(this).nested(J.inner(p))
-    }
-
-    infix fun <FROM_C, PROJ, FROM : EntityPath<FROM_C>> JoinerKtQuery<FROM_C, PROJ, FROM>.leftJoin(j: JoinDescription): JoinerKtQuery<FROM_C, PROJ, FROM> {
-        delegate.joins(j.left())
-        return this
-    }
-
-    infix fun <FROM_C, PROJ, FROM : EntityPath<FROM_C>> JoinerKtQuery<FROM_C, PROJ, FROM>.leftJoin(p: EntityPath<*>): JoinerKtQuery<FROM_C, PROJ, FROM> {
-        delegate.joins(J.left(p))
-        return this
-    }
-
-    infix fun <FROM_C, PROJ, FROM : EntityPath<FROM_C>> JoinerKtQuery<FROM_C, PROJ, FROM>.innerJoin(j: JoinDescription): JoinerKtQuery<FROM_C, PROJ, FROM> {
-        delegate.joins(j.inner())
-        return this
-    }
-
-    infix fun <FROM_C, PROJ, FROM : EntityPath<FROM_C>> JoinerKtQuery<FROM_C, PROJ, FROM>.innerJoin(p: EntityPath<*>): JoinerKtQuery<FROM_C, PROJ, FROM> {
-        delegate.joins(J.inner(p))
-        return this
-    }
-
-}
-
 
 class JoinerKtQuery<FROM_C, PROJ, FROM : EntityPath<FROM_C>>(
     private val entityPath: FROM,

@@ -23,10 +23,10 @@ import javax.persistence.PersistenceContext;
 import java.util.Collection;
 
 /**
+ * TODO split hibernate and EL
  * @author Kisel on 11.01.2016.
  */
 @ExtendWith(SpringExtension.class)
-@SpringJUnitConfig(classes = {TestConfig.class})
 @ContextConfiguration(classes = {TestConfig.class})
 @Transactional
 @EnableTransactionManagement

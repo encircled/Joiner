@@ -44,13 +44,13 @@
 
     <properties>
         <querydsl.version>4.4.0</querydsl.version>
-        <spring.version>5.3.14</spring.version>
-        <hibernate.version>5.4.32.Final</hibernate.version>
-        <eclipselink.version>2.7.1</eclipselink.version>
+        <spring.version>5.3.19</spring.version>
+        <hibernate.version>5.6.7.Final</hibernate.version>
+        <eclipselink.version>2.7.10</eclipselink.version>
         <vendor.name>hibernate</vendor.name>
-        <kotlin.version>1.5.10</kotlin.version>
-        <reactor.version>3.4.6</reactor.version>
-        <junit-jupiter.version>5.6.0</junit-jupiter.version>
+        <kotlin.version>1.6.20</kotlin.version>
+        <reactor.version>3.4.16</reactor.version>
+        <junit-jupiter.version>5.6.2</junit-jupiter.version>
     </properties>
 
     <distributionManagement>
@@ -108,7 +108,7 @@
             <dependency>
                 <groupId>com.h2database</groupId>
                 <artifactId>h2</artifactId>
-                <version>2.1.210</version>
+                <version>2.1.212</version>
             </dependency>
 
             <dependency>
@@ -134,6 +134,25 @@
                 <groupId>org.hibernate</groupId>
                 <artifactId>hibernate-entitymanager</artifactId>
                 <version>${hibernate.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>ch.vorburger.mariaDB4j</groupId>
+                <artifactId>mariaDB4j</artifactId>
+                <version>2.5.3</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>io.vertx</groupId>
+                <artifactId>vertx-mysql-client</artifactId>
+                <version>4.2.7</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>io.vertx</groupId>
+                <artifactId>vertx-sql-client</artifactId>
+                <version>4.2.7</version>
+                <scope>test</scope>
             </dependency>
 
             <!-- Spring -->
@@ -193,7 +212,7 @@
             <dependency>
                 <groupId>org.junit.platform</groupId>
                 <artifactId>junit-platform-commons</artifactId>
-                <version>1.7.2</version>
+                <version>1.8.2</version>
             </dependency>
 
 
@@ -252,7 +271,7 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-javadoc-plugin</artifactId>
-                        <version>3.3.0</version>
+                        <version>3.3.2</version>
                         <executions>
                             <execution>
                                 <id>attach-javadocs</id>
@@ -309,7 +328,7 @@
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>build-helper-maven-plugin</artifactId>
-                <version>1.9.1</version>
+                <version>1.12</version>
                 <executions>
                     <execution>
                         <id>add-resource</id>
@@ -345,7 +364,7 @@
             <plugin>
                 <groupId>org.jacoco</groupId>
                 <artifactId>jacoco-maven-plugin</artifactId>
-                <version>0.8.7</version>
+                <version>0.8.8</version>
                 <executions>
                     <execution>
                         <goals>

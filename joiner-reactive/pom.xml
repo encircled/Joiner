@@ -26,7 +26,7 @@
         <dependency>
             <groupId>org.hibernate.reactive</groupId>
             <artifactId>hibernate-reactive-core</artifactId>
-            <version>1.0.0.CR5</version>
+            <version>1.1.4.Final</version>
         </dependency>
         <dependency>
             <groupId>com.querydsl</groupId>
@@ -56,13 +56,6 @@
         <dependency>
             <groupId>ch.vorburger.mariaDB4j</groupId>
             <artifactId>mariaDB4j</artifactId>
-            <version>2.4.0</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>cz.encircled</groupId>
-            <artifactId>joiner-kotlin</artifactId>
-            <version>${project.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -72,9 +65,14 @@
             <scope>test</scope>
         </dependency>
         <dependency>
+            <groupId>cz.encircled</groupId>
+            <artifactId>joiner-kotlin</artifactId>
+            <version>${project.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
             <groupId>io.vertx</groupId>
             <artifactId>vertx-mysql-client</artifactId>
-            <version>4.0.3</version>
             <scope>test</scope>
         </dependency>
 
@@ -115,6 +113,14 @@
                 </executions>
                 <configuration>
                     <jvmTarget>1.8</jvmTarget>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <source>9</source>
+                    <target>9</target>
                 </configuration>
             </plugin>
         </plugins>

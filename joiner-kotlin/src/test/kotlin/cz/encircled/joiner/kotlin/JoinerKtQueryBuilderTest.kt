@@ -83,7 +83,7 @@ class JoinerKtQueryBuilderTest {
         val delegate = (user1.name from user1
                 leftJoin (QContact.contact leftJoin QStatus.status innerJoin user1)
                 leftJoin (QGroup.group innerJoin QStatus.status)
-                innerJoin QStatus.status
+                innerJoin user1.statuses
                 innerJoin (QAddress.address innerJoin QStatus.status)
                 ).delegate
 
@@ -98,7 +98,7 @@ class JoinerKtQueryBuilderTest {
     }
 
     @Test
-    fun `ordering`() {
+    fun ordering() {
         assertEquals(
             Q.select(user1).from(user1).asc(user1.id),
             (user1 from user1 asc { it.id }).delegate

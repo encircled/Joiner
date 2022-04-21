@@ -301,4 +301,24 @@ public class BasicJoinTest extends AbstractTest {
         }
     }
 
+    @Test
+    public void testQueryGetJoin() {
+        JoinerQueryBase<User, User> query = Q.from(QUser.user1).addHint("", null);
+
+        assertNull(query.getJoin(QGroup.group));
+        query.joins(QGroup.group);
+        assertNotNull(query.getJoin(QGroup.group));
+    }
+
+    @Test
+    public void testGetNestedJoin() {
+        JoinerQueryBase<User, User> query = Q.from(QUser.user1)
+                .joins(J.left(QGroup.group))
+                .addHint("", null);
+
+        assertNull(query.getJoin(QGroup.group).getJoin(QStatus.status));
+        query.getJoin(QGroup.group).nested(QStatus.status);
+        assertNotNull(query.getJoin(QGroup.group).getJoin(QStatus.status));
+    }
+
 }

@@ -44,14 +44,19 @@ abstract class GenericHibernateReactiveJoiner(emf: EntityManagerFactory) {
     protected fun executeChainStep(
         value: Any,
         session: Stage.Session,
-        step: ExecutionStep<*>
+        step: ExecutionStep<*>,
     ): CompletionStage<*> {
         return when (val stepResult = step.perform(value)) {
-            is CompletableFuture<*> -> stepResult.thenApply {
-                step.convertResult(it as List<Any>)
+            // TODO this should probably be executed async and eventually returned in vertex thread
+            is CompletableFuture<*> -> {
+                try {
+                    CompletableFuture.completedFuture(step.convertResult(stepResult.get() as List<Any>))
+                } catch (e: Exception) {
+                    CompletableFuture.failedStage(e.cause)
+                }
             }
 
-            is JoinerQuery<*, *> -> createQuery(session, stepResult).resultList.thenApplyAsync {
+            is JoinerQuery<*, *> -> createQuery(session, stepResult).resultList.thenApply {
                 step.convertResult(it as List<Any>)
             }
 

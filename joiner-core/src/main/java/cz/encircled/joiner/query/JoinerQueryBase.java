@@ -36,9 +36,9 @@ public class JoinerQueryBase<T, R> implements JoinerQuery<T, R>, JoinRoot {
     /**
      * Alias to join
      */
-    private Map<String, JoinDescription> joins = new LinkedHashMap<>(8);
+    private final Map<String, JoinDescription> joins = new LinkedHashMap<>(8);
 
-    private Set<Object> joinGraphs = new LinkedHashSet<>();
+    private final Set<Object> joinGraphs = new LinkedHashSet<>();
 
     private boolean distinct = true;
 
@@ -357,7 +357,6 @@ public class JoinerQueryBase<T, R> implements JoinerQuery<T, R>, JoinRoot {
 
     @Override
     public int hashCode() {
-
         return Objects.hash(from, returnProjection, where, joins, joinGraphs, distinct, groupBy, having, hints, features, offset, limit, orders, isCount);
     }
 }
