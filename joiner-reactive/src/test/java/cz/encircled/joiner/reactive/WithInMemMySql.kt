@@ -10,7 +10,7 @@ import javax.persistence.EntityManagerFactory
 import javax.persistence.Persistence
 import kotlin.test.BeforeTest
 
-private lateinit var db: DB
+private var db: DB? = null
 private lateinit var emf: EntityManagerFactory
 
 open class WithInMemMySql {
@@ -19,6 +19,13 @@ open class WithInMemMySql {
 
     @BeforeTest
     fun beforeEach() {
+        if (db == null) {
+            db = DB.newEmbeddedDB(3307)
+            db!!.start()
+
+            emf = Persistence.createEntityManagerFactory("reactiveTest")
+        }
+
         if (!this::reactorJoiner.isInitialized) {
             reactorJoiner = ReactorJoiner(emf)
         }
@@ -30,19 +37,10 @@ open class WithInMemMySql {
     }
 
     companion object {
-        @BeforeAll
-        @JvmStatic
-        fun before() {
-            db = DB.newEmbeddedDB(3307)
-            db.start()
-
-            emf = Persistence.createEntityManagerFactory("reactiveTest")
-        }
-
         @AfterAll
         @JvmStatic
         fun after() {
-            db.stop()
+            //db.stop()
         }
     }
 

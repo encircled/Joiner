@@ -13,7 +13,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
-class KtReactiveJoinerTest : AbstractKtReactiveTest() {
+class KtReactiveJoinerTest : WithInMemMySql() {
 
     @Test
     fun `save and get`() = runBlocking {
