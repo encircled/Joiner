@@ -261,25 +261,6 @@ class JoinerComposerTest : AbstractReactorTest() {
                 .verifyComplete()
         }
 
-        @Test
-        fun `delete this`() {
-            val transaction = reactorJoiner.transaction {
-//                persist(User("TestName"))
-//                    .persist(User("TN2"))
-                findOneOptional(user1.all())
-                    .flatMap { a -> Mono.just("test") }
-                    .findOneOptional {
-                        QGroup.group.all()
-                    }
-            }
-            try {
-                transaction.block()
-            } catch (e: Throwable) {
-                e.cause!!.printStackTrace()
-                throw e;
-            }
-        }
-
     }
 
     @Nested
