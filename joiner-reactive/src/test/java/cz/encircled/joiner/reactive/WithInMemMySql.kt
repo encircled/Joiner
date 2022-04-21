@@ -33,7 +33,7 @@ open class WithInMemMySql {
         @BeforeAll
         @JvmStatic
         fun before() {
-            db = DB.newEmbeddedDB(3306)
+            db = DB.newEmbeddedDB(3307)
             db.start()
 
             emf = Persistence.createEntityManagerFactory("reactiveTest")
