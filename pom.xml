@@ -167,7 +167,8 @@
             <dependency>
                 <groupId>io.vertx</groupId>
                 <artifactId>vertx-mysql-client</artifactId>
-                <version>4.2.7</version>
+<!--                <version>4.2.7</version>-->
+                <version>4.0.3</version>
                 <scope>test</scope>
             </dependency>
             <dependency>

@@ -12,7 +12,7 @@ import javax.persistence.Persistence
 import kotlin.test.BeforeTest
 
 private var db: DB? = null
-private lateinit var emf: EntityManagerFactory
+private var emf: EntityManagerFactory? = null
 
 open class WithInMemMySql : TestWithLogging() {
 
@@ -23,12 +23,13 @@ open class WithInMemMySql : TestWithLogging() {
         if (db == null) {
             db = DB.newEmbeddedDB(3307)
             db!!.start()
-
+        }
+        if (emf == null) {
             emf = Persistence.createEntityManagerFactory("reactiveTest")
         }
 
         if (!this::reactorJoiner.isInitialized) {
-            reactorJoiner = ReactorJoiner(emf)
+            reactorJoiner = ReactorJoiner(emf!!)
         }
 
         StepVerifier.create(reactorJoiner.find(QUser.user1.all())
