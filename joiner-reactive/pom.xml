@@ -63,7 +63,8 @@
         <dependency>
             <groupId>io.vertx</groupId>
             <artifactId>vertx-mysql-client</artifactId>
-            <scope>test</scope>
+<!--            TODO rollback -->
+            <scope>compile</scope>
         </dependency>
 
         <dependency>

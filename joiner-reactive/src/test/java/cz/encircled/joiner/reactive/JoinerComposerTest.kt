@@ -30,7 +30,7 @@ class JoinerComposerTest : AbstractReactorTest() {
                 persist(User("1"))
                     .persist(User("2"))
                     .persist(User("3"))
-                    .findOne((user1.name from user1).where(user1.name eq "1"))
+                    .findOne(user1.name from user1 where { it.name eq "1" })
             })
                 .expectNext("1")
                 .verifyComplete()
@@ -38,6 +38,17 @@ class JoinerComposerTest : AbstractReactorTest() {
             e.printStackTrace()
             throw e
         }
+    }
+
+    @Test
+    fun `mono flatMap result`() {
+        val transaction = reactorJoiner.transaction {
+            persist(User("TestName"))
+                .flatMap { Mono.just(it.name) }
+        }
+        StepVerifier.create(transaction)
+            .expectNext("TestName")
+            .verifyComplete()
     }
 
     /*@Test
@@ -79,18 +90,6 @@ class JoinerComposerTest : AbstractReactorTest() {
         fun `persist single entity`() {
             StepVerifier.create(reactorJoiner.transaction {
                 persist(User("1"))
-            })
-                .expectNextMatches { it.name.equals("1") && it.id != null }
-                .verifyComplete()
-        }
-
-        @Test
-        fun `test delete me`() {
-            StepVerifier.create(reactorJoiner.transaction {
-                persist(User("1"))
-                    .findOne { u ->
-                        user1.all() where { it.id eq u.id }
-                    }
             })
                 .expectNextMatches { it.name.equals("1") && it.id != null }
                 .verifyComplete()
