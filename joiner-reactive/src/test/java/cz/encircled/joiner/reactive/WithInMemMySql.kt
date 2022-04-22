@@ -11,15 +11,25 @@ import javax.persistence.EntityManagerFactory
 import javax.persistence.Persistence
 import kotlin.test.BeforeTest
 
-private var db: DB? = null
-private var emf: EntityManagerFactory? = null
+//private var db: DB? = null
+//private var emf: EntityManagerFactory? = null
 
 open class WithInMemMySql : TestWithLogging() {
 
-    lateinit var reactorJoiner: ReactorJoiner
+    val reactorJoiner: ReactorJoiner by lazy {
+        log.info("Starting DB on 3307 port")
+        val db = DB.newEmbeddedDB(3307)
+        db!!.start()
+
+        log.info("createEntityManagerFactory(\"reactiveTest\")")
+        val emf = Persistence.createEntityManagerFactory("reactiveTest")
+
+        ReactorJoiner(emf!!)
+    }
 
     @BeforeTest
     fun beforeEach() {
+/*
         if (db == null) {
             log.info("Starting DB on 3307 port")
             db = DB.newEmbeddedDB(3307)
@@ -33,6 +43,7 @@ open class WithInMemMySql : TestWithLogging() {
         if (!this::reactorJoiner.isInitialized) {
             reactorJoiner = ReactorJoiner(emf!!)
         }
+*/
 
         log.info("Drop old test data")
         StepVerifier.create(reactorJoiner.find(QUser.user1.all())
