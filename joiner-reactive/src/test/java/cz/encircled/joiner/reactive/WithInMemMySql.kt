@@ -14,11 +14,13 @@ import kotlin.test.BeforeTest
 //private var db: DB? = null
 //private var emf: EntityManagerFactory? = null
 
+var i = 0
+
 open class WithInMemMySql : TestWithLogging() {
 
     val reactorJoiner: ReactorJoiner by lazy {
         log.info("Starting DB on 3307 port")
-        val db = DB.newEmbeddedDB(3307)
+        val db = DB.newEmbeddedDB(3307 + i++)
         db!!.start()
 
         log.info("createEntityManagerFactory(\"reactiveTest\")")
