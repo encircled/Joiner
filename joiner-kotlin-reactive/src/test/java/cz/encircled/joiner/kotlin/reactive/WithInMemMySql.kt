@@ -24,9 +24,11 @@ open class WithInMemMySql : TestWithLogging() {
     override fun beforeEach(testInfo : TestInfo) {
         super.beforeEach(testInfo)
         if (db == null) {
+            log.info("Starting DB on 3306 port")
             db = DB.newEmbeddedDB(3306)
             db!!.start()
 
+            log.info("createEntityManagerFactory(\"reactiveTest\")")
             emf = Persistence.createEntityManagerFactory("reactiveTest")
         }
         if (!this::joiner.isInitialized) {
