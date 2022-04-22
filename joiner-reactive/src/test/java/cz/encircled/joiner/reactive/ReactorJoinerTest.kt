@@ -7,11 +7,12 @@ import cz.encircled.joiner.kotlin.JoinerKtQueryBuilder.from
 import cz.encircled.joiner.model.QStatus
 import cz.encircled.joiner.model.QUser.user1
 import cz.encircled.joiner.model.User
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Nested
 import reactor.test.StepVerifier
 import kotlin.test.Test
 
-
+@Disabled
 class ReactorJoinerTest : AbstractReactorTest() {
 
     @Nested
@@ -22,8 +23,7 @@ class ReactorJoinerTest : AbstractReactorTest() {
             val entity = User("Test Name")
             StepVerifier.create(reactorJoiner.persist(entity))
                 .expectNextMatches { expectPersistedUser(it, "Test Name") }
-                .expectComplete()
-                .verify()
+                .verifyComplete()
         }
 
         @Test
@@ -41,8 +41,7 @@ class ReactorJoinerTest : AbstractReactorTest() {
             StepVerifier.create(reactorJoiner.persist(listOf(User("Test Name"), User("Test Name 2"))))
                 .expectNextMatches { expectPersistedUser(it, "Test Name") }
                 .expectNextMatches { expectPersistedUser(it, "Test Name 2") }
-                .expectComplete()
-                .verify()
+                .verifyComplete()
         }
 
         @Test
@@ -73,8 +72,7 @@ class ReactorJoinerTest : AbstractReactorTest() {
 
             StepVerifier.create(reactorJoiner.findOne(user1.name from user1 where { it.name eq "Test Name" }))
                 .expectNext("Test Name")
-                .expectComplete()
-                .verify()
+                .verifyComplete()
         }
 
         @Test
@@ -130,15 +128,13 @@ class ReactorJoinerTest : AbstractReactorTest() {
 
             StepVerifier.create(reactorJoiner.findOneOptional(user1.name from user1 where { it.name eq "Test Name" }))
                 .expectNext("Test Name")
-                .expectComplete()
-                .verify()
+                .verifyComplete()
         }
 
         @Test
         fun `find one empty`() {
             StepVerifier.create(reactorJoiner.findOneOptional(user1.name from user1))
-                .expectComplete()
-                .verify()
+                .verifyComplete()
         }
 
         @Test
@@ -178,8 +174,7 @@ class ReactorJoinerTest : AbstractReactorTest() {
 
             StepVerifier.create(reactorJoiner.find(user1.name from user1 where { it.name contains "LimitAndOffset" } limit 1 offset 1))
                 .expectNext("LimitAndOffset 2")
-                .expectComplete()
-                .verify()
+                .verifyComplete()
         }
 
         @Test
@@ -189,8 +184,7 @@ class ReactorJoinerTest : AbstractReactorTest() {
             StepVerifier.create(reactorJoiner.find(user1.name from user1 where { it.name eq "Test Name" or it.name eq "Test Name 2" }))
                 .expectNext("Test Name")
                 .expectNext("Test Name 2")
-                .expectComplete()
-                .verify()
+                .verifyComplete()
         }
 
         @Test

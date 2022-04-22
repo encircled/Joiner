@@ -8,8 +8,7 @@ abstract class AbstractReactorTest : WithInMemMySql() {
 
     protected fun assertUsersAreEmpty() {
         StepVerifier.create(reactorJoiner.find(QUser.user1.all()))
-            .expectComplete()
-            .verify()
+            .verifyComplete()
     }
 
 }

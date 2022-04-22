@@ -54,8 +54,7 @@ class JoinerComposerTest : AbstractReactorTest() {
                 .expectNext("1")
                 .expectNext("2")
                 .expectNext("3")
-                .expectComplete()
-                .verify()
+                .verifyComplete()
         }
 
         @Test
@@ -64,8 +63,7 @@ class JoinerComposerTest : AbstractReactorTest() {
                 persist(User("1"))
             })
                 .expectNextMatches { it.name.equals("1") && it.id != null }
-                .expectComplete()
-                .verify()
+                .verifyComplete()
         }
 
         @Test
@@ -77,8 +75,7 @@ class JoinerComposerTest : AbstractReactorTest() {
                     }
             })
                 .expectNextMatches { it.name.equals("1") && it.id != null }
-                .expectComplete()
-                .verify()
+                .verifyComplete()
         }
 
         @Test
@@ -88,8 +85,7 @@ class JoinerComposerTest : AbstractReactorTest() {
             })
                 .expectNextMatches { it.name.equals("1") && it.id != null }
                 .expectNextMatches { it.name.equals("2") && it.id != null }
-                .expectComplete()
-                .verify()
+                .verifyComplete()
         }
 
         @Test
@@ -106,8 +102,7 @@ class JoinerComposerTest : AbstractReactorTest() {
                 .expectNextMatches {
                     it.name.equals("3") && it.id != null
                 }
-                .expectComplete()
-                .verify()
+                .verifyComplete()
 
             StepVerifier.create(reactorJoiner.findOne(user1.countOf()))
                 .expectNext(3L)
@@ -160,8 +155,7 @@ class JoinerComposerTest : AbstractReactorTest() {
                     }
             })
                 .expectNextMatches { user -> user.name.equals("TestName 2") }
-                .expectComplete()
-                .verify()
+                .verifyComplete()
         }
 
         @Test
@@ -284,8 +278,7 @@ class JoinerComposerTest : AbstractReactorTest() {
                     .collectToList()
             })
                 .expectNext(listOf("1", "2"))
-                .expectComplete()
-                .verify()
+                .verifyComplete()
         }
 
         @Test
@@ -293,8 +286,7 @@ class JoinerComposerTest : AbstractReactorTest() {
             StepVerifier.create(reactorJoiner.transaction {
                 find(user1.name from user1)
             })
-                .expectComplete()
-                .verify()
+                .verifyComplete()
         }
 
         @Test
@@ -308,8 +300,7 @@ class JoinerComposerTest : AbstractReactorTest() {
             })
                 .expectNextMatches { it.name == "1" && it.id != null }
                 .expectNextMatches { it.name == "2" && it.id != null }
-                .expectComplete()
-                .verify()
+                .verifyComplete()
         }
 
         @Test
@@ -321,8 +312,7 @@ class JoinerComposerTest : AbstractReactorTest() {
             })
                 .expectNext("TestName Flux 1")
                 .expectNext("TestName Flux 12")
-                .expectComplete()
-                .verify()
+                .verifyComplete()
         }
 
         @Test
@@ -356,8 +346,7 @@ class JoinerComposerTest : AbstractReactorTest() {
             })
                 .expectNext("TestName Flux 1")
                 .expectNext("TestName Flux 12")
-                .expectComplete()
-                .verify()
+                .verifyComplete()
         }
 
         @Test
@@ -506,8 +495,7 @@ class JoinerComposerTest : AbstractReactorTest() {
                 .expectNextMatches { it.name == "1" }
                 .expectNextMatches { it.name == "2" }
                 .expectNextMatches { it.name == "3" }
-                .expectComplete()
-                .verify()
+                .verifyComplete()
         }
 
         @Test
@@ -518,8 +506,7 @@ class JoinerComposerTest : AbstractReactorTest() {
             })
                 .expectNext(2)
                 .expectNext(4)
-                .expectComplete()
-                .verify()
+                .verifyComplete()
         }
 
         @Test
@@ -532,8 +519,7 @@ class JoinerComposerTest : AbstractReactorTest() {
             })
                 .expectNext("1")
                 .expectNext("3")
-                .expectComplete()
-                .verify()
+                .verifyComplete()
         }
 
     }

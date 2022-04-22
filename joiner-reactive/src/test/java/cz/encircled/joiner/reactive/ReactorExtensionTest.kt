@@ -5,6 +5,7 @@ import cz.encircled.joiner.exception.JoinerExceptions
 import cz.encircled.joiner.reactive.ReactorExtension.getAtMostOne
 import cz.encircled.joiner.reactive.ReactorExtension.getExactlyOne
 import cz.encircled.joiner.reactive.ReactorExtension.reactor
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.assertThrows
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
@@ -14,6 +15,7 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
 
+@Disabled
 class ReactorExtensionTest {
 
     @Test
