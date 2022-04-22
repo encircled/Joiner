@@ -45,14 +45,14 @@
     <properties>
         <querydsl.version>4.4.0</querydsl.version>
         <spring.version>5.3.19</spring.version>
-        <hibernate.version>5.4.32.Final</hibernate.version>
+        <hibernate.version>5.6.8.Final</hibernate.version>
         <eclipselink.version>2.7.10</eclipselink.version>
         <vendor.name>hibernate</vendor.name>
         <kotlin.version>1.6.20</kotlin.version>
         <reactor.version>3.4.16</reactor.version>
         <junit-jupiter.version>5.6.2</junit-jupiter.version>
         <slf4j.version>1.7.36</slf4j.version>
-        <vertx.version>4.1.2</vertx.version>
+        <vertx.version>4.1.8</vertx.version>
     </properties>
 
     <distributionManagement>
