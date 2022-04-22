@@ -13,7 +13,7 @@ import kotlin.test.BeforeTest
 
 //private var emf: EntityManagerFactory? = null
 
-open class WithInMemMySql : TestWithLogging() {
+abstract class WithInMemMySql : TestWithLogging() {
 
     companion object {
         @JvmStatic
@@ -22,7 +22,10 @@ open class WithInMemMySql : TestWithLogging() {
         private var emf: EntityManagerFactory? = null
     }
 
-    val reactorJoiner: ReactorJoiner by lazy {
+    lateinit var reactorJoiner: ReactorJoiner
+
+    @BeforeTest
+    fun beforeEach() {
         if (db == null) {
             log.info("Starting DB on 3307 port")
             db = DB.newEmbeddedDB(3307)
@@ -33,11 +36,7 @@ open class WithInMemMySql : TestWithLogging() {
             emf = Persistence.createEntityManagerFactory("reactiveTest")
         }
 
-        ReactorJoiner(emf!!)
-    }
-
-    @BeforeTest
-    fun beforeEach() {
+        reactorJoiner = ReactorJoiner(emf!!)
 /*
         if (db == null) {
             log.info("Starting DB on 3307 port")
