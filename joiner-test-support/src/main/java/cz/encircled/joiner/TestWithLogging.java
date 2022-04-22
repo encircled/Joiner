@@ -10,7 +10,7 @@ import org.slf4j.LoggerFactory;
 @Timeout(15)
 public class TestWithLogging {
 
-    private static final Logger log = LoggerFactory.getLogger(TestWithLogging.class);
+    protected static final Logger log = LoggerFactory.getLogger(TestWithLogging.class);
 
     @BeforeEach
     public void beforeEach(TestInfo testInfo) {

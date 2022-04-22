@@ -21,10 +21,12 @@ open class WithInMemMySql : TestWithLogging() {
     @BeforeTest
     fun beforeEach() {
         if (db == null) {
+            log.info("Starting DB on 3307 port")
             db = DB.newEmbeddedDB(3307)
             db!!.start()
         }
         if (emf == null) {
+            log.info("createEntityManagerFactory(\"reactiveTest\")")
             emf = Persistence.createEntityManagerFactory("reactiveTest")
         }
 
@@ -32,6 +34,7 @@ open class WithInMemMySql : TestWithLogging() {
             reactorJoiner = ReactorJoiner(emf!!)
         }
 
+        log.info("Drop old test data")
         StepVerifier.create(reactorJoiner.find(QUser.user1.all())
             .flatMap { reactorJoiner.remove(it) }
             .collectList()
