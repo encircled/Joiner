@@ -7,6 +7,7 @@ import cz.encircled.joiner.core.Joiner
 import cz.encircled.joiner.query.JoinerQuery
 import cz.encircled.joiner.reactive.composer.JoinerComposer
 import org.hibernate.reactive.stage.Stage
+import org.hibernate.reactive.stage.Stage.SessionFactory
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.CompletionStage
 import javax.persistence.EntityManagerFactory
@@ -16,14 +17,14 @@ import javax.persistence.EntityManagerFactory
  *
  * Base class for other reactive implementations of Joiner
  */
-abstract class GenericHibernateReactiveJoiner(emf: EntityManagerFactory) {
+abstract class GenericHibernateReactiveJoiner(val emf: EntityManagerFactory) {
 
     private val joiner = Joiner(emf.createEntityManager())
 
-    private val sessionFactory: Stage.SessionFactory = emf.unwrap(Stage.SessionFactory::class.java)
+    private var sessionFactory: SessionFactory = emf.unwrap(SessionFactory::class.java)
 
     fun <T, C, P> executeComposed(c: JoinerComposer<T, C, P>): CompletionStage<C> {
-        return sessionFactory.withTransaction { session, _ ->
+        return sessionFactory().withTransaction { session, _ ->
             var curr = executeChainStep(false, session, c.steps[0])
 
             (1 until c.steps.size).forEach { i ->
@@ -71,26 +72,35 @@ abstract class GenericHibernateReactiveJoiner(emf: EntityManagerFactory) {
     }
 
     protected fun <T> doPersist(entity: T): CompletionStage<T> {
-        return sessionFactory.withTransaction { session, _ ->
+        return sessionFactory().withTransaction { session, _ ->
             session.persist(entity).thenApply { session.getReference(entity) }
         }
     }
 
     protected fun <T> doPersistMultiple(entities: Collection<T>): CompletionStage<List<T>> {
-        return sessionFactory.withTransaction { session, _ ->
+        return sessionFactory().withTransaction { session, _ ->
             session.persistMultiple(entities)
         }
     }
 
     protected fun <T, R> doFind(query: JoinerQuery<T, R>): CompletionStage<List<R>> {
-        return sessionFactory.withTransaction { session, _ ->
+        return sessionFactory().withTransaction { session, _ ->
             createQuery(session, query).resultList
         }
     }
 
     protected fun doRemove(entity: Any): CompletionStage<Void> {
-        return sessionFactory.withTransaction { session, _ ->
+        return sessionFactory().withTransaction { session, _ ->
             session.remove(session.getReference(entity))
+        }
+    }
+
+    private fun sessionFactory() : SessionFactory {
+        return if (sessionFactory.isOpen) {
+            sessionFactory
+        } else {
+            sessionFactory = emf.unwrap(SessionFactory::class.java)
+            sessionFactory
         }
     }
 
