@@ -11,20 +11,27 @@ import javax.persistence.EntityManagerFactory
 import javax.persistence.Persistence
 import kotlin.test.BeforeTest
 
-//private var db: DB? = null
 //private var emf: EntityManagerFactory? = null
-
-var i = 0
 
 open class WithInMemMySql : TestWithLogging() {
 
-    val reactorJoiner: ReactorJoiner by lazy {
-        log.info("Starting DB on 3307 port")
-        val db = DB.newEmbeddedDB(3307 + i++)
-        db!!.start()
+    companion object {
+        @JvmStatic
+        private var db: DB? = null
+        @JvmStatic
+        private var emf: EntityManagerFactory? = null
+    }
 
-        log.info("createEntityManagerFactory(\"reactiveTest\")")
-        val emf = Persistence.createEntityManagerFactory("reactiveTest")
+    val reactorJoiner: ReactorJoiner by lazy {
+        if (db == null) {
+            log.info("Starting DB on 3307 port")
+            db = DB.newEmbeddedDB(3307)
+            db!!.start()
+        }
+        if (emf == null) {
+            log.info("createEntityManagerFactory(\"reactiveTest\")")
+            emf = Persistence.createEntityManagerFactory("reactiveTest")
+        }
 
         ReactorJoiner(emf!!)
     }
