@@ -110,6 +110,7 @@ abstract class GenericHibernateReactiveJoiner(val emf: EntityManagerFactory) {
     }
 
     protected fun <R> createQuery(session: Stage.Session, query: JoinerQuery<*, R>): Stage.Query<R> {
+        println("Creating query in: ${Thread.currentThread().name}")
         val queryDsl = joiner.toJPAQuery(query)
         val serializer = queryDsl.getSerializer(query.isCount)
         val jpaQuery = session.createQuery<R>(serializer.toString())

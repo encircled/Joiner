@@ -1,6 +1,7 @@
 package cz.encircled.joiner.reactive
 
 import cz.encircled.joiner.exception.JoinerException
+import cz.encircled.joiner.kotlin.JoinerKtOps.eq
 import cz.encircled.joiner.kotlin.JoinerKtQueryBuilder.all
 import cz.encircled.joiner.kotlin.JoinerKtQueryBuilder.countOf
 import cz.encircled.joiner.kotlin.JoinerKtQueryBuilder.from
@@ -29,11 +30,9 @@ class JoinerComposerTest : AbstractReactorTest() {
                 persist(User("1"))
                     .persist(User("2"))
                     .persist(User("3"))
-                    .find(user1.name from user1)
+                    .findOne((user1.name from user1).where(user1.name eq "1"))
             })
                 .expectNext("1")
-                .expectNext("2")
-                .expectNext("3")
                 .verifyComplete()
         } catch (e: Throwable) {
             e.printStackTrace()
