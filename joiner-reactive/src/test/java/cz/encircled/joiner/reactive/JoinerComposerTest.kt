@@ -23,6 +23,20 @@ import kotlin.test.assertFalse
 class JoinerComposerTest : AbstractReactorTest() {
 
     @Test
+    fun `persist chain`() {
+        StepVerifier.create(reactorJoiner.transaction {
+            persist(User("1"))
+                .persist(User("2"))
+                .persist(User("3"))
+                .find(user1.name from user1)
+        })
+            .expectNext("1")
+            .expectNext("2")
+            .expectNext("3")
+            .verifyComplete()
+    }
+
+    /*@Test
     fun `empty composer`() {
         assertThrows<IllegalStateException> {
             JoinerComposer<Any, Any, Mono<Any>>(ArrayList()).executeChain(reactorJoiner)
@@ -652,6 +666,6 @@ class JoinerComposerTest : AbstractReactorTest() {
                 .verifyComplete()
         }
 
-    }
+    }*/
 
 }

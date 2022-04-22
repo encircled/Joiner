@@ -96,7 +96,6 @@ abstract class GenericHibernateReactiveJoiner(val emf: EntityManagerFactory) {
     }
 
     private fun sessionFactory() : SessionFactory {
-        println("Getting transaction in thread: ${Thread.currentThread().name}")
         return if (sessionFactory.isOpen) {
             sessionFactory
         } else {

@@ -8,9 +8,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 @Timeout(10)
-public class TestWithLogging {
+public abstract class TestWithLogging {
 
-    protected static final Logger log = LoggerFactory.getLogger(TestWithLogging.class);
+    protected final Logger log = LoggerFactory.getLogger(this.getClass());
 
     @BeforeEach
     public void beforeEach(TestInfo testInfo) {
