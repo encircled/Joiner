@@ -28,9 +28,12 @@ open class WithInMemMySql : TestWithLogging() {
             db = DB.newEmbeddedDB(3307)
             db!!.start()
         }
-        log.info("createEntityManagerFactory(\"reactiveTest\")")
+        if (emf == null) {
+            log.info("createEntityManagerFactory(\"reactiveTest\")")
+            emf = Persistence.createEntityManagerFactory("reactiveTest")
+        }
 
-        ReactorJoiner(Persistence.createEntityManagerFactory("reactiveTest"))
+        ReactorJoiner(emf!!)
     }
 
     @BeforeTest
