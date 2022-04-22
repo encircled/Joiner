@@ -11,6 +11,7 @@ import cz.encircled.joiner.query.join.J;
 import cz.encircled.joiner.query.join.JoinDescription;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInfo;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Arrays;
@@ -32,7 +33,8 @@ public class JoinGraphTest extends AbstractTest {
     private DefaultJoinGraphRegistry mockRegistry;
 
     @BeforeEach
-    public void before() {
+    public void before(TestInfo testInfo) {
+        super.beforeEach(testInfo);
         mockRegistry = new DefaultJoinGraphRegistry();
 
         try {

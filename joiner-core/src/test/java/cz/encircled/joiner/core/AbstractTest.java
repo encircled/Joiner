@@ -1,6 +1,7 @@
 package cz.encircled.joiner.core;
 
 import cz.encircled.joiner.TestDataListener;
+import cz.encircled.joiner.TestWithLogging;
 import cz.encircled.joiner.config.TestConfig;
 import cz.encircled.joiner.model.AbstractEntity;
 import cz.encircled.joiner.query.join.JoinGraphRegistry;
@@ -31,7 +32,7 @@ import java.util.Collection;
 @Transactional
 @EnableTransactionManagement
 @TestExecutionListeners(listeners = {TestDataListener.class, DependencyInjectionTestExecutionListener.class, TransactionalTestExecutionListener.class})
-public abstract class AbstractTest {
+public abstract class AbstractTest extends TestWithLogging {
 
     @Autowired
     protected Joiner joiner;

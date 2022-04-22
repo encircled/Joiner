@@ -7,6 +7,7 @@ import cz.encircled.joiner.kotlin.JoinerKtQueryBuilder.from
 import cz.encircled.joiner.model.QGroup
 import cz.encircled.joiner.model.QStatus
 import cz.encircled.joiner.model.QUser
+import org.junit.jupiter.api.TestInfo
 import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -17,7 +18,8 @@ class JoinerKtTest : AbstractTest() {
     lateinit var joinerKt: JoinerKt
 
     @BeforeTest
-    fun before() {
+    fun before(test: TestInfo) {
+        super.beforeEach(test)
         joinerKt = JoinerKt(entityManager)
     }
 

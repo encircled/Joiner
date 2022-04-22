@@ -6,6 +6,7 @@ import cz.encircled.joiner.query.join.J;
 import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInfo;
 
 import javax.persistence.Persistence;
 import java.util.List;
@@ -19,7 +20,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 public class InheritanceJoinTest extends AbstractTest {
 
     @BeforeEach
-    public void before() {
+    public void before(TestInfo testInfo) {
+        super.beforeEach(testInfo);
         Assumptions.assumeFalse(isEclipse());
 
         entityManager.clear();
