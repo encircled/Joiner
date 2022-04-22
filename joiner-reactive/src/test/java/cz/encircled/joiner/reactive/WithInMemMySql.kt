@@ -6,7 +6,10 @@ import cz.encircled.joiner.exception.JoinerException
 import cz.encircled.joiner.kotlin.JoinerKtQueryBuilder.all
 import cz.encircled.joiner.model.QUser
 import cz.encircled.joiner.model.User
+import org.junit.jupiter.api.AfterAll
+import org.junit.jupiter.api.BeforeAll
 import reactor.test.StepVerifier
+import java.time.Duration
 import javax.persistence.EntityManagerFactory
 import javax.persistence.Persistence
 import kotlin.test.BeforeTest
@@ -20,22 +23,31 @@ abstract class WithInMemMySql : TestWithLogging() {
         private var db: DB? = null
         @JvmStatic
         private var emf: EntityManagerFactory? = null
+
+        @JvmStatic
+        @BeforeAll
+        fun bef() {
+            if (db == null) {
+                db = DB.newEmbeddedDB(3307)
+                db!!.start()
+            }
+            if (emf == null) {
+                emf = Persistence.createEntityManagerFactory("reactiveTest")
+            }
+        }
+
+        @JvmStatic
+        @AfterAll
+        fun af() {
+            emf?.close()
+            db?.stop()
+        }
     }
 
     lateinit var reactorJoiner: ReactorJoiner
 
     @BeforeTest
     fun beforeEach() {
-        if (db == null) {
-            log.info("Starting DB on 3307 port")
-            db = DB.newEmbeddedDB(3307)
-            db!!.start()
-        }
-        if (emf == null) {
-            log.info("createEntityManagerFactory(\"reactiveTest\")")
-            emf = Persistence.createEntityManagerFactory("reactiveTest")
-        }
-
         reactorJoiner = ReactorJoiner(emf!!)
 /*
         if (db == null) {
@@ -60,6 +72,8 @@ abstract class WithInMemMySql : TestWithLogging() {
         )
             .expectNextMatches { true }
             .verifyComplete()
+
+        log.info("Drop old test data finished")
     }
 
     fun createUsers(vararg names: String = arrayOf("1", "2")) {

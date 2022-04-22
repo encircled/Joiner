@@ -6,6 +6,7 @@ import com.querydsl.core.types.dsl.Param
 import cz.encircled.joiner.core.Joiner
 import cz.encircled.joiner.query.JoinerQuery
 import cz.encircled.joiner.reactive.composer.JoinerComposer
+import org.hibernate.reactive.mutiny.Mutiny
 import org.hibernate.reactive.stage.Stage
 import org.hibernate.reactive.stage.Stage.SessionFactory
 import java.util.concurrent.CompletableFuture
@@ -22,6 +23,10 @@ abstract class GenericHibernateReactiveJoiner(val emf: EntityManagerFactory) {
     private val joiner = Joiner(emf.createEntityManager())
 
     private var sessionFactory: SessionFactory = emf.unwrap(SessionFactory::class.java)
+
+    init {
+        println("Creating GenericHibernateReactiveJoiner")
+    }
 
     fun <T, C, P> executeComposed(c: JoinerComposer<T, C, P>): CompletionStage<C> {
         return sessionFactory().withTransaction { session, _ ->
