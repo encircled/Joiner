@@ -43,10 +43,12 @@ class FluxJoinerComposer<T>(steps: MutableList<ExecutionStep<*>>) :
         return MonoJoinerComposer(steps)
     }
 
-    override fun executeChain(r: ReactorJoiner): Flux<T> = Flux.create { flux ->
-        r.executeComposed(this).handle { result, error ->
-            flux.publish(result, error)
-        }
-    }
+    override fun executeChain(r: ReactorJoiner): Flux<T> = Mono.fromCompletionStage(r.executeComposed(this)).flatMapIterable { it }
+
+//    override fun executeChain(r: ReactorJoiner): Flux<T> = Flux.create { flux ->
+//        r.executeComposed(this).handle { result, error ->
+//            flux.publish(result, error)
+//        }
+//    }
 
 }

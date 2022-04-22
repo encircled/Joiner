@@ -27,11 +27,13 @@ class MonoJoinerComposer<T>(steps: MutableList<ExecutionStep<*>>) : JoinerCompos
         return MonoJoinerComposer(steps)
     }
 
-    override fun executeChain(r: ReactorJoiner): Mono<T> = Mono.create { mono ->
-        r.executeComposed(this).handle { result, error ->
-            mono.publish(result, error)
-        }
-    }
+    override fun executeChain(r: ReactorJoiner): Mono<T> = Mono.fromCompletionStage(r.executeComposed(this))
+
+    //    override fun executeChain(r: ReactorJoiner): Mono<T> = Mono.create { mono ->
+//        r.executeComposed(this).handle { result, error ->
+//            mono.publish(result, error)
+//        }
+//    }
 
 }
 
