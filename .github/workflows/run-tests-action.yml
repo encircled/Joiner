@@ -23,7 +23,7 @@ jobs:
         distribution: 'temurin'
         cache: maven
     - name: Build with Maven
-      run: mvn -B install --file pom.xml -P eclipse
+      run: mvn -B install --file pom.xml
     - name: Codecov
       uses: codecov/codecov-action@v3.1.0
       with:
