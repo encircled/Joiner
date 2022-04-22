@@ -28,8 +28,12 @@ abstract class GenericHibernateReactiveJoiner(val emf: EntityManagerFactory) {
             var curr = executeChainStep(false, session, c.steps[0])
 
             (1 until c.steps.size).forEach { i ->
-                curr = curr.thenCompose { v ->
-                    executeChainStep(v, session, c.steps[i])
+                if (c.steps[i] is OuterScopeExecution<*>) {
+
+                } else {
+                    curr = curr.thenCompose { v ->
+                        executeChainStep(v, session, c.steps[i])
+                    }
                 }
             }
 
