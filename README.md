@@ -35,7 +35,7 @@ Joiner offers following extra features:
 
 # TL;DR
 
-Ultimately, all the queries are type-safe, support auto-completion and look like:
+Ultimately, all database queries are type-safe, support auto-completion and look like:
 
 - Kotlin version
 ```kotlin
