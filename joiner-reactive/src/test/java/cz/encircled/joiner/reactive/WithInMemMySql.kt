@@ -5,7 +5,8 @@ import cz.encircled.joiner.TestWithLogging
 import cz.encircled.joiner.exception.JoinerException
 import cz.encircled.joiner.kotlin.JoinerKtQueryBuilder.all
 import cz.encircled.joiner.model.QUser
-import org.junit.jupiter.api.AfterAll
+import cz.encircled.joiner.model.User
+import reactor.test.StepVerifier
 import javax.persistence.EntityManagerFactory
 import javax.persistence.Persistence
 import kotlin.test.BeforeTest
@@ -30,18 +31,18 @@ open class WithInMemMySql : TestWithLogging() {
             reactorJoiner = ReactorJoiner(emf)
         }
 
-        reactorJoiner.find(QUser.user1.all())
+        StepVerifier.create(reactorJoiner.find(QUser.user1.all())
             .flatMap { reactorJoiner.remove(it) }
             .collectList()
-            .block()
+        )
+            .expectNextMatches { true }
+            .verifyComplete()
     }
 
-    companion object {
-        @AfterAll
-        @JvmStatic
-        fun after() {
-            //db.stop()
-        }
+    fun createUsers(vararg names: String = arrayOf("1", "2")) {
+        StepVerifier.create(reactorJoiner.persist(names.map { User(it) }).map { it.name }.collectList())
+            .expectNext(names.toList())
+            .verifyComplete()
     }
 
     fun Throwable.hasCause(msg: String) =

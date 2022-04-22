@@ -35,16 +35,4 @@ open class WithInMemMySql {
         }
     }
 
-    companion object {
-        @AfterAll
-        @JvmStatic
-        fun after() {
-            //db.stop()
-        }
-    }
-
-    fun Throwable.hasCause(msg: String) =
-        this is JoinerException && message!!.contains(msg) ||
-                cause is JoinerException && cause!!.message!!.contains(msg)
-
 }

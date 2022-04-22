@@ -13,6 +13,7 @@ import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.assertThrows
 import reactor.core.publisher.Mono
 import reactor.test.StepVerifier
+import reactor.test.StepVerifier.Step
 import java.util.*
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -30,12 +31,6 @@ class JoinerComposerTest : AbstractReactorTest() {
 
     @Test
     fun `multiple chains in single composer`() {
-        // This must work with
-        reactorJoiner.transaction {
-            find(user1.all())
-                .find(user1.all())
-        }.collectList().block()
-
         assertThrows<IllegalStateException> {
             reactorJoiner.transaction {
                 find(user1.all())
@@ -114,7 +109,9 @@ class JoinerComposerTest : AbstractReactorTest() {
                 .expectComplete()
                 .verify()
 
-            assertEquals(3, reactorJoiner.findOne(user1.countOf()).block())
+            StepVerifier.create(reactorJoiner.findOne(user1.countOf()))
+                .expectNext(3L)
+                .verifyComplete()
         }
 
         @Test
@@ -268,20 +265,19 @@ class JoinerComposerTest : AbstractReactorTest() {
 
         @Test
         fun `basic flux`() {
-            reactorJoiner.persist(listOf(User("1"), User("2"))).collectList().block()
+            createUsers()
 
             StepVerifier.create(reactorJoiner.transaction {
                 find(user1.name from user1)
             })
                 .expectNext("1")
                 .expectNext("2")
-                .expectComplete()
-                .verify()
+                .verifyComplete()
         }
 
         @Test
         fun `flux collect to list result`() {
-            reactorJoiner.persist(listOf(User("1"), User("2"))).collectList().block()
+            createUsers()
 
             StepVerifier.create(reactorJoiner.transaction {
                 find(user1.name from user1)
@@ -303,7 +299,7 @@ class JoinerComposerTest : AbstractReactorTest() {
 
         @Test
         fun `flux collect to list intermediate`() {
-            reactorJoiner.persist(listOf(User("1"), User("2"))).collectList().block()
+            createUsers()
 
             StepVerifier.create(reactorJoiner.transaction {
                 find(user1.name from user1)
@@ -499,7 +495,7 @@ class JoinerComposerTest : AbstractReactorTest() {
 
         @Test
         fun `find all flux result`() {
-            reactorJoiner.persist(listOf(User("1"), User("2"))).blockLast()
+            createUsers()
 
             StepVerifier.create(reactorJoiner.transaction {
                 persist(User("3"))

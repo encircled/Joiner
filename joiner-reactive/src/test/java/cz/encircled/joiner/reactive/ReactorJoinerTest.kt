@@ -69,7 +69,7 @@ class ReactorJoinerTest : AbstractReactorTest() {
 
         @Test
         fun `find one success`() {
-            reactorJoiner.persist(User("Test Name")).block()
+            createUsers("Test Name")
 
             StepVerifier.create(reactorJoiner.findOne(user1.name from user1 where { it.name eq "Test Name" }))
                 .expectNext("Test Name")
@@ -79,7 +79,7 @@ class ReactorJoinerTest : AbstractReactorTest() {
 
         @Test
         fun `find one execution exception`() {
-            reactorJoiner.persist(User("Test Name")).block()
+            createUsers("Test Name")
 
             StepVerifier.create(reactorJoiner.findOne(user1.name from QStatus.status))
                 .expectErrorMatches { it.message!!.contains("QuerySyntaxException") }
@@ -95,8 +95,7 @@ class ReactorJoinerTest : AbstractReactorTest() {
 
         @Test
         fun `find one multiple results`() {
-            reactorJoiner.persist(User("Test Name")).block()
-            reactorJoiner.persist(User("Test Name 2")).block()
+            createUsers("Test Name", "Test Name 2")
 
             StepVerifier.create(reactorJoiner.findOne(user1.name from user1))
                 .expectError(JoinerException::class.java)
@@ -109,7 +108,7 @@ class ReactorJoinerTest : AbstractReactorTest() {
                 .expectNext(0)
                 .verifyComplete()
 
-            reactorJoiner.persist(listOf(User("1"), User("2"))).collectList().block()
+            createUsers()
 
             StepVerifier.create(reactorJoiner.findOne(user1.countOf()))
                 .expectNext(2)
@@ -127,7 +126,7 @@ class ReactorJoinerTest : AbstractReactorTest() {
 
         @Test
         fun `find one success`() {
-            reactorJoiner.persist(User("Test Name")).block()
+            createUsers("Test Name")
 
             StepVerifier.create(reactorJoiner.findOneOptional(user1.name from user1 where { it.name eq "Test Name" }))
                 .expectNext("Test Name")
@@ -144,8 +143,7 @@ class ReactorJoinerTest : AbstractReactorTest() {
 
         @Test
         fun `find one multiple results`() {
-            reactorJoiner.persist(User("Test Name")).block()
-            reactorJoiner.persist(User("Test Name 2")).block()
+            createUsers("Test Name", "Test Name 2")
 
             StepVerifier.create(reactorJoiner.findOneOptional(user1.name from user1))
                 .expectError(JoinerException::class.java)
@@ -158,7 +156,7 @@ class ReactorJoinerTest : AbstractReactorTest() {
                 .expectNext(0)
                 .verifyComplete()
 
-            reactorJoiner.persist(listOf(User("1"), User("2"))).collectList().block()
+            createUsers()
 
             StepVerifier.create(reactorJoiner.findOneOptional(user1.countOf()))
                 .expectNext(2)
@@ -176,9 +174,7 @@ class ReactorJoinerTest : AbstractReactorTest() {
 
         @Test
         fun `find multiple success with limit and offset`() {
-            reactorJoiner.persist(User("LimitAndOffset")).block()
-            reactorJoiner.persist(User("LimitAndOffset 2")).block()
-            reactorJoiner.persist(User("LimitAndOffset 3")).block()
+            createUsers("LimitAndOffset", "LimitAndOffset 2", "LimitAndOffset 3")
 
             StepVerifier.create(reactorJoiner.find(user1.name from user1 where { it.name contains "LimitAndOffset" } limit 1 offset 1))
                 .expectNext("LimitAndOffset 2")
@@ -188,8 +184,7 @@ class ReactorJoinerTest : AbstractReactorTest() {
 
         @Test
         fun `find multiple success`() {
-            reactorJoiner.persist(User("Test Name")).block()
-            reactorJoiner.persist(User("Test Name 2")).block()
+            createUsers("Test Name", "Test Name 2")
 
             StepVerifier.create(reactorJoiner.find(user1.name from user1 where { it.name eq "Test Name" or it.name eq "Test Name 2" }))
                 .expectNext("Test Name")
@@ -208,8 +203,11 @@ class ReactorJoinerTest : AbstractReactorTest() {
     }
 
     private fun expectPersistedUser(user: User, name: String): Boolean {
-        return user.id != null && user.name.equals(name) &&
-                reactorJoiner.findOne(user1 from user1 where { it.id eq user.id }).block() != null
+        StepVerifier.create(reactorJoiner.findOne(user1 from user1 where { it.id eq user.id }).map { it.name })
+            .expectNext(name)
+            .verifyComplete()
+
+        return user.id != null && user.name.equals(name)
     }
 
 }
