@@ -1,86 +1,30 @@
 package cz.encircled.joiner.reactive
 
+import cz.encircled.joiner.exception.JoinerException
+import cz.encircled.joiner.kotlin.JoinerKtQueryBuilder.all
+import cz.encircled.joiner.kotlin.JoinerKtQueryBuilder.countOf
+import cz.encircled.joiner.kotlin.JoinerKtQueryBuilder.from
+import cz.encircled.joiner.model.QStatus
+import cz.encircled.joiner.model.QUser
+import cz.encircled.joiner.model.QUser.user1
 import cz.encircled.joiner.model.User
 import cz.encircled.joiner.reactive.ReactorExtension.publish
+import cz.encircled.joiner.reactive.composer.JoinerComposer
 import org.hibernate.reactive.mutiny.Mutiny
 import org.hibernate.reactive.stage.Stage
+import org.junit.jupiter.api.Nested
+import org.junit.jupiter.api.assertThrows
 import reactor.core.publisher.Mono
 import reactor.test.StepVerifier
 import java.util.*
+import java.util.concurrent.atomic.AtomicInteger
 import kotlin.test.Test
+import kotlin.test.assertFalse
 
 
 class JoinerComposerTest : AbstractReactorTest() {
 
-  /*  @Test
-    fun `persist chain`() {
-        try {
-            StepVerifier.create(reactorJoiner.transaction {
-                persist(User("1"))
-                    .persist(User("2"))
-                    .persist(User("3"))
-                    .findOne(user1.name from user1 where { it.name eq "1" })
-            })
-                .expectNext("1")
-                .verifyComplete()
-        } catch (e: Throwable) {
-            e.printStackTrace()
-            throw e
-        }
-    }
-
     @Test
-    fun `mono flatMap result`() {
-        val transaction = reactorJoiner.transaction {
-            persist(User("TestName"))
-                .flatMap { Mono.just(it.name) }
-        }
-        StepVerifier.create(transaction)
-            .expectNext("TestName")
-            .verifyComplete()
-    }*/
-
-    @Test
-    fun test_cf() {
-        val unwrap = reactorJoiner.emf.unwrap(Stage.SessionFactory::class.java)
-        StepVerifier.create(Mono.fromCompletionStage(
-            unwrap.withTransaction { session, _ ->
-                session.persist(User("1"))
-            }
-        )).verifyComplete()
-    }
-
-    @Test
-    fun test1() {
-        val unwrap = reactorJoiner.emf.unwrap(Mutiny.SessionFactory::class.java)
-        StepVerifier.create(Mono.create<Int> { s ->
-            unwrap.withTransaction { session, _ ->
-                session.persist(User("1"))
-            }.subscribe().with {  s.publish(0, null) }
-        }).expectNext(0).verifyComplete()
-    }
-
-    @Test
-    fun test2() {
-        val unwrap = reactorJoiner.emf.unwrap(Mutiny.SessionFactory::class.java)
-        StepVerifier.create(Mono.create<Int> { s ->
-            unwrap.withTransaction { session, _ ->
-                session.persist(User("32"))
-            }.subscribe().with {  s.publish(0, null) }
-        }).expectNext(0).verifyComplete()
-    }
-
-    @Test
-    fun test3() {
-        val unwrap = reactorJoiner.emf.unwrap(Mutiny.SessionFactory::class.java)
-        StepVerifier.create(Mono.create<Int> { s ->
-            unwrap.withTransaction { session, _ ->
-                session.persist(User("3"))
-            }.subscribe().with {  s.publish(0, null) }
-        }).expectNext(0).verifyComplete()
-    }
-
-    /*@Test
     fun `empty composer`() {
         assertThrows<IllegalStateException> {
             JoinerComposer<Any, Any, Mono<Any>>(ArrayList()).executeChain(reactorJoiner)
@@ -698,6 +642,6 @@ class JoinerComposerTest : AbstractReactorTest() {
                 .verifyComplete()
         }
 
-    }*/
+    }
 
 }

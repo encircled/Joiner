@@ -25,8 +25,7 @@
         <dependency>
             <groupId>org.hibernate.reactive</groupId>
             <artifactId>hibernate-reactive-core</artifactId>
-            <version>1.1.4.Final</version>
-<!--            <version>1.0.0.CR5</version>-->
+            <version>1.0.0.CR5</version>
         </dependency>
         <dependency>
             <groupId>com.querydsl</groupId>
@@ -63,8 +62,7 @@
         <dependency>
             <groupId>io.vertx</groupId>
             <artifactId>vertx-mysql-client</artifactId>
-<!--            TODO rollback -->
-            <scope>compile</scope>
+            <scope>test</scope>
         </dependency>
 
         <dependency>

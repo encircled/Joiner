@@ -6,9 +6,6 @@ import com.querydsl.core.types.dsl.Param
 import cz.encircled.joiner.core.Joiner
 import cz.encircled.joiner.query.JoinerQuery
 import cz.encircled.joiner.reactive.composer.JoinerComposer
-import io.vertx.core.Vertx
-import org.hibernate.reactive.context.impl.VertxContext
-import org.hibernate.reactive.mutiny.Mutiny
 import org.hibernate.reactive.stage.Stage
 import org.hibernate.reactive.stage.Stage.SessionFactory
 import java.util.concurrent.CompletableFuture
@@ -112,7 +109,6 @@ abstract class GenericHibernateReactiveJoiner(val emf: EntityManagerFactory) {
     }
 
     protected fun <R> createQuery(session: Stage.Session, query: JoinerQuery<*, R>): Stage.Query<R> {
-        println("Creating query in: ${Thread.currentThread().name}, verx ctx: ${Vertx.currentContext()}")
         val queryDsl = joiner.toJPAQuery(query)
         val serializer = queryDsl.getSerializer(query.isCount)
         val jpaQuery = session.createQuery<R>(serializer.toString())

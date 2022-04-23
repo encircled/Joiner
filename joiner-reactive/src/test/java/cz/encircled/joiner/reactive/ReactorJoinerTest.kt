@@ -12,7 +12,6 @@ import org.junit.jupiter.api.Nested
 import reactor.test.StepVerifier
 import kotlin.test.Test
 
-@Disabled
 class ReactorJoinerTest : AbstractReactorTest() {
 
     @Nested
