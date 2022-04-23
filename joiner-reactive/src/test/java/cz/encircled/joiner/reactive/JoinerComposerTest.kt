@@ -1,25 +1,13 @@
 package cz.encircled.joiner.reactive
 
-import cz.encircled.joiner.exception.JoinerException
-import cz.encircled.joiner.kotlin.JoinerKtOps.eq
-import cz.encircled.joiner.kotlin.JoinerKtQueryBuilder.all
-import cz.encircled.joiner.kotlin.JoinerKtQueryBuilder.countOf
-import cz.encircled.joiner.kotlin.JoinerKtQueryBuilder.from
-import cz.encircled.joiner.model.QGroup
-import cz.encircled.joiner.model.QStatus
-import cz.encircled.joiner.model.QUser.user1
 import cz.encircled.joiner.model.User
-import cz.encircled.joiner.reactive.composer.JoinerComposer
+import cz.encircled.joiner.reactive.ReactorExtension.publish
+import org.hibernate.reactive.mutiny.Mutiny
 import org.hibernate.reactive.stage.Stage
-import org.junit.jupiter.api.Nested
-import org.junit.jupiter.api.assertThrows
 import reactor.core.publisher.Mono
 import reactor.test.StepVerifier
-import reactor.test.StepVerifier.Step
 import java.util.*
 import kotlin.test.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertFalse
 
 
 class JoinerComposerTest : AbstractReactorTest() {
@@ -53,7 +41,7 @@ class JoinerComposerTest : AbstractReactorTest() {
     }*/
 
     @Test
-    fun test() {
+    fun test_cf() {
         val unwrap = reactorJoiner.emf.unwrap(Stage.SessionFactory::class.java)
         StepVerifier.create(Mono.fromCompletionStage(
             unwrap.withTransaction { session, _ ->
@@ -63,23 +51,33 @@ class JoinerComposerTest : AbstractReactorTest() {
     }
 
     @Test
-    fun test2() {
-        val unwrap = reactorJoiner.emf.unwrap(Stage.SessionFactory::class.java)
-        StepVerifier.create(Mono.fromCompletionStage(
+    fun test1() {
+        val unwrap = reactorJoiner.emf.unwrap(Mutiny.SessionFactory::class.java)
+        StepVerifier.create(Mono.create<Int> { s ->
             unwrap.withTransaction { session, _ ->
-                session.persist(User("2"))
-            }
-        )).verifyComplete()
+                session.persist(User("1"))
+            }.subscribe().with {  s.publish(0, null) }
+        }).expectNext(0).verifyComplete()
+    }
+
+    @Test
+    fun test2() {
+        val unwrap = reactorJoiner.emf.unwrap(Mutiny.SessionFactory::class.java)
+        StepVerifier.create(Mono.create<Int> { s ->
+            unwrap.withTransaction { session, _ ->
+                session.persist(User("32"))
+            }.subscribe().with {  s.publish(0, null) }
+        }).expectNext(0).verifyComplete()
     }
 
     @Test
     fun test3() {
-        val unwrap = reactorJoiner.emf.unwrap(Stage.SessionFactory::class.java)
-        StepVerifier.create(Mono.fromCompletionStage(
+        val unwrap = reactorJoiner.emf.unwrap(Mutiny.SessionFactory::class.java)
+        StepVerifier.create(Mono.create<Int> { s ->
             unwrap.withTransaction { session, _ ->
                 session.persist(User("3"))
-            }
-        )).verifyComplete()
+            }.subscribe().with {  s.publish(0, null) }
+        }).expectNext(0).verifyComplete()
     }
 
     /*@Test
