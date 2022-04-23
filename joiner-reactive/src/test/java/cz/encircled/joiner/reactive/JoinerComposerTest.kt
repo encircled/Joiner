@@ -10,6 +10,7 @@ import cz.encircled.joiner.model.QStatus
 import cz.encircled.joiner.model.QUser.user1
 import cz.encircled.joiner.model.User
 import cz.encircled.joiner.reactive.composer.JoinerComposer
+import org.hibernate.reactive.stage.Stage
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.assertThrows
 import reactor.core.publisher.Mono
@@ -23,7 +24,7 @@ import kotlin.test.assertFalse
 
 class JoinerComposerTest : AbstractReactorTest() {
 
-    @Test
+  /*  @Test
     fun `persist chain`() {
         try {
             StepVerifier.create(reactorJoiner.transaction {
@@ -49,6 +50,36 @@ class JoinerComposerTest : AbstractReactorTest() {
         StepVerifier.create(transaction)
             .expectNext("TestName")
             .verifyComplete()
+    }*/
+
+    @Test
+    fun test() {
+        val unwrap = reactorJoiner.emf.unwrap(Stage.SessionFactory::class.java)
+        StepVerifier.create(Mono.fromCompletionStage(
+            unwrap.withTransaction { session, _ ->
+                session.persist(User("1"))
+            }
+        )).verifyComplete()
+    }
+
+    @Test
+    fun test2() {
+        val unwrap = reactorJoiner.emf.unwrap(Stage.SessionFactory::class.java)
+        StepVerifier.create(Mono.fromCompletionStage(
+            unwrap.withTransaction { session, _ ->
+                session.persist(User("2"))
+            }
+        )).verifyComplete()
+    }
+
+    @Test
+    fun test3() {
+        val unwrap = reactorJoiner.emf.unwrap(Stage.SessionFactory::class.java)
+        StepVerifier.create(Mono.fromCompletionStage(
+            unwrap.withTransaction { session, _ ->
+                session.persist(User("3"))
+            }
+        )).verifyComplete()
     }
 
     /*@Test
