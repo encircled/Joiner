@@ -23,7 +23,7 @@ jobs:
         distribution: 'adopt-hotspot'
         cache: maven
     - name: Build with Maven
-      run: mvn -B install --file pom.xml
+      run: mvn -B install --file pom.xml -P eclipse
     - name: Codecov
       uses: codecov/codecov-action@v3.1.0
       with:
