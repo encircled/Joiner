@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/encircled/Joiner.svg?branch=master)](https://travis-ci.org/encircled/Joiner)
+[![CI build](https://github.com/encircled/Joiner/actions/workflows/run-tests-action.yml/badge.svg)](https://github.com/encircled/Joiner/actions/workflows/run-tests-action.yml)
 [![codecov](https://codecov.io/gh/encircled/Joiner/branch/master/graph/badge.svg)](https://codecov.io/gh/encircled/Joiner)
 
 # Overview
