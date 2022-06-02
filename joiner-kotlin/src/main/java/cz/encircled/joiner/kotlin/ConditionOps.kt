@@ -7,6 +7,11 @@ import com.querydsl.core.types.dsl.StringExpression
 
 interface ConditionOps {
 
+    /**
+     * Equals to ignoring case
+     */
+    infix fun StringExpression.eqic(to: String): BooleanExpression = equalsIgnoreCase(to)
+
     infix fun StringExpression.contains(to: String): BooleanExpression = contains(to)
 
     infix fun <T> SimpleExpression<T>.eq(to: T): BooleanExpression = eq(to)
@@ -15,12 +20,18 @@ interface ConditionOps {
 
     infix fun <T> SimpleExpression<T>.notIn(to: Collection<T>): BooleanExpression = notIn(to)
 
+    /**
+     * Not equals
+     */
     infix fun <T> SimpleExpression<T>.ne(to: T): BooleanExpression = ne(to)
 
     infix fun <T> PredicateContinuation<T>.eq(to: T): BooleanExpression {
         return t.invoke { it.eq(to) }
     }
 
+    /**
+     * Not equals
+     */
     infix fun <T> PredicateContinuation<T>.ne(to: T): BooleanExpression {
         return t.invoke { it.ne(to) }
     }
@@ -42,12 +53,19 @@ interface ConditionOps {
     }
 
     infix fun BooleanExpression.and(another: BooleanExpression): BooleanExpression = and(another)
+
     infix fun BooleanExpression.or(another: BooleanExpression): BooleanExpression = or(another)
 
     // NUMBERS
 
+    /**
+     * Greater than
+     */
     infix fun <T> NumberExpression<T>.gt(to: T): BooleanExpression where T : Number, T : Comparable<*> = gt(to)
 
+    /**
+     * Less than
+     */
     infix fun <T> NumberExpression<T>.lt(to: T): BooleanExpression where T : Number, T : Comparable<*> = lt(to)
 
 }

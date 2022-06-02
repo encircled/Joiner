@@ -8,8 +8,8 @@ import cz.encircled.joiner.model.QUser
 import cz.encircled.joiner.model.User
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll
+import org.slf4j.LoggerFactory
 import reactor.test.StepVerifier
-import java.time.Duration
 import javax.persistence.EntityManagerFactory
 import javax.persistence.Persistence
 import kotlin.test.BeforeTest
@@ -24,14 +24,26 @@ abstract class WithInMemMySql : TestWithLogging() {
 
         @JvmStatic
         @BeforeAll
-        fun bef() {
+        fun before() {
             if (db == null) {
+                LoggerFactory.getLogger(this::class.java).info("Starting DB on 3307 port")
                 db = DB.newEmbeddedDB(3307)
                 db!!.start()
             }
-            if (emf == null) {
-                emf = Persistence.createEntityManagerFactory("reactiveTest")
+            emf = Persistence.createEntityManagerFactory("reactiveTest")
+        }
+
+        @JvmStatic
+        @AfterAll
+        fun after() {
+            try {
+                emf?.close()
+                db?.stop()
+            } catch (e: Exception) {
+                e.printStackTrace()
             }
+            db = null
+            emf = null
         }
 
     }

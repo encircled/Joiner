@@ -12,6 +12,8 @@ class ConditionOpsTest : ConditionOps {
         assertEquals(user1.name.ne("1"), user1.name ne "1")
         assertEquals(user1.name.eq("1"), user1.name eq "1")
 
+        assertEquals(user1.name.equalsIgnoreCase("1"), user1.name eqic "1")
+
         // Numbers
         assertEquals(user1.id gt 1, user1.id.gt(1))
         assertEquals(user1.id lt 1, user1.id.lt(1))
