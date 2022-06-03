@@ -57,7 +57,9 @@ abstract class GenericHibernateReactiveJoiner(val emf: EntityManagerFactory) {
                 try {
                     CompletableFuture.completedFuture(step.convertResult(stepResult.get() as List<Any>))
                 } catch (e: Exception) {
-                    CompletableFuture.failedStage(e.cause)
+                    val c = CompletableFuture<Any>()
+                    c.completeExceptionally(e.cause)
+                    c
                 }
             }
 
