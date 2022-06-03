@@ -96,14 +96,14 @@
             <plugin>
                 <groupId>org.jetbrains.dokka</groupId>
                 <artifactId>dokka-maven-plugin</artifactId>
-                <version>1.6.20</version>
+                <version>1.6.21</version>
                 <executions>
                     <execution>
                         <phase>prepare-package</phase>
                         <goals>
-                            <goal>dokka</goal>
+<!--                            <goal>dokka</goal>-->
 <!--                            <goal>javadoc</goal>-->
-<!--                            <goal>javadocJar</goal>-->
+                            <goal>javadocJar</goal>
                         </goals>
                     </execution>
                 </executions>
