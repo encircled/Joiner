@@ -15,7 +15,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 /**
  * @author Kisel on 26.01.2016.
  */
-public class FailTest extends AbstractTest {
+public abstract class FailTest extends AbstractTest {
 
     @Test
     public void testNullInput() {

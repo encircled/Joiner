@@ -28,7 +28,7 @@ public class AliasResolverUnitTest extends AbstractTest {
         JoinDescription left = J.left(QPassword.password);
         J.left(QUser.user1).nested(left);
 
-        resolver.resolveJoinAlias(left, QUser.user1);
+        resolver.resolveFieldPathForJoinAlias(left, QUser.user1);
 
         assertEquals(new QNormalUser("user1").passwords, left.getCollectionPath());
     }
@@ -38,7 +38,7 @@ public class AliasResolverUnitTest extends AbstractTest {
         AliasResolver resolver = new DefaultAliasResolver(entityManager);
 
         JoinDescription left = J.left(QAddress.address);
-        resolver.resolveJoinAlias(left, QSuperUser.superUser);
+        resolver.resolveFieldPathForJoinAlias(left, QSuperUser.superUser);
 
         assertEquals(new QUser(QSuperUser.superUser.toString()).addresses, left.getCollectionPath());
     }
@@ -48,7 +48,7 @@ public class AliasResolverUnitTest extends AbstractTest {
         AliasResolver resolver = new DefaultAliasResolver(entityManager);
 
         JoinDescription left = J.left(QSuperUser.superUser);
-        resolver.resolveJoinAlias(left, QAddress.address);
+        resolver.resolveFieldPathForJoinAlias(left, QAddress.address);
 
         assertEquals(QAddress.address.user, left.getSinglePath());
     }
@@ -57,7 +57,7 @@ public class AliasResolverUnitTest extends AbstractTest {
     public void testFieldNotFound() {
         AliasResolver resolver = new DefaultAliasResolver(entityManager);
 
-        assertThrows(JoinerException.class, () -> resolver.resolveJoinAlias(J.left(QPassword.password), QGroup.group));
+        assertThrows(JoinerException.class, () -> resolver.resolveFieldPathForJoinAlias(J.left(QPassword.password), QGroup.group));
     }
 
     @Test
@@ -65,7 +65,7 @@ public class AliasResolverUnitTest extends AbstractTest {
         AliasResolver resolver = new DefaultAliasResolver(entityManager);
 
         try {
-            resolver.resolveJoinAlias(J.left(QUser.user1), QContact.contact);
+            resolver.resolveFieldPathForJoinAlias(J.left(QUser.user1), QContact.contact);
         } catch (JoinerException e) {
             e.printStackTrace();
             assertTrue(e.getMessage().contains("Multiple mappings found: [contact.employmentUser, contact.user]"));

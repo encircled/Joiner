@@ -55,30 +55,29 @@ public class Joiner {
 
     private static final Logger log = LoggerFactory.getLogger(Joiner.class);
 
-    private EntityManager entityManager;
+    private final EntityManager entityManager;
 
     private JoinerVendorRepository joinerVendorRepository;
 
     private JoinGraphRegistry joinGraphRegistry;
 
-    private AliasResolver aliasResolver;
+    private final AliasResolver aliasResolver;
 
-    private PredicateAliasResolver predicateAliasResolver;
+    private final PredicateAliasResolver predicateAliasResolver = new DefaultPredicateAliasResolver();
 
     public Joiner(EntityManager entityManager) {
         Assert.notNull(entityManager);
 
         this.entityManager = entityManager;
         aliasResolver = new DefaultAliasResolver(entityManager);
-        predicateAliasResolver = new DefaultPredicateAliasResolver();
 
         String implName = entityManager.getDelegate().getClass().getName();
         if (implName.startsWith("org.hibernate")) {
             this.joinerVendorRepository = new HibernateRepository();
-        } else if (implName.startsWith("org.eclipse")) {
+        } else {
             try {
                 Class<?> eclipseLink = Class.forName("cz.encircled.joiner.eclipse.EnchancedEclipselinkRepository");
-                this.joinerVendorRepository = (JoinerVendorRepository) eclipseLink.newInstance();
+                this.joinerVendorRepository = (JoinerVendorRepository) eclipseLink.getConstructor().newInstance();
                 log.info("Joiner is using EnchancedEclipselinkRepository");
             } catch (Exception e) {
                 this.joinerVendorRepository = new EclipselinkRepository();
@@ -102,7 +101,7 @@ public class Joiner {
         JPAQuery<R> query = toJPAQuery(request);
 
         if (request.isCount()) {
-            return (List) Collections.singletonList(query.fetchCount());
+            return (List<R>) Collections.singletonList(query.fetchCount());
         } else {
             return joinerVendorRepository.getResultList(query, request.getReturnProjection());
         }
@@ -132,13 +131,8 @@ public class Joiner {
         Set<Path<?>> usedAliases = new HashSet<>();
         usedAliases.add(request.getFrom());
 
-        List<JoinDescription> joins = J.unrollChildrenJoins(request.getJoins());
-        for (JoinDescription join : joins) {
-            if (join.getCollectionPath() == null && join.getSinglePath() == null) {
-                aliasResolver.resolveJoinAlias(join, request.getFrom());
-            }
-            usedAliases.add(join.getAlias());
-        }
+        List<JoinDescription> joins = preprocessJoins(request, usedAliases);
+
         addJoins(joins, query, request.getFrom(), request.getFrom().equals(request.getReturnProjection()));
 
         addHints(request, query);
@@ -153,6 +147,22 @@ public class Joiner {
             query = doPostProcess(request, query, feature);
         }
         return query;
+    }
+
+    private <T, R> List<JoinDescription> preprocessJoins(JoinerQuery<T, R> request, Set<Path<?>> usedAliases) {
+        List<JoinDescription> joins = J.unrollChildrenJoins(request.getJoins());
+        for (JoinDescription join : joins) {
+            if (join.getCollectionPath() == null && join.getSinglePath() == null) {
+                aliasResolver.resolveFieldPathForJoinAlias(join, request.getFrom());
+            }
+            usedAliases.add(join.getAlias());
+        }
+        for (JoinDescription join : joins) {
+            if (join.getOn() != null) {
+                join.on(predicateAliasResolver.resolvePredicate(join.getOn(), joins, usedAliases));
+            }
+        }
+        return joins;
     }
 
     private <T, R> void validateAllAliases(JoinerQuery<T, R> request, Set<Path<?>> usedAliases) {
@@ -206,7 +216,7 @@ public class Joiner {
     }
 
 
-    private <T extends Comparable> OrderSpecifier<T> transformOrder(QueryOrder<T> queryOrder) {
+    private <T extends Comparable<?>> OrderSpecifier<T> transformOrder(QueryOrder<T> queryOrder) {
         return new OrderSpecifier<>(queryOrder.isAsc() ? Order.ASC : Order.DESC, queryOrder.getTarget());
     }
 
@@ -244,7 +254,7 @@ public class Joiner {
         ReflectionUtils.setField(f, sourceQuery, ArrayListMultimap.create());
     }
 
-    private void addJoins(List<JoinDescription> joins, JPAQuery query, EntityPath<?> rootPath, boolean doFetch) {
+    private void addJoins(List<JoinDescription> joins, JPAQuery<?> query, EntityPath<?> rootPath, boolean doFetch) {
         for (JoinDescription join : joins) {
             joinerVendorRepository.addJoin(query, join);
             if (doFetch && join.isFetch()) {
@@ -253,7 +263,7 @@ public class Joiner {
         }
     }
 
-    private void addHints(JoinerQuery<?, ?> request, JPAQuery query) {
+    private void addHints(JoinerQuery<?, ?> request, JPAQuery<?> query) {
         for (Map.Entry<String, List<Object>> entry : request.getHints().entrySet()) {
             if (entry.getValue() != null) {
                 for (Object value : entry.getValue()) {
@@ -265,7 +275,7 @@ public class Joiner {
 
     private void checkAliasesArePresent(Expression<?> expression, Set<Path<?>> usedAliases) {
         for (Path<?> path : JoinerUtils.collectPredicatePaths(expression)) {
-            Path predicatePath = path.getRoot();
+            Path<?> predicatePath = path.getRoot();
             if (!predicatePath.toString().startsWith("any(")) {
                 if (!usedAliases.contains(predicatePath)) {
                     throw new AliasMissingException("Alias " + predicatePath + " is not present in joins!");

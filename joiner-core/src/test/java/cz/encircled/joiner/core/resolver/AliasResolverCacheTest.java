@@ -25,10 +25,10 @@ public class AliasResolverCacheTest extends AbstractTest {
     @Test
     public void testCacheAttributeOnEntity() {
         CountingAliasResolver resolver = new CountingAliasResolver(entityManager);
-        resolver.resolveJoinAlias(J.left(QUser.user1), QAddress.address);
-        resolver.resolveJoinAlias(J.left(QUser.user1), QAddress.address);
+        resolver.resolveFieldPathForJoinAlias(J.left(QUser.user1), QAddress.address);
+        resolver.resolveFieldPathForJoinAlias(J.left(QUser.user1), QAddress.address);
         JoinDescription left = J.left(QUser.user1);
-        resolver.resolveJoinAlias(left, QAddress.address);
+        resolver.resolveFieldPathForJoinAlias(left, QAddress.address);
 
         assertNotNull(left.getSinglePath());
         assertEquals(1, resolver.getCounter());
@@ -37,10 +37,10 @@ public class AliasResolverCacheTest extends AbstractTest {
     @Test
     public void testCacheAttributeOnChildEntity() {
         CountingAliasResolver resolver = new CountingAliasResolver(entityManager);
-        resolver.resolveJoinAlias(J.left(QKey.key), QUser.user1);
-        resolver.resolveJoinAlias(J.left(QKey.key), QUser.user1);
+        resolver.resolveFieldPathForJoinAlias(J.left(QKey.key), QUser.user1);
+        resolver.resolveFieldPathForJoinAlias(J.left(QKey.key), QUser.user1);
         JoinDescription left = J.left(QKey.key);
-        resolver.resolveJoinAlias(left, QUser.user1);
+        resolver.resolveFieldPathForJoinAlias(left, QUser.user1);
 
         assertNotNull(left.getSinglePath());
         assertEquals(1, resolver.getCounter());
@@ -49,11 +49,11 @@ public class AliasResolverCacheTest extends AbstractTest {
     @Test
     public void testCacheAttributeOnParentEntity() {
         CountingAliasResolver resolver = new CountingAliasResolver(entityManager);
-        resolver.resolveJoinAlias(J.left(QSuperUser.superUser), QAddress.address);
-        resolver.resolveJoinAlias(J.left(QSuperUser.superUser), QAddress.address);
+        resolver.resolveFieldPathForJoinAlias(J.left(QSuperUser.superUser), QAddress.address);
+        resolver.resolveFieldPathForJoinAlias(J.left(QSuperUser.superUser), QAddress.address);
 
         JoinDescription left = J.left(QSuperUser.superUser);
-        resolver.resolveJoinAlias(left, QAddress.address);
+        resolver.resolveFieldPathForJoinAlias(left, QAddress.address);
 
         assertNotNull(left.getSinglePath());
         assertEquals(1, resolver.getCounter());
@@ -62,10 +62,10 @@ public class AliasResolverCacheTest extends AbstractTest {
     @Test
     public void testCacheAttributeSubtype() {
         CountingAliasResolver resolver = new CountingAliasResolver(entityManager);
-        resolver.resolveJoinAlias(J.left(QAddress.address), QSuperUser.superUser);
-        resolver.resolveJoinAlias(J.left(QAddress.address), QSuperUser.superUser);
+        resolver.resolveFieldPathForJoinAlias(J.left(QAddress.address), QSuperUser.superUser);
+        resolver.resolveFieldPathForJoinAlias(J.left(QAddress.address), QSuperUser.superUser);
         JoinDescription left = J.left(QAddress.address);
-        resolver.resolveJoinAlias(left, QSuperUser.superUser);
+        resolver.resolveFieldPathForJoinAlias(left, QSuperUser.superUser);
 
         assertNotNull(left.getCollectionPath());
         assertEquals(1, resolver.getCounter());

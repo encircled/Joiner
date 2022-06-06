@@ -1,19 +1,16 @@
 package cz.encircled.joiner.core;
 
-import cz.encircled.joiner.config.TestConfig;
 import cz.encircled.joiner.config.hint.HintQueryFeature;
 import cz.encircled.joiner.model.QUser;
 import cz.encircled.joiner.query.Q;
 import org.junit.jupiter.api.Test;
-import org.springframework.test.context.ContextConfiguration;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 /**
  * @author Kisel on 04.02.2016.
  */
-@ContextConfiguration(classes = {TestConfig.class})
-public class HintsTest extends AbstractTest {
+public abstract class HintsTest extends AbstractTest {
 
     @Test
     public void testHint() {

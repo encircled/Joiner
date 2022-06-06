@@ -20,10 +20,9 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
- * @see PredicateAliasResolver
  * @author Vlad on 10-Feb-17.
+ * @see PredicateAliasResolver
  */
-// TODO find by original alias?
 public class DefaultPredicateAliasResolver implements PredicateAliasResolver {
 
     @Override
@@ -37,10 +36,10 @@ public class DefaultPredicateAliasResolver implements PredicateAliasResolver {
 
     @Override
     public Predicate resolveOperation(Operation<?> operation, List<JoinDescription> joins, Set<Path<?>> usedAliases) {
-        Map<AnnotatedElement, List<JoinDescription>> collect = joins.stream()
+        Map<AnnotatedElement, List<JoinDescription>> elemToJoin = joins.stream()
                 .collect(Collectors.groupingBy(j -> j.getOriginalAlias().getAnnotatedElement()));
 
-        PredicateHolder result = rebuildPredicate(new PredicateHolder(operation.getArgs(), operation.getOperator()), collect, usedAliases);
+        PredicateHolder result = rebuildPredicate(new PredicateHolder(operation.getArgs(), operation.getOperator()), elemToJoin, usedAliases);
 
         if (result.args.size() == 2) {
             return ReflectionUtils.instantiate(PredicateOperation.class, result.operator, ImmutableList.of(result.args.get(0), result.args.get(1)));
@@ -52,9 +51,19 @@ public class DefaultPredicateAliasResolver implements PredicateAliasResolver {
     @Override
     public <T> Path<T> resolvePath(Path<T> path, Map<AnnotatedElement, List<JoinDescription>> classToJoin, Set<Path<?>> usedAliases) {
         if (!usedAliases.contains(path.getRoot())) {
-            List<JoinDescription> candidates = classToJoin.get(path.getRoot().getAnnotatedElement());
-            if (candidates != null && candidates.size() == 1) {
-                PathImpl<?> resolvedRoot = ReflectionUtils.instantiate(PathImpl.class, candidates.get(0).getClass(), candidates.get(0).getAlias().getMetadata());
+            List<JoinDescription> candidates = classToJoin.getOrDefault(path.getRoot().getAnnotatedElement(), new ArrayList<>());
+            JoinDescription join = null;
+            if (candidates.size() == 1) {
+                join = candidates.get(0);
+            } else {
+                List<JoinDescription> filtered = candidates.stream().filter(candidate -> candidate.getOriginalAlias().toString().equals(path.getRoot().toString())).collect(Collectors.toList());
+                if (filtered.size() == 1) {
+                    join = filtered.get(0);
+                }
+            }
+
+            if (join != null) {
+                PathImpl<?> resolvedRoot = ReflectionUtils.instantiate(PathImpl.class, join.getClass(), join.getAlias().getMetadata());
                 return ReflectionUtils.instantiate(PathImpl.class, path.getType(), resolvedRoot, path.getMetadata().getElement());
             }
         }
@@ -62,7 +71,7 @@ public class DefaultPredicateAliasResolver implements PredicateAliasResolver {
     }
 
     private PredicateHolder rebuildPredicate(PredicateHolder predicateHolder, Map<AnnotatedElement, List<JoinDescription>> classToJoin,
-            Set<Path<?>> usedAliases) {
+                                             Set<Path<?>> usedAliases) {
         PredicateHolder result = new PredicateHolder(new ArrayList<>(), predicateHolder.operator);
 
         for (Expression<?> arg : predicateHolder.args) {

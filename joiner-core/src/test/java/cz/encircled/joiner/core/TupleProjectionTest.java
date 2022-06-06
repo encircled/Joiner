@@ -12,7 +12,7 @@ import static org.junit.jupiter.api.Assertions.*;
 /**
  * @author Vlad on 11-Feb-17.
  */
-public class TupleProjectionTest extends AbstractTest {
+public abstract class TupleProjectionTest extends AbstractTest {
 
     @Test
     public void testSingleTuple() {

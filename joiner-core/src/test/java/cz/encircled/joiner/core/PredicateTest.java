@@ -13,7 +13,7 @@ import java.util.List;
 /**
  * @author Kisel on 26.01.2016.
  */
-public class PredicateTest extends AbstractTest {
+public abstract class PredicateTest extends AbstractTest {
 
     @Test
     public void basicPredicateTest() {

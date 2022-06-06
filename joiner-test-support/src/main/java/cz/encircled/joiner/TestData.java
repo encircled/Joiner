@@ -1,14 +1,6 @@
 package cz.encircled.joiner;
 
-import cz.encircled.joiner.model.Address;
-import cz.encircled.joiner.model.Group;
-import cz.encircled.joiner.model.Key;
-import cz.encircled.joiner.model.NormalUser;
-import cz.encircled.joiner.model.Password;
-import cz.encircled.joiner.model.Phone;
-import cz.encircled.joiner.model.Status;
-import cz.encircled.joiner.model.SuperUser;
-import cz.encircled.joiner.model.User;
+import cz.encircled.joiner.model.*;
 import org.springframework.stereotype.Component;
 import org.springframework.test.annotation.Commit;
 import org.springframework.transaction.annotation.Transactional;
@@ -43,6 +35,13 @@ public class TestData {
         baseUserCreate(group, 3, false);
         superUser(group);
         normalUser(group);
+
+        WithSelfReference parentRef = new WithSelfReference();
+        entityManager.persist(parentRef);
+        WithSelfReference ref = new WithSelfReference();
+        ref.setName("refWithParent");
+        ref.selfReference = parentRef;
+        entityManager.persist(ref);
 
         entityManager.flush();
         entityManager.clear();

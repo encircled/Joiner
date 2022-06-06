@@ -10,7 +10,7 @@ import org.junit.jupiter.api.Test;
 /**
  * @author Kisel on 31.10.2016.
  */
-public class CountTest extends AbstractTest {
+public abstract class CountTest extends AbstractTest {
 
     @Test
     public void testCount() {

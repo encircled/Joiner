@@ -12,7 +12,6 @@ import cz.encircled.joiner.query.join.JoinDescription;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInfo;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -27,8 +26,7 @@ import static org.junit.jupiter.api.Assertions.*;
 /**
  * @author Vlad on 15-Aug-16.
  */
-@Transactional
-public class JoinGraphTest extends AbstractTest {
+public abstract class JoinGraphTest extends AbstractTest {
 
     private DefaultJoinGraphRegistry mockRegistry;
 

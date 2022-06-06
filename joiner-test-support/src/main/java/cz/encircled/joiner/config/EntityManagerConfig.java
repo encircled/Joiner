@@ -1,11 +1,11 @@
 package cz.encircled.joiner.config;
 
 import org.eclipse.persistence.config.PersistenceUnitProperties;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.core.env.Environment;
-import org.springframework.core.env.Profiles;
 import org.springframework.dao.annotation.PersistenceExceptionTranslationPostProcessor;
+import org.springframework.jdbc.datasource.embedded.EmbeddedDatabase;
 import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseBuilder;
 import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseType;
 import org.springframework.orm.jpa.JpaTransactionManager;
@@ -27,28 +27,36 @@ import java.util.Properties;
 @EnableTransactionManagement
 public class EntityManagerConfig {
 
+    static EmbeddedDatabase db;
+
     @Bean
     public DataSource dataSource() {
+        if (db != null) {
+            db.shutdown();
+        }
         EmbeddedDatabaseBuilder builder = new EmbeddedDatabaseBuilder();
-        return builder
+        EmbeddedDatabase newDb = builder
                 .setType(EmbeddedDatabaseType.H2)
                 .build();
+        db = newDb;
+        return newDb;
     }
 
     @Bean
-    public LocalContainerEntityManagerFactoryBean entityManagerFactory(DataSource dataSource, Environment environment) {
+    public LocalContainerEntityManagerFactoryBean entityManagerFactory(DataSource dataSource, @Value("${orm:hibernate}") String orm) {
+        System.out.println("Creating LocalContainerEntityManagerFactoryBean for " + orm);
         LocalContainerEntityManagerFactoryBean em = new LocalContainerEntityManagerFactoryBean();
         em.setDataSource(dataSource);
         em.setPackagesToScan("cz.encircled");
 
-        if (environment.acceptsProfiles(Profiles.of("eclipse"))) {
-            AbstractJpaVendorAdapter vendorAdapter = new EclipseLinkJpaVendorAdapter();
-            em.setJpaVendorAdapter(vendorAdapter);
-            em.setJpaProperties(eclipseProperties(true));
-        } else {
+        if (orm.equals("hibernate")) {
             HibernateJpaVendorAdapter vendorAdapter = new HibernateJpaVendorAdapter();
             em.setJpaVendorAdapter(vendorAdapter);
-            em.setJpaProperties(hibernateProperties(true));
+            em.setJpaProperties(hibernateProperties());
+        } else {
+            AbstractJpaVendorAdapter vendorAdapter = new EclipseLinkJpaVendorAdapter();
+            em.setJpaVendorAdapter(vendorAdapter);
+            em.setJpaProperties(eclipseProperties());
         }
         return em;
     }
@@ -66,7 +74,7 @@ public class EntityManagerConfig {
         return new PersistenceExceptionTranslationPostProcessor();
     }
 
-    private Properties eclipseProperties(boolean fresh) {
+    private Properties eclipseProperties() {
         Properties properties = new Properties();
         properties.put(PersistenceUnitProperties.CACHE_SHARED_DEFAULT, "false");
         properties.put(PersistenceUnitProperties.WEAVING, "static");
@@ -77,15 +85,13 @@ public class EntityManagerConfig {
         } catch (Exception e) {
             // ignore
         }
-        if (fresh) {
-            properties.put(PersistenceUnitProperties.DDL_GENERATION, "drop-and-create-tables");
-        }
+        properties.put(PersistenceUnitProperties.DDL_GENERATION, "drop-and-create-tables");
         return properties;
     }
 
-    private Properties hibernateProperties(boolean fresh) {
+    private Properties hibernateProperties() {
         Properties properties = new Properties();
-        properties.setProperty("hibernate.hbm2ddl.auto", fresh ? "create" : "update");
+        properties.setProperty("hibernate.hbm2ddl.auto", "create");
         properties.setProperty("hibernate.show_sql", "true");
         properties.setProperty("hibernate.dialect", "org.hibernate.dialect.H2Dialect");
         return properties;

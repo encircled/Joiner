@@ -14,7 +14,6 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import javax.persistence.Persistence;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -24,7 +23,7 @@ import static org.junit.jupiter.api.Assertions.*;
  *
  * @author Vlad on 21-Aug-16.
  */
-public class MultipleMappingsForSameClassOnSingleEntityTest extends AbstractTest {
+public abstract class MultipleMappingsForSameClassOnSingleEntityTest extends AbstractTest {
 
     @Autowired
     public Joiner joiner2;
@@ -42,8 +41,8 @@ public class MultipleMappingsForSameClassOnSingleEntityTest extends AbstractTest
         assertFalse(users.isEmpty());
 
         for (User user : users) {
-            assertTrue(Persistence.getPersistenceUtil().isLoaded(user, "employmentContacts"));
-            assertFalse(Persistence.getPersistenceUtil().isLoaded(user, "contacts"));
+            assertTrue(isLoaded(user, "employmentContacts"));
+            assertFalse(isLoaded(user, "contacts"));
         }
     }
 
@@ -53,8 +52,8 @@ public class MultipleMappingsForSameClassOnSingleEntityTest extends AbstractTest
         assertFalse(users.isEmpty());
 
         for (User user : users) {
-            assertTrue(Persistence.getPersistenceUtil().isLoaded(user, "employmentContacts"));
-            assertTrue(Persistence.getPersistenceUtil().isLoaded(user, "contacts"));
+            assertTrue(isLoaded(user, "employmentContacts"));
+            assertTrue(isLoaded(user, "contacts"));
         }
     }
 
@@ -73,8 +72,8 @@ public class MultipleMappingsForSameClassOnSingleEntityTest extends AbstractTest
         assertFalse(result.isEmpty());
 
         for (Contact contact : result) {
-            assertTrue(Persistence.getPersistenceUtil().isLoaded(contact, "user"));
-            assertTrue(Persistence.getPersistenceUtil().isLoaded(contact, "employmentUser"));
+            assertTrue(isLoaded(contact, "user"));
+            assertTrue(isLoaded(contact, "employmentUser"));
             assertNotEquals(contact.getUser().getId(), contact.getEmploymentUser().getId());
         }
     }
@@ -91,8 +90,8 @@ public class MultipleMappingsForSameClassOnSingleEntityTest extends AbstractTest
         for (Group group : groups) {
             assertFalse(group.getUsers().isEmpty());
             for (User user : group.getUsers()) {
-                assertTrue(Persistence.getPersistenceUtil().isLoaded(user, "employmentContacts"));
-                assertTrue(Persistence.getPersistenceUtil().isLoaded(user, "contacts"));
+                assertTrue(isLoaded(user, "employmentContacts"));
+                assertTrue(isLoaded(user, "contacts"));
             }
         }
     }

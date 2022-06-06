@@ -8,7 +8,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInfo;
 
-import javax.persistence.Persistence;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -17,7 +16,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 /**
  * Created by Kisel on 28.01.2016.
  */
-public class InheritanceJoinTest extends AbstractTest {
+public abstract class InheritanceJoinTest extends AbstractTest {
 
     @BeforeEach
     public void before(TestInfo testInfo) {
@@ -35,9 +34,9 @@ public class InheritanceJoinTest extends AbstractTest {
 
         assertFalse(users.isEmpty());
         for (User user : users) {
-            assertTrue(Persistence.getPersistenceUtil().isLoaded(user, "contacts"));
+            assertTrue(isLoaded(user, "contacts"));
             for (Contact contact : user.getContacts()) {
-                assertTrue(Persistence.getPersistenceUtil().isLoaded(contact, "statuses"));
+                assertTrue(isLoaded(contact, "statuses"));
             }
         }
     }
@@ -52,8 +51,8 @@ public class InheritanceJoinTest extends AbstractTest {
         assertFalse(contacts.isEmpty());
 
         for (Contact contact : contacts) {
-            assertTrue(Persistence.getPersistenceUtil().isLoaded(contact, "employmentUser"));
-            assertTrue(Persistence.getPersistenceUtil().isLoaded(contact.getEmploymentUser(), "passwords"));
+            assertTrue(isLoaded(contact, "employmentUser"));
+            assertTrue(isLoaded(contact.getEmploymentUser(), "passwords"));
         }
     }
 
@@ -63,10 +62,10 @@ public class InheritanceJoinTest extends AbstractTest {
 
         assertFalse(groups.isEmpty());
         for (Group group : groups) {
-            assertFalse(Persistence.getPersistenceUtil().isLoaded(group, "users"));
+            assertFalse(isLoaded(group, "users"));
             for (User user : group.getUsers()) {
                 if (user instanceof NormalUser) {
-                    assertFalse(Persistence.getPersistenceUtil().isLoaded(user, "passwords"));
+                    assertFalse(isLoaded(user, "passwords"));
                 }
             }
         }
@@ -81,9 +80,9 @@ public class InheritanceJoinTest extends AbstractTest {
 
         assertFalse(groups.isEmpty());
         for (Group group : groups) {
-            assertTrue(Persistence.getPersistenceUtil().isLoaded(group, "users"));
+            assertTrue(isLoaded(group, "users"));
             for (User user : group.getUsers()) {
-                assertTrue(Persistence.getPersistenceUtil().isLoaded(user, "passwords"));
+                assertTrue(isLoaded(user, "passwords"));
             }
         }
     }
@@ -104,19 +103,19 @@ public class InheritanceJoinTest extends AbstractTest {
         boolean atLeastOneUser = false;
 
         for (Group group : groups) {
-            assertTrue(Persistence.getPersistenceUtil().isLoaded(group, "users"));
+            assertTrue(isLoaded(group, "users"));
             for (User user : group.getUsers()) {
-                assertTrue(Persistence.getPersistenceUtil().isLoaded(user, "employmentContacts"));
+                assertTrue(isLoaded(user, "employmentContacts"));
                 for (Contact userContact : user.getEmploymentContacts()) {
                     if (userContact instanceof Phone) {
-                        assertTrue(Persistence.getPersistenceUtil().isLoaded(userContact, "statuses"));
+                        assertTrue(isLoaded(userContact, "statuses"));
                     }
                 }
 
                 if (user instanceof NormalUser) {
-                    assertTrue(Persistence.getPersistenceUtil().isLoaded(user, "passwords"));
+                    assertTrue(isLoaded(user, "passwords"));
                     for (Password password : ((NormalUser) user).getPasswords()) {
-                        assertTrue(Persistence.getPersistenceUtil().isLoaded(password, "normalUser"));
+                        assertTrue(isLoaded(password, "normalUser"));
                         atLeastOneUser = true;
                     }
                 }
@@ -155,17 +154,17 @@ public class InheritanceJoinTest extends AbstractTest {
         boolean hasPassword = false;
 
         for (Group group : groups) {
-            assertTrue(Persistence.getPersistenceUtil().isLoaded(group, "users"));
+            assertTrue(isLoaded(group, "users"));
             for (User user : group.getUsers()) {
                 if (user instanceof SuperUser) {
                     if (key) {
-                        assertTrue(Persistence.getPersistenceUtil().isLoaded(user, "key"));
+                        assertTrue(isLoaded(user, "key"));
                     }
                     hasKey = true;
                 }
                 if (user instanceof NormalUser) {
                     if (password) {
-                        assertTrue(Persistence.getPersistenceUtil().isLoaded(user, "passwords"));
+                        assertTrue(isLoaded(user, "passwords"));
                     }
                     hasPassword = true;
                 }

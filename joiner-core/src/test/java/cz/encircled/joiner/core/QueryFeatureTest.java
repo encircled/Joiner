@@ -1,6 +1,5 @@
 package cz.encircled.joiner.core;
 
-import cz.encircled.joiner.config.TestConfig;
 import cz.encircled.joiner.model.QUser;
 import cz.encircled.joiner.model.User;
 import cz.encircled.joiner.query.ExtendedJPAQuery;
@@ -8,7 +7,6 @@ import cz.encircled.joiner.query.JoinerQuery;
 import cz.encircled.joiner.query.Q;
 import cz.encircled.joiner.query.QueryFeature;
 import org.junit.jupiter.api.Test;
-import org.springframework.test.context.ContextConfiguration;
 
 import java.util.Collections;
 
@@ -17,8 +15,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 /**
  * @author Kisel on 01.02.2016.
  */
-@ContextConfiguration(classes = { TestConfig.class })
-public class QueryFeatureTest extends AbstractTest {
+public abstract class QueryFeatureTest extends AbstractTest {
 
     @Test
     public void testQueryFeatureBefore() {

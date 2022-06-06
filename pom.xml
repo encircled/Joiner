@@ -50,7 +50,7 @@
         <vendor.name>hibernate</vendor.name>
         <kotlin.version>1.6.21</kotlin.version>
         <reactor.version>3.4.17</reactor.version>
-        <junit-jupiter.version>5.6.2</junit-jupiter.version>
+        <junit-jupiter.version>5.8.2</junit-jupiter.version>
         <slf4j.version>1.7.36</slf4j.version>
         <vertx.version>4.3.0</vertx.version>
         <maven.compiler.source>11</maven.compiler.source>

@@ -12,7 +12,6 @@ import cz.encircled.joiner.query.join.JoinDescription;
 import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.Test;
 
-import javax.persistence.Persistence;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -25,7 +24,7 @@ import static org.junit.jupiter.api.Assertions.*;
  *
  * @author Kisel on 21.01.2016.
  */
-public class BasicJoinTest extends AbstractTest {
+public abstract class BasicJoinTest extends AbstractTest {
 
     public static final String USER_NO_ADDRESS = "user3";
 
@@ -62,7 +61,7 @@ public class BasicJoinTest extends AbstractTest {
         List<User> users = joiner.find(Q.from(QUser.user1).joins(new JoinDescription(QGroup.group).right().fetch(false)));
 
         assertFalse(users.isEmpty());
-        assertFalse(Persistence.getPersistenceUtil().isLoaded(users.get(0), "groups"));
+        assertFalse(isLoaded(users.get(0), "groups"));
     }
 
     @Test
@@ -70,7 +69,7 @@ public class BasicJoinTest extends AbstractTest {
         List<User> users = joiner.find(Q.from(QUser.user1).joins(J.inner(QGroup.group)));
 
         assertFalse(users.isEmpty());
-        assertTrue(Persistence.getPersistenceUtil().isLoaded(users.get(0), "groups"));
+        assertTrue(isLoaded(users.get(0), "groups"));
     }
 
     @Test
@@ -78,7 +77,7 @@ public class BasicJoinTest extends AbstractTest {
         List<User> users = joiner.find(Q.from(QUser.user1).joins(J.inner(QUser.user1.groups)));
 
         assertFalse(users.isEmpty());
-        assertTrue(Persistence.getPersistenceUtil().isLoaded(users.get(0), "groups"));
+        assertTrue(isLoaded(users.get(0), "groups"));
     }
 
     @Test
@@ -86,39 +85,39 @@ public class BasicJoinTest extends AbstractTest {
         List<User> users = joiner.find(Q.from(QUser.user1).joins(QUser.user1.groups));
 
         assertFalse(users.isEmpty());
-        assertTrue(Persistence.getPersistenceUtil().isLoaded(users.get(0), "groups"));
+        assertTrue(isLoaded(users.get(0), "groups"));
     }
 
     @Test
     public void noFetchJoinTest() {
         List<User> users = joiner.find(Q.from(QUser.user1));
-        assertFalse(Persistence.getPersistenceUtil().isLoaded(users.get(0), "groups"));
+        assertFalse(isLoaded(users.get(0), "groups"));
 
         JoinDescription e = J.left(QGroup.group).fetch(false);
 
         users = joiner.find(Q.from(QUser.user1).joins(Collections.singletonList(e)));
-        assertFalse(Persistence.getPersistenceUtil().isLoaded(users.get(0), "groups"));
+        assertFalse(isLoaded(users.get(0), "groups"));
 
         e.fetch(true);
         entityManager.clear();
         users = joiner.find(Q.from(QUser.user1).joins(Collections.singletonList(e)));
-        assertTrue(Persistence.getPersistenceUtil().isLoaded(users.get(0), "groups"));
+        assertTrue(isLoaded(users.get(0), "groups"));
     }
 
     @Test
     public void testNestedCollectionAndSingleJoin() {
-        if (noProfiles("eclipse")) {
+        if (!isEclipse()) {
             List<Address> addresses = joiner.find(Q.from(QAddress.address));
-            assertFalse(Persistence.getPersistenceUtil().isLoaded(addresses.get(0), "user"));
-            assertFalse(Persistence.getPersistenceUtil().isLoaded(addresses.get(0).getUser(), "groups"));
+            assertFalse(isLoaded(addresses.get(0), "user"));
+            assertFalse(isLoaded(addresses.get(0).getUser(), "groups"));
             entityManager.clear();
         }
 
         List<Address> addresses = joiner.find(Q.from(QAddress.address)
                 .joins(J.left(QUser.user1).nested(J.left(QGroup.group))));
 
-        assertTrue(Persistence.getPersistenceUtil().isLoaded(addresses.get(0), "user"));
-        assertTrue(Persistence.getPersistenceUtil().isLoaded(addresses.get(0).getUser(), "groups"));
+        assertTrue(isLoaded(addresses.get(0), "user"));
+        assertTrue(isLoaded(addresses.get(0).getUser(), "groups"));
     }
 
 
@@ -126,8 +125,8 @@ public class BasicJoinTest extends AbstractTest {
     public void testNestedCollectionJoin() {
         List<Group> groups = joiner.find(Q.from(QGroup.group));
 
-        assertFalse(Persistence.getPersistenceUtil().isLoaded(groups.get(0), "users"));
-        assertFalse(Persistence.getPersistenceUtil().isLoaded(groups.get(0).getUsers().iterator().next(), "addresses"));
+        assertFalse(isLoaded(groups.get(0), "users"));
+        assertFalse(isLoaded(groups.get(0).getUsers().iterator().next(), "addresses"));
 
         entityManager.clear();
 
@@ -135,8 +134,8 @@ public class BasicJoinTest extends AbstractTest {
                 .joins(J.left(QUser.user1)
                         .nested(J.left(QAddress.address))));
 
-        assertTrue(Persistence.getPersistenceUtil().isLoaded(groups.get(0), "users"));
-        assertTrue(Persistence.getPersistenceUtil().isLoaded(groups.get(0).getUsers().iterator().next(), "addresses"));
+        assertTrue(isLoaded(groups.get(0), "users"));
+        assertTrue(isLoaded(groups.get(0).getUsers().iterator().next(), "addresses"));
     }
 
     @Test
@@ -200,7 +199,7 @@ public class BasicJoinTest extends AbstractTest {
 
     @Test
     public void testRightJoinNoFetch() {
-        if (noProfiles("eclipse")) {
+        if (!isEclipse()) {
             List<Group> groups = joiner.find(Q.from(QGroup.group)
                     .joins(J.left(QUser.user1).right().fetch(false))
                     .where(QUser.user1.name.eq("user1")));
@@ -226,9 +225,9 @@ public class BasicJoinTest extends AbstractTest {
     @Test
     public void testNonDistinct() {
         int nonDistinct = joiner.find(Q.from(QUser.user1)
-                .joins(J.left(QAddress.address)
-                        .nested(J.left(QStatus.status)))
-                .distinct(false))
+                        .joins(J.left(QAddress.address)
+                                .nested(J.left(QStatus.status)))
+                        .distinct(false))
                 .size();
 
         entityManager.clear();
@@ -302,6 +301,17 @@ public class BasicJoinTest extends AbstractTest {
     }
 
     @Test
+    public void testLeftJoinManyToOne() {
+        List<Password> passwords = joiner.find(Q.from(QPassword.password).joins(QNormalUser.normalUser));
+
+        assertFalse(passwords.isEmpty());
+
+        for (Password password : passwords) {
+            assertTrue(isLoaded(password, "normalUser"));
+        }
+    }
+
+    @Test
     public void testQueryGetJoin() {
         JoinerQueryBase<User, User> query = Q.from(QUser.user1).addHint("", null);
 
@@ -321,4 +331,36 @@ public class BasicJoinTest extends AbstractTest {
         assertNotNull(query.getJoin(QGroup.group).getJoin(QStatus.status));
     }
 
+    @Test
+    public void testJoinSelfReference() {
+        WithSelfReference result = joiner.findOne(Q.from(QWithSelfReference.withSelfReference)
+                .where(QWithSelfReference.withSelfReference.name.eq("refWithParent"))
+                .joins(new QWithSelfReference("self")));
+        assertTrue(isLoaded(result.selfReference, "normalUser"));
+    }
+
+    @Test
+    public void testPredicateAliasInWhere() {
+        JoinerQueryBase<Group, Group> query = Q.from(QGroup.group)
+                .joins(J.left(new QStatus("groupStatus")), J.left(QUser.user1).nested(new QStatus("userStatus")))
+                .where(new QStatus("userStatus").id.isNotNull());
+        assertQueryContains("userStatus_on_user1.id is not null", query);
+    }
+
+    @Test
+    public void testPredicateAliasInJoinOn() {
+        JoinerQueryBase<Group, Group> query = Q.from(QGroup.group)
+                .joins(J.left(new QStatus("groupStatus")), J.left(QUser.user1).nested(
+                        J.left(new QStatus("userStatus")).on(new QStatus("userStatus").id.isNotNull())
+                ));
+        assertQueryContains("userStatus_on_user1.id is not null", query);
+    }
+
+    void assertQueryContains(String expected, JoinerQueryBase<?, ?> query) {
+        String actual = joiner.toJPAQuery(query).toString();
+        assertTrue(actual.contains(expected), "actual: " + actual);
+    }
+
 }
+
+//    SELECT FROM {oj test_group t1 LEFT OUTER JOIN test_status t0 ON (t0.group_id = t1.ID) LEFT OUTER JOIN (user_to_group t6 JOIN test_user t2 ON (t2.ID = t6.user_id) LEFT OUTER JOIN test_normal_user t3 ON (t3.ID = t2.ID) LEFT OUTER JOIN test_super_user t4 ON (t4.ID = t2.ID)) ON (t6.group_id = t1.ID) LEFT OUTER JOIN test_status t5 ON (t5.user_id = t2.ID)} WHERE (t0.ID IS NOT NULL)

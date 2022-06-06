@@ -54,6 +54,21 @@ public class PredicateResolverTest extends AbstractTest {
     }
 
     @Test
+    public void testPredicateResolvedOnNestedJoin() {
+        List<JoinDescription> joins = J.unrollChildrenJoins(Collections.singletonList(J.left(QGroup.group).nested(testStatus)));
+        Predicate resolved = resolver.resolvePredicate(QStatus.status.id.eq(1L), joins, Collections.emptySet());
+        assertEquals(new QStatus(joins.get(1).getAlias().toString()).id.eq(1L), resolved);
+    }
+
+    @Test
+    public void testPredicateResolvedAmbiguous() {
+        List<JoinDescription> joins = J.unrollChildrenJoins(Collections.singletonList(J.left(QGroup.group).nested(J.left(testStatus).nested(new QStatus("ambiguous")))));
+
+        Predicate resolved = resolver.resolvePredicate(new QStatus("ambiguous").id.eq(1L), joins, Collections.emptySet());
+        assertEquals(new QStatus(joins.get(2).getAlias().toString()).id.eq(1L), resolved);
+    }
+
+    @Test
     public void testMissingAliasNotChanged() {
         Predicate resolved = resolver.resolvePredicate(QStatus.status.id.eq(1L), Collections.singletonList(J.left(QUser.user1)), Collections.emptySet());
         assertEquals(QStatus.status.id.eq(1L), resolved);

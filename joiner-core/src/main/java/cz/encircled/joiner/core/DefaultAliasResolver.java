@@ -12,6 +12,7 @@ import cz.encircled.joiner.util.ReflectionUtils;
 
 import javax.persistence.EntityManager;
 import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -21,8 +22,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import static cz.encircled.joiner.util.ReflectionUtils.getField;
 
 /**
- * @see AliasResolver
  * @author Vlad on 16-Aug-16.
+ * @see AliasResolver
  */
 public class DefaultAliasResolver implements AliasResolver {
 
@@ -30,18 +31,17 @@ public class DefaultAliasResolver implements AliasResolver {
 
     private final EntityManager entityManager;
 
-    private final Map<String, Path> aliasCache = new ConcurrentHashMap<>();
+    private final Map<String, Path<?>> aliasCache = new ConcurrentHashMap<>();
 
     public DefaultAliasResolver(EntityManager entityManager) {
         this.entityManager = entityManager;
     }
 
     @Override
-    @SuppressWarnings("unchecked")
-    public void resolveJoinAlias(JoinDescription join, EntityPath<?> root) {
+    public void resolveFieldPathForJoinAlias(JoinDescription join, EntityPath<?> root) {
         Path<?> parent = join.getParent() != null ? join.getParent().getAlias() : root;
-
         Path<?> fieldOnParent = findPathOnParent(parent, join.getAlias().getType(), join);
+
         if (fieldOnParent instanceof CollectionPathBase) {
             join.collectionPath((CollectionPathBase<?, ?, ?>) fieldOnParent);
         } else if (fieldOnParent instanceof EntityPath) {
@@ -72,27 +72,32 @@ public class DefaultAliasResolver implements AliasResolver {
         List<Path<?>> candidatePaths = new ArrayList<>();
 
         for (Field field : parent.getClass().getFields()) {
-            testAliasCandidate(targetType, candidatePaths, getField(field, parent));
+            // skip self-reference and 'super' reference
+            if (!Modifier.isStatic(field.getModifiers()) && !field.getName().equals("_super")) {
+                testAliasCandidate(targetType, candidatePaths, getField(field, parent));
+            }
         }
 
         if (candidatePaths.isEmpty()) {
             findPathOnParentSubclasses(parent, targetType, candidatePaths);
         }
 
-        if (candidatePaths.isEmpty()) {
-            J.unrollChildrenJoins(Collections.singletonList(joinDescription)).forEach(j -> j.fetch(false));
-            return nullPath;
-        } else if (candidatePaths.size() == 1) {
-            return candidatePaths.get(0);
-        } else {
-            // Multiple associations on parent, try find by specified alias
-            String targetFieldName = joinDescription.getOriginalAlias().toString();
-            for (Path<?> candidatePath : candidatePaths) {
-                if (targetFieldName.equals(candidatePath.getMetadata().getElement())) {
-                    return candidatePath;
+        switch (candidatePaths.size()) {
+            case 0:
+                J.unrollChildrenJoins(Collections.singletonList(joinDescription)).forEach(j -> j.fetch(false));
+                return nullPath;
+            case 1:
+                return candidatePaths.get(0);
+            default: {
+                // Multiple associations on parent, try find by specified alias
+                String targetFieldName = joinDescription.getOriginalAlias().toString();
+                for (Path<?> candidatePath : candidatePaths) {
+                    if (targetFieldName.equals(candidatePath.getMetadata().getElement())) {
+                        return candidatePath;
+                    }
                 }
+                throw new JoinerException("Join with ambiguous alias : " + joinDescription + ". Multiple mappings found: " + candidatePaths);
             }
-            throw new JoinerException("Join with ambiguous alias : " + joinDescription + ". Multiple mappings found: " + candidatePaths);
         }
     }
 
@@ -104,10 +109,10 @@ public class DefaultAliasResolver implements AliasResolver {
      * @param candidatePaths container for found paths
      */
     private void findPathOnParentSubclasses(Path<?> parent, Class<?> targetType, List<Path<?>> candidatePaths) {
-        for (Class child : ReflectionUtils.getSubclasses(parent.getType(), entityManager)) {
+        for (Class<?> child : ReflectionUtils.getSubclasses(parent.getType(), entityManager)) {
             try {
-                Class clazz = Class.forName(child.getPackage().getName() + ".Q" + child.getSimpleName());
-                Object childInstance = ReflectionUtils.instantiate(clazz, (String) parent.getMetadata().getElement());
+                Class<?> clazz = Class.forName(child.getPackage().getName() + ".Q" + child.getSimpleName());
+                Object childInstance = ReflectionUtils.instantiate(clazz, parent.getMetadata().getElement());
                 for (Field field : clazz.getFields()) {
                     testAliasCandidate(targetType, candidatePaths, getField(field, childInstance));
                 }
@@ -125,7 +130,7 @@ public class DefaultAliasResolver implements AliasResolver {
                 candidatePaths.add((Path<?>) candidate);
             }
         } else if (candidate instanceof EntityPathBase) {
-            Class<?> type = ((EntityPathBase) candidate).getType();
+            Class<?> type = ((EntityPathBase<?>) candidate).getType();
             if (type.isAssignableFrom(targetType)) {
                 candidatePaths.add((Path<?>) candidate);
             }

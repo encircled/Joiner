@@ -8,23 +8,24 @@ import cz.encircled.joiner.query.join.JoinGraphRegistry;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.env.Environment;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestExecutionListeners;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
-import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 import org.springframework.test.context.support.DependencyInjectionTestExecutionListener;
 import org.springframework.test.context.transaction.TransactionalTestExecutionListener;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityManager;
-import javax.persistence.Persistence;
 import javax.persistence.PersistenceContext;
+import javax.persistence.spi.LoadState;
+import javax.persistence.spi.PersistenceProvider;
+import javax.persistence.spi.PersistenceProviderResolverHolder;
 import java.util.Collection;
+import java.util.List;
 
 /**
- * TODO split hibernate and EL
  * @author Kisel on 11.01.2016.
  */
 @ExtendWith(SpringExtension.class)
@@ -43,8 +44,8 @@ public abstract class AbstractTest extends TestWithLogging {
     @PersistenceContext
     protected EntityManager entityManager;
 
-    @Autowired
-    private Environment environment;
+    @Value("${orm:hibernate}")
+    private String orm;
 
     protected void assertHasName(Collection<? extends AbstractEntity> entities, String name) {
         Assertions.assertFalse(entities.isEmpty(), "Found collection must be not empty!");
@@ -59,19 +60,23 @@ public abstract class AbstractTest extends TestWithLogging {
     }
 
     protected boolean isEclipse() {
-        return hasProfiles("eclipse");
-    }
-
-    protected boolean hasProfiles(String... profiles) {
-        return environment.acceptsProfiles(profiles);
-    }
-
-    protected boolean noProfiles(String... profiles) {
-        return !environment.acceptsProfiles(profiles);
+        return orm.equals("eclipse");
     }
 
     protected boolean isLoaded(Object entity, String attribute) {
-        return Persistence.getPersistenceUtil().isLoaded(entity, attribute);
+        List<PersistenceProvider> providers = PersistenceProviderResolverHolder.getPersistenceProviderResolver().getPersistenceProviders();
+        Assertions.assertEquals(2, providers.size());
+        PersistenceProvider eclipse = providers.get(0).getClass().getName().contains("eclipse") ? providers.get(0) : providers.get(1);
+        PersistenceProvider hibernate = providers.get(0).getClass().getName().contains("eclipse") ? providers.get(1) : providers.get(0);
+        return doIsLoaded(entity, attribute, isEclipse() ? eclipse : hibernate);
+    }
+
+    private boolean doIsLoaded(Object entity, String attribute, PersistenceProvider provider) {
+        LoadState state = provider.getProviderUtil().isLoadedWithoutReference(entity, attribute);
+        if (state == LoadState.UNKNOWN) {
+            state = provider.getProviderUtil().isLoadedWithReference(entity, attribute);
+        }
+        return state != LoadState.NOT_LOADED;
     }
 
 }

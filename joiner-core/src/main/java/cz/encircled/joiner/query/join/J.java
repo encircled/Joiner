@@ -51,9 +51,9 @@ public class J {
      * @return entity path with correct alias
      */
     @SuppressWarnings("unchcecked")
-    public static <T extends EntityPath> T path(EntityPath<?> parent, T path) {
+    public static <T extends EntityPath<?>> T path(EntityPath<?> parent, T path) {
         if (parent != null) {
-            return ReflectionUtils.instantiate(path.getClass(), path.toString() + "_on_" + parent.toString());
+            return ReflectionUtils.instantiate(path.getClass(), path + "_on_" + parent);
         }
         return path;
     }
@@ -73,7 +73,7 @@ public class J {
      * @return entity path with correct alias
      */
     @SuppressWarnings("unchcecked")
-    public static <T extends EntityPath> T path(EntityPath<?> grandFather, EntityPath<?> father, T path) {
+    public static <T extends EntityPath<?>> T path(EntityPath<?> grandFather, EntityPath<?> father, T path) {
         Assert.notNull(father);
         Assert.notNull(grandFather);
 

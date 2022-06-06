@@ -10,6 +10,12 @@ import cz.encircled.joiner.query.join.JoinDescription;
  */
 public interface AliasResolver {
 
-    void resolveJoinAlias(JoinDescription join, EntityPath<?> root);
+    /**
+     * Find and set the path to field (collection or single) for the given <code>join</code>
+     *
+     * @param join
+     * @param root
+     */
+    void resolveFieldPathForJoinAlias(JoinDescription join, EntityPath<?> root);
 
 }

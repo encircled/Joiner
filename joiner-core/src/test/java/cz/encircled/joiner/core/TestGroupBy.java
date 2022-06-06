@@ -11,7 +11,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 /**
  * @author Kisel on 28.01.2016.
  */
-public class TestGroupBy extends AbstractTest {
+public abstract class TestGroupBy extends AbstractTest {
 
     @Test
     public void testGroupBy() {

@@ -11,7 +11,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 /**
  * @author Vlad on 11-Feb-17.
  */
-public class TestFindOne extends AbstractTest {
+public abstract class TestFindOne extends AbstractTest {
 
     @Test
     public void testFindOneMultipleResults() {

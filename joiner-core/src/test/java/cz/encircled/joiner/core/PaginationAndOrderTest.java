@@ -20,7 +20,7 @@ import static org.junit.jupiter.api.Assertions.*;
 /**
  * @author Kisel on 30.9.2016.
  */
-public class PaginationAndOrderTest extends AbstractTest {
+public abstract class PaginationAndOrderTest extends AbstractTest {
 
     @Test
     public void testLimit() {

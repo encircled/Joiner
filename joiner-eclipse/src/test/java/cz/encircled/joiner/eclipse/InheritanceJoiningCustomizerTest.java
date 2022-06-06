@@ -10,7 +10,6 @@ import org.eclipse.persistence.internal.queries.JoinedAttributeManager;
 import org.junit.jupiter.api.Test;
 import org.springframework.util.ReflectionUtils;
 
-import javax.persistence.Persistence;
 import javax.persistence.Query;
 import java.lang.reflect.Field;
 import java.util.List;
@@ -43,8 +42,8 @@ public class InheritanceJoiningCustomizerTest extends AbstractEclipseTest {
         assertFalse(passwords.isEmpty());
 
         for (Password password : passwords) {
-            assertTrue(Persistence.getPersistenceUtil().isLoaded(password, "normalUser"));
-            assertTrue(Persistence.getPersistenceUtil().isLoaded(password.getNormalUser(), "employmentContacts"));
+            assertTrue(isLoaded(password, "normalUser"));
+            assertTrue(isLoaded(password.getNormalUser(), "employmentContacts"));
         }
     }
 
@@ -58,9 +57,9 @@ public class InheritanceJoiningCustomizerTest extends AbstractEclipseTest {
 
         assertFalse(users.isEmpty());
         for (User user : users) {
-            assertTrue(Persistence.getPersistenceUtil().isLoaded(user, "contacts"));
+            assertTrue(isLoaded(user, "contacts"));
             for (Contact contact : user.getContacts()) {
-                assertTrue(Persistence.getPersistenceUtil().isLoaded(contact, "statuses"));
+                assertTrue(isLoaded(contact, "statuses"));
                 if (contact instanceof Phone) {
                     if (!((Phone) contact).getStatuses().isEmpty()) {
                         hasStatus = true;
