@@ -63,7 +63,7 @@ public class Joiner {
 
     private final AliasResolver aliasResolver;
 
-    private final PredicateAliasResolver predicateAliasResolver = new DefaultPredicateAliasResolver();
+    private final PredicateAliasResolver predicateAliasResolver = new DefaultPredicateAliasResolver(this);
 
     public Joiner(EntityManager entityManager) {
         Assert.notNull(entityManager);

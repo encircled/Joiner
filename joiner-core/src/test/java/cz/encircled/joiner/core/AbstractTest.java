@@ -4,6 +4,7 @@ import cz.encircled.joiner.TestDataListener;
 import cz.encircled.joiner.TestWithLogging;
 import cz.encircled.joiner.config.TestConfig;
 import cz.encircled.joiner.model.AbstractEntity;
+import cz.encircled.joiner.query.JoinerQuery;
 import cz.encircled.joiner.query.join.JoinGraphRegistry;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -24,6 +25,8 @@ import javax.persistence.spi.PersistenceProvider;
 import javax.persistence.spi.PersistenceProviderResolverHolder;
 import java.util.Collection;
 import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * @author Kisel on 11.01.2016.
@@ -63,6 +66,10 @@ public abstract class AbstractTest extends TestWithLogging {
         return orm.equals("eclipse");
     }
 
+    protected boolean isHibernate() {
+        return !isEclipse();
+    }
+
     protected boolean isLoaded(Object entity, String attribute) {
         List<PersistenceProvider> providers = PersistenceProviderResolverHolder.getPersistenceProviderResolver().getPersistenceProviders();
         Assertions.assertEquals(2, providers.size());
@@ -77,6 +84,14 @@ public abstract class AbstractTest extends TestWithLogging {
             state = provider.getProviderUtil().isLoadedWithReference(entity, attribute);
         }
         return state != LoadState.NOT_LOADED;
+    }
+
+    void assertQueryContains(String expected, JoinerQuery<?, ?> query) {
+        String actual = joiner.toJPAQuery(query).toString();
+        if (isHibernate()) {
+            actual = actual.replaceAll(" join fetch ", " join ");
+        }
+        assertTrue(actual.contains(expected), "actual: " + actual);
     }
 
 }

@@ -35,7 +35,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 @ContextConfiguration(classes = {TestConfig.class})
 public class PredicateResolverTest extends AbstractTest {
 
-    private final PredicateAliasResolver resolver = new DefaultPredicateAliasResolver();
+    private final PredicateAliasResolver resolver = new DefaultPredicateAliasResolver(joiner);
 
     private final QStatus testStatus = new QStatus("testStatus");
 

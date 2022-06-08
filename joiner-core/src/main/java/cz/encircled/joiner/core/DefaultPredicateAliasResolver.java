@@ -9,6 +9,7 @@ import com.querydsl.core.types.Path;
 import com.querydsl.core.types.PathImpl;
 import com.querydsl.core.types.Predicate;
 import com.querydsl.core.types.PredicateOperation;
+import cz.encircled.joiner.query.JoinerQuery;
 import cz.encircled.joiner.query.join.JoinDescription;
 import cz.encircled.joiner.util.ReflectionUtils;
 
@@ -24,6 +25,12 @@ import java.util.stream.Collectors;
  * @see PredicateAliasResolver
  */
 public class DefaultPredicateAliasResolver implements PredicateAliasResolver {
+
+    private final Joiner joiner;
+
+    public DefaultPredicateAliasResolver(Joiner joiner) {
+        this.joiner = joiner;
+    }
 
     @Override
     public Predicate resolvePredicate(Predicate predicate, List<JoinDescription> joins, Set<Path<?>> usedAliases) {
@@ -90,6 +97,9 @@ public class DefaultPredicateAliasResolver implements PredicateAliasResolver {
                 }
             } else if (arg instanceof Path) {
                 newArg = resolvePath((Path<?>) arg, classToJoin, usedAliases);
+            } else if (arg instanceof JoinerQuery<?, ?>) {
+                JoinerQuery<?, ?> subQuery = (JoinerQuery<?, ?>) arg;
+                subQuery.setSubQueryMetadata(joiner.toJPAQuery(subQuery).getMetadata());
             }
 
             result.args.add(newArg);

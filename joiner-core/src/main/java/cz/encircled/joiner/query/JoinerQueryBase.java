@@ -1,15 +1,19 @@
 package cz.encircled.joiner.query;
 
+import com.querydsl.core.QueryMetadata;
 import com.querydsl.core.types.EntityPath;
 import com.querydsl.core.types.Expression;
 import com.querydsl.core.types.Path;
 import com.querydsl.core.types.Predicate;
+import com.querydsl.core.types.SubQueryExpression;
+import com.querydsl.core.types.Visitor;
 import com.querydsl.core.types.dsl.CollectionPathBase;
 import cz.encircled.joiner.query.join.J;
 import cz.encircled.joiner.query.join.JoinDescription;
 import cz.encircled.joiner.util.Assert;
 import cz.encircled.joiner.util.JoinerUtils;
 
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -26,7 +30,7 @@ import java.util.stream.Collectors;
  *
  * @author Kisel on 13.9.2016.
  */
-public class JoinerQueryBase<T, R> implements JoinerQuery<T, R>, JoinRoot {
+public class JoinerQueryBase<T, R> implements JoinerQuery<T, R>, JoinRoot, SubQueryExpression<R> {
 
     private final EntityPath<T> from;
     private Expression<R> returnProjection;
@@ -57,6 +61,12 @@ public class JoinerQueryBase<T, R> implements JoinerQuery<T, R>, JoinRoot {
     private List<QueryOrder> orders = new ArrayList<>(2);
 
     private boolean isCount;
+
+    /**
+     * Is filled during predicate resolving in case when this query is a sub-query
+     */
+    @Nullable
+    private QueryMetadata subQueryMetadata;
 
     public JoinerQueryBase(EntityPath<T> from) {
         this.from = from;
@@ -358,6 +368,31 @@ public class JoinerQueryBase<T, R> implements JoinerQuery<T, R>, JoinRoot {
     @Override
     public int hashCode() {
         return Objects.hash(from, returnProjection, where, joins, joinGraphs, distinct, groupBy, having, hints, features, offset, limit, orders, isCount);
+    }
+
+    /*
+     * SUB QUERY
+     */
+
+    @Override
+    public void setSubQueryMetadata(QueryMetadata metadata) {
+        subQueryMetadata = metadata;
+    }
+
+    @Override
+    public QueryMetadata getMetadata() {
+        return subQueryMetadata;
+    }
+
+    @Nullable
+    @Override
+    public <R1, C> R1 accept(Visitor<R1, C> v, @Nullable C context) {
+        return v.visit(this, context);
+    }
+
+    @Override
+    public Class<? extends R> getType() {
+        return null;
     }
 }
 

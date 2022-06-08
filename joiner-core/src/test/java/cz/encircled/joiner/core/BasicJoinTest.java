@@ -106,7 +106,7 @@ public abstract class BasicJoinTest extends AbstractTest {
 
     @Test
     public void testNestedCollectionAndSingleJoin() {
-        if (!isEclipse()) {
+        if (isHibernate()) {
             List<Address> addresses = joiner.find(Q.from(QAddress.address));
             assertFalse(isLoaded(addresses.get(0), "user"));
             assertFalse(isLoaded(addresses.get(0).getUser(), "groups"));
@@ -199,7 +199,7 @@ public abstract class BasicJoinTest extends AbstractTest {
 
     @Test
     public void testRightJoinNoFetch() {
-        if (!isEclipse()) {
+        if (isHibernate()) {
             List<Group> groups = joiner.find(Q.from(QGroup.group)
                     .joins(J.left(QUser.user1).right().fetch(false))
                     .where(QUser.user1.name.eq("user1")));
@@ -356,11 +356,4 @@ public abstract class BasicJoinTest extends AbstractTest {
         assertQueryContains("userStatus_on_user1.id is not null", query);
     }
 
-    void assertQueryContains(String expected, JoinerQueryBase<?, ?> query) {
-        String actual = joiner.toJPAQuery(query).toString();
-        assertTrue(actual.contains(expected), "actual: " + actual);
-    }
-
 }
-
-//    SELECT FROM {oj test_group t1 LEFT OUTER JOIN test_status t0 ON (t0.group_id = t1.ID) LEFT OUTER JOIN (user_to_group t6 JOIN test_user t2 ON (t2.ID = t6.user_id) LEFT OUTER JOIN test_normal_user t3 ON (t3.ID = t2.ID) LEFT OUTER JOIN test_super_user t4 ON (t4.ID = t2.ID)) ON (t6.group_id = t1.ID) LEFT OUTER JOIN test_status t5 ON (t5.user_id = t2.ID)} WHERE (t0.ID IS NOT NULL)

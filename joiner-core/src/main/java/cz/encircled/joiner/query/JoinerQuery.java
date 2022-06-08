@@ -1,9 +1,11 @@
 package cz.encircled.joiner.query;
 
+import com.querydsl.core.QueryMetadata;
 import com.querydsl.core.types.EntityPath;
 import com.querydsl.core.types.Expression;
 import com.querydsl.core.types.Path;
 import com.querydsl.core.types.Predicate;
+import com.querydsl.core.types.SubQueryExpression;
 import com.querydsl.core.types.dsl.CollectionPathBase;
 import cz.encircled.joiner.query.join.JoinDescription;
 
@@ -19,7 +21,7 @@ import java.util.Set;
  *
  * @author Vlad on 04-Sep-16.
  */
-public interface JoinerQuery<T, R> extends JoinRoot {
+public interface JoinerQuery<T, R> extends JoinRoot, SubQueryExpression<R> {
 
     EntityPath<T> getFrom();
 
@@ -125,5 +127,7 @@ public interface JoinerQuery<T, R> extends JoinRoot {
     JoinerQuery<T, R> copy();
 
     boolean isCount();
+
+    void setSubQueryMetadata(QueryMetadata metadata);
 
 }
