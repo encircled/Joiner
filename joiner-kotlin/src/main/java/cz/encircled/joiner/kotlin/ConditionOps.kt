@@ -1,5 +1,6 @@
 package cz.encircled.joiner.kotlin
 
+import com.querydsl.core.types.Expression
 import com.querydsl.core.types.dsl.BooleanExpression
 import com.querydsl.core.types.dsl.NumberExpression
 import com.querydsl.core.types.dsl.SimpleExpression
@@ -16,6 +17,8 @@ interface ConditionOps {
 
     infix fun <T> SimpleExpression<T>.eq(to: T): BooleanExpression = eq(to)
 
+    infix fun <T> SimpleExpression<T>.eq(to: Expression<in T>): BooleanExpression = eq(to)
+
     infix fun <T> SimpleExpression<T>.isIn(to: Collection<T>): BooleanExpression = `in`(to)
 
     infix fun <T> SimpleExpression<T>.notIn(to: Collection<T>): BooleanExpression = notIn(to)
@@ -26,6 +29,10 @@ interface ConditionOps {
     infix fun <T> SimpleExpression<T>.ne(to: T): BooleanExpression = ne(to)
 
     infix fun <T> PredicateContinuation<T>.eq(to: T): BooleanExpression {
+        return t.invoke { it.eq(to) }
+    }
+
+    infix fun <T> PredicateContinuation<T>.eq(to: Expression<in T>): BooleanExpression {
         return t.invoke { it.eq(to) }
     }
 

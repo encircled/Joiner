@@ -4,6 +4,7 @@ import cz.encircled.joiner.kotlin.JoinerKtOps.innerJoin
 import cz.encircled.joiner.kotlin.JoinerKtOps.leftJoin
 import cz.encircled.joiner.kotlin.JoinerKtQueryBuilder.countOf
 import cz.encircled.joiner.kotlin.JoinerKtQueryBuilder.from
+import cz.encircled.joiner.model.QAddress
 import cz.encircled.joiner.model.QGroup
 import cz.encircled.joiner.model.QStatus
 import cz.encircled.joiner.model.QUser
@@ -35,6 +36,8 @@ class JoinerKtTest : AbstractTest() {
 
                     asc QUser.user1.id
         )
+
+        QAddress.address from QAddress.address where { it.user.id eq (QUser.user1.id from QUser.user1) }
 
         assertNotNull(find)
     }

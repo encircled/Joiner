@@ -42,10 +42,10 @@ import java.util.stream.Collectors;
 /**
  * Base class of Joiner. Contains basic database operations.
  * <p>
- *     In spring-based environment can be instantiated using spring JoinerConfiguration.
+ * In spring-based environment can be instantiated using spring JoinerConfiguration.
  * </p>
  * <p>
- *     For repository-per-entity approach this class should not be accessed directly. Instead repositories can implement {@link JoinerRepository}.
+ * For repository-per-entity approach this class should not be accessed directly. Instead repositories can implement {@link JoinerRepository}.
  * </p>
  *
  * @author Kisel on 26.01.2016.
@@ -137,11 +137,9 @@ public class Joiner {
 
         addHints(request, query);
 
-        validateAllAliases(request, usedAliases);
-
         applyPredicates(request, query, usedAliases, joins);
 
-        applyPaging(request, query);
+        applyPaging(request, query, usedAliases, joins);
 
         for (QueryFeature feature : request.getFeatures()) {
             query = doPostProcess(request, query, feature);
@@ -163,12 +161,6 @@ public class Joiner {
             }
         }
         return joins;
-    }
-
-    private <T, R> void validateAllAliases(JoinerQuery<T, R> request, Set<Path<?>> usedAliases) {
-        for (QueryOrder<?> queryOrder : request.getOrder()) {
-            checkAliasesArePresent(queryOrder.getTarget(), usedAliases);
-        }
     }
 
     /**
@@ -201,7 +193,7 @@ public class Joiner {
         }
     }
 
-    private <T, R> void applyPaging(JoinerQuery<T, R> request, JPAQuery<R> query) {
+    private <T, R> void applyPaging(JoinerQuery<T, R> request, JPAQuery<R> query, Set<Path<?>> usedAliases, List<JoinDescription> joins) {
         if (request.getLimit() != null) {
             query.limit(request.getLimit());
         }
@@ -209,8 +201,15 @@ public class Joiner {
             query.offset(request.getOffset());
         }
 
+        Map<AnnotatedElement, List<JoinDescription>> grouped = joins.stream()
+                .collect(Collectors.groupingBy(j -> j.getOriginalAlias().getAnnotatedElement()));
         for (QueryOrder queryOrder : request.getOrder()) {
-            // TODO apply predicate resolver as well
+            if (queryOrder.getTarget() instanceof Path<?>) {
+                Path<?> path = predicateAliasResolver.resolvePath((Path<?>) queryOrder.getTarget(), grouped, usedAliases);
+                queryOrder = new QueryOrder(queryOrder.isAsc(), path);
+            }
+
+            checkAliasesArePresent(queryOrder.getTarget(), usedAliases);
             query.orderBy(transformOrder(queryOrder));
         }
     }

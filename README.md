@@ -22,6 +22,7 @@ Joiner offers following extra features:
 - [TL;DR](#tldr)
 - [Basic query](#basic-query)
 - [Basic joins](#basic-join)
+- [Subquery](#subquery)
 - [Customizing a join](#customizing-a-join)
 - [Nested joins](#nested-joins)
 - [Entity inheritance](#inheritance)
@@ -109,6 +110,22 @@ joiner.find(group.name from group
 )
 ```
 
+## Subquery
+
+Subqueries have the same syntax as standard queries, for example
+
+```java
+Q.select(address.city).from(address)
+        .where(address.user.id.ne(Q.select(user.id.max()).from(user)))
+```
+
+or in Kotlin
+
+```kotlin
+address.city from address
+        where { it.user.id ne (user.id.max() from user) }
+```
+
 ## Basic join
 
 Example below shows how to join users of group. Target attribute is looked up by type and field name, so it does not
@@ -188,26 +205,11 @@ joiner.findOne(Q.from(QGroup.group)
 
 Joiner represents query joins as a graph, which allows to automatically resolve unique aliases for nested joins (even when there are name collisions in different tree branches).
 
-Aliases of ambiguous aliases for joins are determined at runtime. `J.path(...)` allows to get alias of ambiguous join.
+Aliases for ambiguous joins are determined at the runtime. `J.path(...)` allows getting the alias of a such join. Even better is to use a unique alias defined by yourself.
 
-So from previous example, the phone can be referenced directly, by the phone statuses only using `J.path(...)`:       
+So from previous example, the phone can be referenced directly, but the phone statuses only using `J.path(...)` or custom unique alias:       
 
-```java
-joiner.findOne(Q.from(QGroup.group)
-                    .joins(
-                            J.inner(QUser.user1).nested(
-                                    J.left(QPhone.phone)
-                                            .nested(QStatus.status)
-                            ),
-                            
-                            J.left(QStatus.status)
-                    )
-                    .where(QPhone.phone.type.eq("mobile")
-                                            .and(J.path(QUser.user1, QPhone.phone, QStatus.status).active.isTrue())));
-```
-
-Or, you may use a unique name:
-
+Unique name:
 ```java
 joiner.findOne(Q.from(QGroup.group)
                     .joins(
@@ -222,7 +224,23 @@ joiner.findOne(Q.from(QGroup.group)
                                             .and(new QStatus("contactStatus").active.isTrue())));
 ```
 
-If the target join is at second level, it may be referenced via parent like this:
+`J.path()`:
+```java
+joiner.findOne(Q.from(QGroup.group)
+                    .joins(
+                            J.inner(QUser.user1).nested(
+                                    J.left(QPhone.phone)
+                                            .nested(QStatus.status)
+                            ),
+                            
+                            J.left(QStatus.status)
+                    )
+                    .where(QPhone.phone.type.eq("mobile")
+                                            .and(J.path(QUser.user1, QPhone.phone, QStatus.status).active.isTrue())));
+```
+
+
+If the target join is at the second level, it may be as well referenced via parent:
 
 ```java
 joiner.findOne(Q.from(QGroup.group)
@@ -249,14 +267,14 @@ Joining an attribute, which is present on a subclass only (`Key` is present on `
 ```java
 joiner.findOne(Q.from(QGroup.group)
                   .joins(J.left(QSuperUser.superUser)
-                  .nested(QKey.key))
+                        .nested(QKey.key))
                   .where(QGroup.group.id.eq(1L)));
 ```
 
 ## Result projection
 
 By default, `find` and `findOne` return an object(s) of type passed to `from` method. Customizing of result projection
-is possible using `Q.select` method. Lets find the active phone number of John:
+is possible using `Q.select` method. Finding the active phone number of John:
 
 ```java
 String number = joiner.findOne(Q.select(phone.number)
@@ -266,14 +284,15 @@ String number = joiner.findOne(Q.select(phone.number)
         );
 ```
 
-Or tuple:
+Or a tuple:
 
 ```java
-List<Tuple> tuple = joiner.findOne(user.surname, Q.select(phone.number)
+List<Tuple> tuple = joiner.findOne(Q.select(user.firstName, user.lastName, phone.number)
                                       .from(user)
                                       .joins(J.inner(phone).nested(status))
                                       .where(user.name.eq("John").and(status.active.isTrue()))
         );
+  String number = tuple.get(0).get(phone.number)
 ```
 
 in Kotlin:

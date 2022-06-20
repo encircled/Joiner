@@ -1,5 +1,6 @@
 package cz.encircled.joiner.query;
 
+import com.querydsl.core.DefaultQueryMetadata;
 import com.querydsl.core.QueryMetadata;
 import com.querydsl.core.types.EntityPath;
 import com.querydsl.core.types.Expression;
@@ -381,6 +382,14 @@ public class JoinerQueryBase<T, R> implements JoinerQuery<T, R>, JoinRoot, SubQu
 
     @Override
     public QueryMetadata getMetadata() {
+        // Might happen if a query is being compiled before execution (for instance called toString)
+        if (subQueryMetadata == null) {
+            DefaultQueryMetadata metadata = new DefaultQueryMetadata();
+            metadata.addWhere(where);
+            metadata.setProjection(from);
+            return metadata;
+        }
+
         return subQueryMetadata;
     }
 

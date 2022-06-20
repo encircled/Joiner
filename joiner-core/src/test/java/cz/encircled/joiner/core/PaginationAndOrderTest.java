@@ -7,8 +7,11 @@ import cz.encircled.joiner.model.QAddress;
 import cz.encircled.joiner.model.QGroup;
 import cz.encircled.joiner.model.QStatus;
 import cz.encircled.joiner.model.QUser;
+import cz.encircled.joiner.model.Status;
 import cz.encircled.joiner.model.User;
+import cz.encircled.joiner.query.JoinerQueryBase;
 import cz.encircled.joiner.query.Q;
+import cz.encircled.joiner.query.join.J;
 import org.junit.jupiter.api.Test;
 
 import java.util.Comparator;
@@ -43,6 +46,19 @@ public abstract class PaginationAndOrderTest extends AbstractTest {
         assertTrue(users.size() > 1);
 
         assertTrue(isSorted(users, false));
+    }
+
+    @Test
+    public void testOrderAscFromJoin() {
+        JoinerQueryBase<Status, Status> query = Q.select(QStatus.status).from(QStatus.status)
+                .joins(J.inner(QGroup.group).nested(J.inner(new QUser("test"))))
+                .asc(new QUser("test").name);
+
+        assertQueryContains("select distinct status\n" +
+                "from Status status\n" +
+                "  inner join status.group as group1\n" +
+                "  inner join group1.users as test_on_group1\n" +
+                "order by test_on_group1.name asc", query);
     }
 
     @Test
