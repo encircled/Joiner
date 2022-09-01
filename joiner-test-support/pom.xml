@@ -10,6 +10,11 @@
     <artifactId>joiner-test-support</artifactId>
 
     <dependencies>
+        <dependency>
+            <groupId>javax.annotation</groupId>
+            <artifactId>javax.annotation-api</artifactId>
+            <version>1.3.2</version>
+        </dependency>
         <!-- JUnit -->
         <dependency>
             <groupId>org.junit.jupiter</groupId>
@@ -33,11 +38,6 @@
         <dependency>
             <groupId>com.querydsl</groupId>
             <artifactId>querydsl-apt</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>javax.annotation</groupId>
-            <artifactId>javax.annotation-api</artifactId>
         </dependency>
 
         <!-- Spring -->

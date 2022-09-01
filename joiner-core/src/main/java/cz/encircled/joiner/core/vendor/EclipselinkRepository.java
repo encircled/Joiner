@@ -1,6 +1,5 @@
 package cz.encircled.joiner.core.vendor;
 
-import com.google.common.collect.ArrayListMultimap;
 import com.querydsl.core.JoinType;
 import com.querydsl.core.types.EntityPath;
 import com.querydsl.jpa.EclipseLinkTemplates;
@@ -9,6 +8,7 @@ import com.querydsl.jpa.impl.JPAQuery;
 import cz.encircled.joiner.exception.JoinerException;
 import cz.encircled.joiner.query.ExtendedJPAQuery;
 import cz.encircled.joiner.query.join.JoinDescription;
+import cz.encircled.joiner.util.MultiValueMap;
 import cz.encircled.joiner.util.ReflectionUtils;
 
 import javax.persistence.EntityManager;
@@ -32,7 +32,7 @@ public class EclipselinkRepository extends AbstractVendorRepository implements J
 
     private void makeInsertionOrderHints(AbstractJPAQuery<?, ?> sourceQuery) {
         Field f = ReflectionUtils.findField(AbstractJPAQuery.class, "hints");
-        ReflectionUtils.setField(f, sourceQuery, ArrayListMultimap.create());
+        ReflectionUtils.setField(f, sourceQuery, new MultiValueMap<>());
     }
 
     @Override

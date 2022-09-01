@@ -1,6 +1,5 @@
 package cz.encircled.joiner.core;
 
-import com.google.common.collect.ArrayListMultimap;
 import com.querydsl.core.types.EntityPath;
 import com.querydsl.core.types.Expression;
 import com.querydsl.core.types.Order;
@@ -24,11 +23,11 @@ import cz.encircled.joiner.query.join.JoinDescription;
 import cz.encircled.joiner.query.join.JoinGraphRegistry;
 import cz.encircled.joiner.util.Assert;
 import cz.encircled.joiner.util.JoinerUtils;
+import cz.encircled.joiner.util.MultiValueMap;
 import cz.encircled.joiner.util.ReflectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.annotation.concurrent.ThreadSafe;
 import javax.persistence.EntityManager;
 import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Field;
@@ -50,7 +49,6 @@ import java.util.stream.Collectors;
  *
  * @author Kisel on 26.01.2016.
  */
-@ThreadSafe
 public class Joiner {
 
     private static final Logger log = LoggerFactory.getLogger(Joiner.class);
@@ -250,7 +248,7 @@ public class Joiner {
 
     private void makeInsertionOrderHints(AbstractJPAQuery<?, ?> sourceQuery) {
         Field f = ReflectionUtils.findField(AbstractJPAQuery.class, "hints");
-        ReflectionUtils.setField(f, sourceQuery, ArrayListMultimap.create());
+        ReflectionUtils.setField(f, sourceQuery, new MultiValueMap<>());
     }
 
     private void addJoins(List<JoinDescription> joins, JPAQuery<?> query, EntityPath<?> rootPath, boolean doFetch) {

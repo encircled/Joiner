@@ -14,7 +14,6 @@ import cz.encircled.joiner.query.join.JoinDescription;
 import cz.encircled.joiner.util.Assert;
 import cz.encircled.joiner.util.JoinerUtils;
 
-import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -66,7 +65,6 @@ public class JoinerQueryBase<T, R> implements JoinerQuery<T, R>, JoinRoot, SubQu
     /**
      * Is filled during predicate resolving in case when this query is a sub-query
      */
-    @Nullable
     private QueryMetadata subQueryMetadata;
 
     public JoinerQueryBase(EntityPath<T> from) {
@@ -393,9 +391,8 @@ public class JoinerQueryBase<T, R> implements JoinerQuery<T, R>, JoinRoot, SubQu
         return subQueryMetadata;
     }
 
-    @Nullable
     @Override
-    public <R1, C> R1 accept(Visitor<R1, C> v, @Nullable C context) {
+    public <R1, C> R1 accept(Visitor<R1, C> v, C context) {
         return v.visit(this, context);
     }
 

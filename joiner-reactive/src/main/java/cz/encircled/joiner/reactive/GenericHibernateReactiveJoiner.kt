@@ -23,6 +23,8 @@ abstract class GenericHibernateReactiveJoiner(val emf: EntityManagerFactory) {
 
     private var sessionFactory: SessionFactory = emf.unwrap(SessionFactory::class.java)
 
+    private val constantPrefix: String = "a"
+
     init {
         println("Creating GenericHibernateReactiveJoiner")
     }
@@ -116,7 +118,7 @@ abstract class GenericHibernateReactiveJoiner(val emf: EntityManagerFactory) {
         query.limit?.apply { jpaQuery.setMaxResults(toInt()) }
         query.offset?.apply { jpaQuery.setFirstResult(toInt()) }
 
-        setConstants(jpaQuery, serializer.constantToAllLabels, queryDsl.metadata.params)
+        setConstants(jpaQuery, serializer.constantToLabel, queryDsl.metadata.params)
 
         return jpaQuery
     }
@@ -136,7 +138,7 @@ abstract class GenericHibernateReactiveJoiner(val emf: EntityManagerFactory) {
                 }
             }
 
-            query.setParameter(Integer.valueOf(key), value)
+            query.setParameter(Integer.valueOf(key.replace(constantPrefix, "")), value)
         }
     }
 

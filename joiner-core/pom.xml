@@ -24,6 +24,10 @@
     </developers>
 
     <dependencies>
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-collections4</artifactId>
+        </dependency>
         <!-- JPA -->
         <dependency>
             <groupId>org.hibernate.javax.persistence</groupId>

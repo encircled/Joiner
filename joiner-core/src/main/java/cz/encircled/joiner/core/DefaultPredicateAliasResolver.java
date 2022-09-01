@@ -1,6 +1,5 @@
 package cz.encircled.joiner.core;
 
-import com.google.common.collect.ImmutableList;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.Expression;
 import com.querydsl.core.types.Operation;
@@ -19,6 +18,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
+
+import static java.util.Arrays.asList;
 
 /**
  * @author Vlad on 10-Feb-17.
@@ -49,9 +50,9 @@ public class DefaultPredicateAliasResolver implements PredicateAliasResolver {
         PredicateHolder result = rebuildPredicate(new PredicateHolder(operation.getArgs(), operation.getOperator()), elemToJoin, usedAliases);
 
         if (result.args.size() == 2) {
-            return ReflectionUtils.instantiate(PredicateOperation.class, result.operator, ImmutableList.of(result.args.get(0), result.args.get(1)));
+            return ReflectionUtils.instantiate(PredicateOperation.class, result.operator, asList(result.args.get(0), result.args.get(1)));
         } else {
-            return ReflectionUtils.instantiate(PredicateOperation.class, result.operator, ImmutableList.of(result.args.get(0)));
+            return ReflectionUtils.instantiate(PredicateOperation.class, result.operator, asList(result.args.get(0)));
         }
     }
 
@@ -91,9 +92,9 @@ public class DefaultPredicateAliasResolver implements PredicateAliasResolver {
 
                 if (nestedResult.args.size() == 2) {
                     newArg = ReflectionUtils
-                            .instantiate(PredicateOperation.class, nestedResult.operator, ImmutableList.of(nestedResult.args.get(0), nestedResult.args.get(1)));
+                            .instantiate(PredicateOperation.class, nestedResult.operator, asList(nestedResult.args.get(0), nestedResult.args.get(1)));
                 } else {
-                    newArg = ReflectionUtils.instantiate(PredicateOperation.class, nestedResult.operator, ImmutableList.of(nestedResult.args.get(0)));
+                    newArg = ReflectionUtils.instantiate(PredicateOperation.class, nestedResult.operator, asList(nestedResult.args.get(0)));
                 }
             } else if (arg instanceof Path) {
                 newArg = resolvePath((Path<?>) arg, classToJoin, usedAliases);
