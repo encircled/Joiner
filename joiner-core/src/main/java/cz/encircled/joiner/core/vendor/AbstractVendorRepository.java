@@ -4,8 +4,9 @@ import com.querydsl.core.types.CollectionExpression;
 import com.querydsl.core.types.EntityPath;
 import com.querydsl.core.types.Expression;
 import com.querydsl.core.types.Path;
-import com.querydsl.jpa.impl.JPAQuery;
+import com.querydsl.jpa.JPQLQuery;
 import cz.encircled.joiner.exception.JoinerException;
+import cz.encircled.joiner.query.JoinerQuery;
 import cz.encircled.joiner.query.join.JoinDescription;
 
 import java.util.List;
@@ -19,7 +20,7 @@ public abstract class AbstractVendorRepository implements JoinerVendorRepository
 
     @Override
     @SuppressWarnings("unchecked")
-    public void addJoin(JPAQuery<?> query, JoinDescription joinDescription) {
+    public void addJoin(JPQLQuery<?> query, JoinDescription joinDescription) {
         Path<Object> alias = (Path<Object>) joinDescription.getAlias();
 
         switch (joinDescription.getJoinType()) {
@@ -60,7 +61,7 @@ public abstract class AbstractVendorRepository implements JoinerVendorRepository
     }
 
     @Override
-    public <T> List<T> getResultList(JPAQuery<T> query, Expression<T> projection) {
+    public <T> List<T> getResultList(JoinerQuery<?, T> request, JPQLQuery<T> query, Expression<T> projection) {
         return query.fetch();
     }
 }

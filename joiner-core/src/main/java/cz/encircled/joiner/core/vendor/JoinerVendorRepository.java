@@ -2,8 +2,8 @@ package cz.encircled.joiner.core.vendor;
 
 import com.querydsl.core.types.EntityPath;
 import com.querydsl.core.types.Expression;
-import com.querydsl.jpa.impl.JPAQuery;
-import cz.encircled.joiner.query.ExtendedJPAQuery;
+import com.querydsl.jpa.JPQLQuery;
+import cz.encircled.joiner.query.JoinerQuery;
 import cz.encircled.joiner.query.join.JoinDescription;
 
 import javax.persistence.EntityManager;
@@ -17,12 +17,12 @@ import java.util.List;
  */
 public interface JoinerVendorRepository {
 
-    <R> ExtendedJPAQuery<R> createQuery(EntityManager entityManager);
+    <R> JPQLQuery<R> createQuery(EntityManager entityManager, boolean useStatelessSessions);
 
-    void addJoin(JPAQuery<?> query, JoinDescription joinDescription);
+    void addJoin(JPQLQuery<?> query, JoinDescription joinDescription);
 
-    void addFetch(JPAQuery<?> query, JoinDescription joinDescription, Collection<JoinDescription> joins, EntityPath<?> rootPath);
+    void addFetch(JPQLQuery<?> query, JoinDescription joinDescription, Collection<JoinDescription> joins, EntityPath<?> rootPath);
 
-    <T> List<T> getResultList(JPAQuery<T> query, Expression<T> projection);
+    <T> List<T> getResultList(JoinerQuery<?, T> request, JPQLQuery<T> query, Expression<T> projection);
 
 }

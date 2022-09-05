@@ -5,7 +5,7 @@ import com.querydsl.core.types.Expression;
 import com.querydsl.core.types.Path;
 import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.core.types.dsl.PathBuilder;
-import cz.encircled.joiner.query.ExtendedJPAQuery;
+import com.querydsl.jpa.JPQLQuery;
 import cz.encircled.joiner.query.JoinerQuery;
 import cz.encircled.joiner.query.QueryFeature;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -49,7 +49,7 @@ public class PageableFeature implements QueryFeature {
     }
 
     @Override
-    public <T, R> ExtendedJPAQuery<R> after(JoinerQuery<T, R> request, ExtendedJPAQuery<R> query) {
+    public <T, R> JPQLQuery<R> after(JoinerQuery<T, R> request, JPQLQuery<R> query) {
         return query;
     }
 

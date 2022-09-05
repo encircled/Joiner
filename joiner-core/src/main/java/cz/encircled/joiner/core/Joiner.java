@@ -6,15 +6,14 @@ import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Path;
 import com.querydsl.core.types.Predicate;
+import com.querydsl.jpa.JPQLQuery;
 import com.querydsl.jpa.impl.AbstractJPAQuery;
-import com.querydsl.jpa.impl.JPAQuery;
 import cz.encircled.joiner.core.vendor.EclipselinkRepository;
 import cz.encircled.joiner.core.vendor.HibernateRepository;
 import cz.encircled.joiner.core.vendor.JoinerVendorRepository;
 import cz.encircled.joiner.exception.AliasMissingException;
 import cz.encircled.joiner.exception.JoinerException;
 import cz.encircled.joiner.exception.JoinerExceptions;
-import cz.encircled.joiner.query.ExtendedJPAQuery;
 import cz.encircled.joiner.query.JoinerQuery;
 import cz.encircled.joiner.query.QueryFeature;
 import cz.encircled.joiner.query.QueryOrder;
@@ -59,6 +58,8 @@ public class Joiner {
 
     private JoinGraphRegistry joinGraphRegistry;
 
+    private boolean useStatelessSessions = false;
+
     private final AliasResolver aliasResolver;
 
     private final PredicateAliasResolver predicateAliasResolver = new DefaultPredicateAliasResolver(this);
@@ -96,16 +97,16 @@ public class Joiner {
     }
 
     public <T, R> List<R> find(JoinerQuery<T, R> request) {
-        JPAQuery<R> query = toJPAQuery(request);
+        JPQLQuery<R> query = toJPAQuery(request);
 
         if (request.isCount()) {
             return (List<R>) Collections.singletonList(query.fetchCount());
         } else {
-            return joinerVendorRepository.getResultList(query, request.getReturnProjection());
+            return joinerVendorRepository.getResultList(request, query, request.getReturnProjection());
         }
     }
 
-    public <T, R> ExtendedJPAQuery<R> toJPAQuery(JoinerQuery<T, R> request) {
+    public <T, R> JPQLQuery<R> toJPAQuery(JoinerQuery<T, R> request) {
         Assert.notNull(request);
         Assert.notNull(request.getFrom());
 
@@ -115,7 +116,7 @@ public class Joiner {
             request = doPreProcess(request, feature);
         }
 
-        ExtendedJPAQuery<R> query = joinerVendorRepository.createQuery(entityManager);
+        JPQLQuery<R> query = joinerVendorRepository.createQuery(entityManager, useStatelessSessions);
         makeInsertionOrderHints(query);
 
         query.from(request.getFrom());
@@ -171,7 +172,7 @@ public class Joiner {
      * @param <T>
      * @param <R>
      */
-    private <T, R> void applyPredicates(JoinerQuery<T, R> request, JPAQuery<R> query, Set<Path<?>> usedAliases, List<JoinDescription> joins) {
+    private <T, R> void applyPredicates(JoinerQuery<T, R> request, JPQLQuery<R> query, Set<Path<?>> usedAliases, List<JoinDescription> joins) {
         if (request.getWhere() != null) {
             Predicate where = predicateAliasResolver.resolvePredicate(request.getWhere(), joins, usedAliases);
             checkAliasesArePresent(where, usedAliases);
@@ -191,7 +192,7 @@ public class Joiner {
         }
     }
 
-    private <T, R> void applyPaging(JoinerQuery<T, R> request, JPAQuery<R> query, Set<Path<?>> usedAliases, List<JoinDescription> joins) {
+    private <T, R> void applyPaging(JoinerQuery<T, R> request, JPQLQuery<R> query, Set<Path<?>> usedAliases, List<JoinDescription> joins) {
         if (request.getLimit() != null) {
             query.limit(request.getLimit());
         }
@@ -211,7 +212,6 @@ public class Joiner {
             query.orderBy(transformOrder(queryOrder));
         }
     }
-
 
     private <T extends Comparable<?>> OrderSpecifier<T> transformOrder(QueryOrder<T> queryOrder) {
         return new OrderSpecifier<>(queryOrder.isAsc() ? Order.ASC : Order.DESC, queryOrder.getTarget());
@@ -238,7 +238,7 @@ public class Joiner {
         }
     }
 
-    private <T, R> ExtendedJPAQuery<R> doPostProcess(JoinerQuery<T, R> request, ExtendedJPAQuery<R> query, QueryFeature feature) {
+    private <T, R> JPQLQuery<R> doPostProcess(JoinerQuery<T, R> request, JPQLQuery<R> query, QueryFeature feature) {
         return feature.after(request, query);
     }
 
@@ -246,12 +246,14 @@ public class Joiner {
         return feature.before(request);
     }
 
-    private void makeInsertionOrderHints(AbstractJPAQuery<?, ?> sourceQuery) {
-        Field f = ReflectionUtils.findField(AbstractJPAQuery.class, "hints");
-        ReflectionUtils.setField(f, sourceQuery, new MultiValueMap<>());
+    private void makeInsertionOrderHints(JPQLQuery<?> sourceQuery) {
+        if (sourceQuery instanceof AbstractJPAQuery) {
+            Field f = ReflectionUtils.findField(AbstractJPAQuery.class, "hints");
+            ReflectionUtils.setField(f, sourceQuery, new MultiValueMap<>());
+        }
     }
 
-    private void addJoins(List<JoinDescription> joins, JPAQuery<?> query, EntityPath<?> rootPath, boolean doFetch) {
+    private void addJoins(List<JoinDescription> joins, JPQLQuery<?> query, EntityPath<?> rootPath, boolean doFetch) {
         for (JoinDescription join : joins) {
             joinerVendorRepository.addJoin(query, join);
             if (doFetch && join.isFetch()) {
@@ -260,11 +262,13 @@ public class Joiner {
         }
     }
 
-    private void addHints(JoinerQuery<?, ?> request, JPAQuery<?> query) {
-        for (Map.Entry<String, List<Object>> entry : request.getHints().entrySet()) {
-            if (entry.getValue() != null) {
-                for (Object value : entry.getValue()) {
-                    query.setHint(entry.getKey(), value);
+    private void addHints(JoinerQuery<?, ?> request, JPQLQuery<?> query) {
+        if (query instanceof AbstractJPAQuery) {
+            for (Map.Entry<String, List<Object>> entry : request.getHints().entrySet()) {
+                if (entry.getValue() != null) {
+                    for (Object value : entry.getValue()) {
+                        ((AbstractJPAQuery) query).setHint(entry.getKey(), value);
+                    }
                 }
             }
         }
@@ -281,9 +285,15 @@ public class Joiner {
         }
     }
 
-
     public void setJoinGraphRegistry(JoinGraphRegistry joinGraphRegistry) {
         this.joinGraphRegistry = joinGraphRegistry;
+    }
+
+    public void setUseStatelessSessions(boolean useStatelessSessions) {
+        if (!(joinerVendorRepository instanceof HibernateRepository)) {
+            throw new IllegalStateException("StatelessSessions are supported in Hibernate only!");
+        }
+        this.useStatelessSessions = useStatelessSessions;
     }
 
 }

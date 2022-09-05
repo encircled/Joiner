@@ -3,10 +3,10 @@ package cz.encircled.joiner.core.vendor;
 import com.querydsl.core.JoinType;
 import com.querydsl.core.types.EntityPath;
 import com.querydsl.jpa.EclipseLinkTemplates;
+import com.querydsl.jpa.JPQLQuery;
 import com.querydsl.jpa.impl.AbstractJPAQuery;
 import com.querydsl.jpa.impl.JPAQuery;
 import cz.encircled.joiner.exception.JoinerException;
-import cz.encircled.joiner.query.ExtendedJPAQuery;
 import cz.encircled.joiner.query.join.JoinDescription;
 import cz.encircled.joiner.util.MultiValueMap;
 import cz.encircled.joiner.util.ReflectionUtils;
@@ -24,10 +24,10 @@ public class EclipselinkRepository extends AbstractVendorRepository implements J
     private static final String DOT_ESCAPED = "\\.";
 
     @Override
-    public <R> ExtendedJPAQuery<R> createQuery(EntityManager entityManager) {
+    public <R> JPQLQuery<R> createQuery(EntityManager entityManager, boolean useStatelessSessions) {
         JPAQuery<R> query = new JPAQuery<>(entityManager, EclipseLinkTemplates.DEFAULT);
         makeInsertionOrderHints(query);
-        return new ExtendedJPAQuery<>(entityManager, query);
+        return query;
     }
 
     private void makeInsertionOrderHints(AbstractJPAQuery<?, ?> sourceQuery) {
@@ -36,16 +36,16 @@ public class EclipselinkRepository extends AbstractVendorRepository implements J
     }
 
     @Override
-    public void addFetch(JPAQuery<?> query, JoinDescription joinDescription, Collection<JoinDescription> joins, EntityPath<?> rootPath) {
+    public void addFetch(JPQLQuery<?> query, JoinDescription joinDescription, Collection<JoinDescription> joins, EntityPath<?> rootPath) {
         String rootEntityAlias = rootPath.getMetadata().getName();
         String path = resolvePathToFieldFromRoot(rootEntityAlias, joinDescription, joins);
 
         String fetchHint = joinDescription.getJoinType().equals(JoinType.LEFTJOIN) ? "eclipselink.left-join-fetch" : "eclipselink.join-fetch";
-        query.setHint(fetchHint, path);
+        ((AbstractJPAQuery<?, ?>) query).setHint(fetchHint, path);
     }
 
     @Override
-    public void addJoin(JPAQuery query, JoinDescription joinDescription) {
+    public void addJoin(JPQLQuery query, JoinDescription joinDescription) {
         if (joinDescription.getJoinType().equals(JoinType.RIGHTJOIN)) {
             throw new JoinerException("Right join is not supported in EclipseLink!");
         }

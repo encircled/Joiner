@@ -2,9 +2,11 @@ package cz.encircled.joiner.eclipse;
 
 import com.querydsl.core.types.Expression;
 import com.querydsl.core.types.FactoryExpression;
+import com.querydsl.jpa.JPQLQuery;
 import com.querydsl.jpa.impl.JPAQuery;
 import cz.encircled.joiner.core.vendor.EclipselinkRepository;
 import cz.encircled.joiner.core.vendor.JoinerVendorRepository;
+import cz.encircled.joiner.query.JoinerQuery;
 import cz.encircled.joiner.util.ReflectionUtils;
 import org.eclipse.persistence.internal.jpa.QueryImpl;
 import org.eclipse.persistence.internal.queries.JoinedAttributeManager;
@@ -23,8 +25,8 @@ public class EnchancedEclipselinkRepository extends EclipselinkRepository implem
     // TODO test for fixed joinedAttributeManager is missing
     @Override
     @SuppressWarnings("unchecked")
-    public <T> List<T> getResultList(JPAQuery<T> query, Expression<T> projection) {
-        Query jpaQuery = query.createQuery();
+    public <T> List<T> getResultList(JoinerQuery<?, T> request, JPQLQuery<T> query, Expression<T> projection) {
+        Query jpaQuery = ((JPAQuery) query).createQuery();
 
         if (jpaQuery instanceof QueryImpl) {
             QueryImpl casted = (QueryImpl) jpaQuery;
