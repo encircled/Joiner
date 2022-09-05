@@ -9,6 +9,7 @@ import cz.encircled.joiner.query.QueryFeature;
 import org.junit.jupiter.api.Test;
 
 import java.util.Collections;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
@@ -67,6 +68,33 @@ public abstract class QueryFeatureTest extends AbstractTest {
             }
         });
         assertThrows(TestException.class, () -> joiner.find(request));
+    }
+
+    @Test
+    public void testQueryFeaturePostLoad() {
+        JoinerQuery<User, User> request = Q.from(QUser.user1).addFeatures(new QueryFeature() {
+            @Override
+            public <T, R> void postLoad(JoinerQuery<T, R> request, List<R> result) {
+                throw new TestException();
+            }
+        });
+        assertThrows(TestException.class, () -> joiner.find(request));
+    }
+
+    @Test
+    public void testDefaultQueryFeature() {
+        try {
+            joiner.setJoinerProperties(new JoinerProperties().addDefaultQueryFeature(new QueryFeature() {
+                @Override
+                public <T, R> void postLoad(JoinerQuery<T, R> request, List<R> result) {
+                    throw new TestException();
+                }
+            }));
+
+            assertThrows(TestException.class, () -> joiner.find(Q.from(QUser.user1)));
+        } finally {
+            joiner.setJoinerProperties(null);
+        }
     }
 
 }

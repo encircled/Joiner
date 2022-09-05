@@ -1,11 +1,11 @@
 package cz.encircled.joiner.core.vendor;
 
 import com.querydsl.core.types.EntityPath;
-import com.querydsl.core.types.Expression;
 import com.querydsl.jpa.HQLTemplates;
 import com.querydsl.jpa.JPQLQuery;
 import com.querydsl.jpa.hibernate.HibernateQuery;
 import com.querydsl.jpa.impl.JPAQuery;
+import cz.encircled.joiner.core.JoinerProperties;
 import cz.encircled.joiner.query.JoinerQuery;
 import cz.encircled.joiner.query.join.JoinDescription;
 import org.hibernate.Session;
@@ -37,7 +37,7 @@ public class HibernateRepository extends AbstractVendorRepository implements Joi
     }
 
     @Override
-    public <T> List<T> getResultList(JoinerQuery<?, T> request, JPQLQuery<T> query, Expression<T> projection) {
+    public <T> List<T> getResultList(JoinerQuery<?, T> request, JPQLQuery<T> query, JoinerProperties joinerProperties) {
         if (query instanceof HibernateQuery) {
             Query<T> jpaQuery = ((HibernateQuery<T>) query).createQuery();
             for (Map.Entry<String, List<Object>> entry : request.getHints().entrySet()) {
@@ -45,14 +45,19 @@ public class HibernateRepository extends AbstractVendorRepository implements Joi
                     jpaQuery.setHint(entry.getKey(), value);
                 }
             }
+            for (Map.Entry<String, List<Object>> entry : joinerProperties.defaultHints.entrySet()) {
+                for (Object value : entry.getValue()) {
+                    jpaQuery.setHint(entry.getKey(), value);
+                }
+            }
             return jpaQuery.getResultList();
         }
-        return super.getResultList(request, query, projection);
+        return super.getResultList(request, query, joinerProperties);
     }
 
     @Override
-    public <R> JPQLQuery<R> createQuery(EntityManager entityManager, boolean useStatelessSessions) {
-        if (useStatelessSessions) {
+    public <R> JPQLQuery<R> createQuery(EntityManager entityManager, JoinerProperties joinerProperties) {
+        if (joinerProperties.useStatelessSessions) {
             StatelessSession session = getStatelessSession(entityManager);
             return new HibernateQuery<>(session);
         }

@@ -2,6 +2,8 @@ package cz.encircled.joiner.query;
 
 import com.querydsl.jpa.JPQLQuery;
 
+import java.util.List;
+
 /**
  * Query features allow to modify the request/query before executing in declarative way
  *
@@ -10,7 +12,7 @@ import com.querydsl.jpa.JPQLQuery;
 public interface QueryFeature {
 
     /**
-     * This method is called before JPA query creation and allows the request modification
+     * This method is invoked before a JPA query creation and allows the request modification
      *
      * @param request initial joiner request
      * @param <T>     query from
@@ -22,7 +24,7 @@ public interface QueryFeature {
     }
 
     /**
-     * This method is called just before JPA query execution and allows to modify the result query directly
+     * This method is invoked just before a JPA query execution and allows to modify the result query directly
      *
      * @param request initial joiner request
      * @param query   JPA query
@@ -31,5 +33,14 @@ public interface QueryFeature {
     default <T, R> JPQLQuery<R> after(JoinerQuery<T, R> request, JPQLQuery<R> query) {
         return query;
     }
+
+    /**
+     * This method is invoked after the result set is fetched, similar to JPA @PostLoad
+     *
+     * @param request initial joiner request
+     * @param <T>     query from
+     * @param <R>     query return type
+     */
+    default <T, R> void postLoad(JoinerQuery<T, R> request, List<R> result) {}
 
 }

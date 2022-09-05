@@ -1,9 +1,9 @@
 package cz.encircled.joiner.eclipse;
 
-import com.querydsl.core.types.Expression;
 import com.querydsl.core.types.FactoryExpression;
 import com.querydsl.jpa.JPQLQuery;
 import com.querydsl.jpa.impl.JPAQuery;
+import cz.encircled.joiner.core.JoinerProperties;
 import cz.encircled.joiner.core.vendor.EclipselinkRepository;
 import cz.encircled.joiner.core.vendor.JoinerVendorRepository;
 import cz.encircled.joiner.query.JoinerQuery;
@@ -25,7 +25,7 @@ public class EnchancedEclipselinkRepository extends EclipselinkRepository implem
     // TODO test for fixed joinedAttributeManager is missing
     @Override
     @SuppressWarnings("unchecked")
-    public <T> List<T> getResultList(JoinerQuery<?, T> request, JPQLQuery<T> query, Expression<T> projection) {
+    public <T> List<T> getResultList(JoinerQuery<?, T> request, JPQLQuery<T> query, JoinerProperties joinerProperties) {
         Query jpaQuery = ((JPAQuery) query).createQuery();
 
         if (jpaQuery instanceof QueryImpl) {
@@ -43,8 +43,8 @@ public class EnchancedEclipselinkRepository extends EclipselinkRepository implem
             }
         }
 
-        if (projection instanceof FactoryExpression) {
-            FactoryExpression factoryExpression = (FactoryExpression) projection;
+        if (request.getReturnProjection() instanceof FactoryExpression) {
+            FactoryExpression factoryExpression = (FactoryExpression) request.getReturnProjection();
 
             List<?> results = jpaQuery.getResultList();
             List<Object> rv = new ArrayList<>(results.size());

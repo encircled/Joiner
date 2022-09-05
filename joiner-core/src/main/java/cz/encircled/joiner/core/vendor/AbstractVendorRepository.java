@@ -2,9 +2,9 @@ package cz.encircled.joiner.core.vendor;
 
 import com.querydsl.core.types.CollectionExpression;
 import com.querydsl.core.types.EntityPath;
-import com.querydsl.core.types.Expression;
 import com.querydsl.core.types.Path;
 import com.querydsl.jpa.JPQLQuery;
+import cz.encircled.joiner.core.JoinerProperties;
 import cz.encircled.joiner.exception.JoinerException;
 import cz.encircled.joiner.query.JoinerQuery;
 import cz.encircled.joiner.query.join.JoinDescription;
@@ -61,7 +61,7 @@ public abstract class AbstractVendorRepository implements JoinerVendorRepository
     }
 
     @Override
-    public <T> List<T> getResultList(JoinerQuery<?, T> request, JPQLQuery<T> query, Expression<T> projection) {
+    public <T> List<T> getResultList(JoinerQuery<?, T> request, JPQLQuery<T> query, JoinerProperties joinerProperties) {
         return query.fetch();
     }
 }

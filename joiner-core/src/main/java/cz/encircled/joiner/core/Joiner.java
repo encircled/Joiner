@@ -1,11 +1,6 @@
 package cz.encircled.joiner.core;
 
-import com.querydsl.core.types.EntityPath;
-import com.querydsl.core.types.Expression;
-import com.querydsl.core.types.Order;
-import com.querydsl.core.types.OrderSpecifier;
-import com.querydsl.core.types.Path;
-import com.querydsl.core.types.Predicate;
+import com.querydsl.core.types.*;
 import com.querydsl.jpa.JPQLQuery;
 import com.querydsl.jpa.impl.AbstractJPAQuery;
 import cz.encircled.joiner.core.vendor.EclipselinkRepository;
@@ -20,7 +15,6 @@ import cz.encircled.joiner.query.QueryOrder;
 import cz.encircled.joiner.query.join.J;
 import cz.encircled.joiner.query.join.JoinDescription;
 import cz.encircled.joiner.query.join.JoinGraphRegistry;
-import cz.encircled.joiner.util.Assert;
 import cz.encircled.joiner.util.JoinerUtils;
 import cz.encircled.joiner.util.MultiValueMap;
 import cz.encircled.joiner.util.ReflectionUtils;
@@ -30,12 +24,10 @@ import org.slf4j.LoggerFactory;
 import javax.persistence.EntityManager;
 import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Field;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
+
+import static cz.encircled.joiner.util.Assert.notNull;
 
 /**
  * Base class of Joiner. Contains basic database operations.
@@ -58,15 +50,20 @@ public class Joiner {
 
     private JoinGraphRegistry joinGraphRegistry;
 
-    private boolean useStatelessSessions = false;
-
     private final AliasResolver aliasResolver;
 
     private final PredicateAliasResolver predicateAliasResolver = new DefaultPredicateAliasResolver(this);
 
-    public Joiner(EntityManager entityManager) {
-        Assert.notNull(entityManager);
+    private JoinerProperties joinerProperties;
 
+    public Joiner(EntityManager entityManager) {
+        this(entityManager, new JoinerProperties());
+    }
+
+    public Joiner(EntityManager entityManager, JoinerProperties joinerProperties) {
+        notNull(entityManager);
+
+        this.joinerProperties = joinerProperties;
         this.entityManager = entityManager;
         aliasResolver = new DefaultAliasResolver(entityManager);
 
@@ -99,24 +96,32 @@ public class Joiner {
     public <T, R> List<R> find(JoinerQuery<T, R> request) {
         JPQLQuery<R> query = toJPAQuery(request);
 
+        List<R> result;
         if (request.isCount()) {
-            return (List<R>) Collections.singletonList(query.fetchCount());
+            result = (List<R>) Collections.singletonList(query.fetchCount());
         } else {
-            return joinerVendorRepository.getResultList(request, query, request.getReturnProjection());
+            result = joinerVendorRepository.getResultList(request, query, getJoinerProperties());
         }
+
+        for (QueryFeature queryFeature : getQueryFeatures(request)) {
+            queryFeature.postLoad(request, result);
+        }
+
+        return result;
     }
 
     public <T, R> JPQLQuery<R> toJPAQuery(JoinerQuery<T, R> request) {
-        Assert.notNull(request);
-        Assert.notNull(request.getFrom());
+        notNull(request);
+        notNull(request.getFrom());
 
         setJoinsFromJoinsGraphs(request);
 
-        for (QueryFeature feature : request.getFeatures()) {
+        List<QueryFeature> queryFeatures = getQueryFeatures(request);
+        for (QueryFeature feature : queryFeatures) {
             request = doPreProcess(request, feature);
         }
 
-        JPQLQuery<R> query = joinerVendorRepository.createQuery(entityManager, useStatelessSessions);
+        JPQLQuery<R> query = joinerVendorRepository.createQuery(entityManager, getJoinerProperties());
         makeInsertionOrderHints(query);
 
         query.from(request.getFrom());
@@ -140,10 +145,19 @@ public class Joiner {
 
         applyPaging(request, query, usedAliases, joins);
 
-        for (QueryFeature feature : request.getFeatures()) {
+        for (QueryFeature feature : queryFeatures) {
             query = doPostProcess(request, query, feature);
         }
         return query;
+    }
+
+    private <T, R> List<QueryFeature> getQueryFeatures(JoinerQuery<T, R> request) {
+        if (!joinerProperties.defaultFeatures.isEmpty()) {
+            ArrayList<QueryFeature> res = new ArrayList<>(joinerProperties.defaultFeatures);
+            res.addAll(request.getFeatures());
+            return res;
+        }
+        return request.getFeatures();
     }
 
     private <T, R> List<JoinDescription> preprocessJoins(JoinerQuery<T, R> request, Set<Path<?>> usedAliases) {
@@ -264,11 +278,23 @@ public class Joiner {
 
     private void addHints(JoinerQuery<?, ?> request, JPQLQuery<?> query) {
         if (query instanceof AbstractJPAQuery) {
+            addHints(getJoinerProperties().defaultHints, query);
+
             for (Map.Entry<String, List<Object>> entry : request.getHints().entrySet()) {
                 if (entry.getValue() != null) {
                     for (Object value : entry.getValue()) {
                         ((AbstractJPAQuery) query).setHint(entry.getKey(), value);
                     }
+                }
+            }
+        }
+    }
+
+    private void addHints(Map<String, List<Object>> hints, JPQLQuery<?> query) {
+        for (Map.Entry<String, List<Object>> entry : hints.entrySet()) {
+            if (entry.getValue() != null) {
+                for (Object value : entry.getValue()) {
+                    ((AbstractJPAQuery) query).setHint(entry.getKey(), value);
                 }
             }
         }
@@ -289,11 +315,12 @@ public class Joiner {
         this.joinGraphRegistry = joinGraphRegistry;
     }
 
-    public void setUseStatelessSessions(boolean useStatelessSessions) {
-        if (!(joinerVendorRepository instanceof HibernateRepository)) {
-            throw new IllegalStateException("StatelessSessions are supported in Hibernate only!");
-        }
-        this.useStatelessSessions = useStatelessSessions;
+    public JoinerProperties getJoinerProperties() {
+        return joinerProperties;
+    }
+
+    public void setJoinerProperties(JoinerProperties joinerProperties) {
+        this.joinerProperties = Objects.requireNonNullElse(joinerProperties, new JoinerProperties());
     }
 
 }
