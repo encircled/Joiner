@@ -22,14 +22,13 @@ import java.util.Map;
  */
 public class HibernateRepository extends AbstractVendorRepository implements JoinerVendorRepository {
 
-    @Override
-    public <R> JPQLQuery<R> createQuery(EntityManager entityManager, boolean useStatelessSessions) {
-        if (useStatelessSessions) {
-            StatelessSession session = entityManager.unwrap(Session.class).getSessionFactory().openStatelessSession();
-            return new HibernateQuery<>(session);
-        }
+    private static StatelessSession statelessSession;
 
-        return new JPAQuery<>(entityManager, HQLTemplates.DEFAULT);
+    private static synchronized StatelessSession getStatelessSession(EntityManager entityManager) {
+        if (statelessSession == null || !statelessSession.isOpen()) {
+            statelessSession = entityManager.unwrap(Session.class).getSessionFactory().openStatelessSession();
+        }
+        return statelessSession;
     }
 
     @Override
@@ -50,4 +49,15 @@ public class HibernateRepository extends AbstractVendorRepository implements Joi
         }
         return super.getResultList(request, query, projection);
     }
+
+    @Override
+    public <R> JPQLQuery<R> createQuery(EntityManager entityManager, boolean useStatelessSessions) {
+        if (useStatelessSessions) {
+            StatelessSession session = getStatelessSession(entityManager);
+            return new HibernateQuery<>(session);
+        }
+
+        return new JPAQuery<>(entityManager, HQLTemplates.DEFAULT);
+    }
+
 }
