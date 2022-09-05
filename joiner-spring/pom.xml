@@ -3,11 +3,11 @@
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>joiner-spring</artifactId>
-    <version>0.4.5-SNAPSHOT</version>
+    <version>0.4.5</version>
     <parent>
         <groupId>cz.encircled</groupId>
         <artifactId>joiner-parent</artifactId>
-        <version>0.4.5-SNAPSHOT</version>
+        <version>0.4.5</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
