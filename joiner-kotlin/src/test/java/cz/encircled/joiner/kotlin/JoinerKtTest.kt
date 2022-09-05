@@ -70,7 +70,7 @@ class JoinerKtTest : AbstractTest() {
         val find = joinerKt.findOne(
             QUser.user1.countOf()
                     leftJoin QGroup.group
-                    leftJoin QStatus.status
+                    leftJoin QUser.user1.statuses
                     innerJoin QStatus.status
 
                     where { it.name eq "user1" or it.id ne 1 or it.id isIn listOf(1) }

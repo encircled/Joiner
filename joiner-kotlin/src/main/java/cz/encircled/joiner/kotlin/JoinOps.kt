@@ -41,6 +41,11 @@ interface JoinOps {
         return this
     }
 
+    infix fun <FROM_C, PROJ, FROM : EntityPath<FROM_C>> JoinerKtQuery<FROM_C, PROJ, FROM>.leftJoin(p: CollectionPathBase<*, *, *>): JoinerKtQuery<FROM_C, PROJ, FROM> {
+        delegate.joins(J.left(p))
+        return this
+    }
+
     infix fun <FROM_C, PROJ, FROM : EntityPath<FROM_C>> JoinerKtQuery<FROM_C, PROJ, FROM>.innerJoin(j: JoinDescription): JoinerKtQuery<FROM_C, PROJ, FROM> {
         delegate.joins(j.inner())
         return this

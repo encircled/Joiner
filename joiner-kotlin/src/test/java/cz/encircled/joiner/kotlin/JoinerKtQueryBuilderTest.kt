@@ -7,10 +7,13 @@ import cz.encircled.joiner.kotlin.JoinerKtQueryBuilder.countOf
 import cz.encircled.joiner.kotlin.JoinerKtQueryBuilder.from
 import cz.encircled.joiner.model.*
 import cz.encircled.joiner.model.QUser.user1
+import cz.encircled.joiner.query.JoinerQuery
 import cz.encircled.joiner.query.Q
+import cz.encircled.joiner.query.QueryFeature
 import cz.encircled.joiner.query.join.J
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertTrue
 
 /**
  * @author Vlad on 05-Jun-18.
@@ -110,6 +113,16 @@ class JoinerKtQueryBuilderTest {
     }
 
     @Test
+    fun addFeature() {
+        val testFeature = TestQueryFeature()
+        val testFeature2 = TestQueryFeature()
+        val features = (user1 from user1 feature testFeature feature testFeature2).delegate.features
+        assertEquals(2, features.size)
+        assertTrue(features.contains(testFeature))
+        assertTrue(features.contains(testFeature2))
+    }
+
+    @Test
     fun `complex query`() {
         val query =
             (user1 from user1
@@ -141,6 +154,12 @@ class JoinerKtQueryBuilderTest {
             )
         assertEquals(expected, query.delegate)
         assertEquals(J.unrollChildrenJoins(expected.joins), J.unrollChildrenJoins(query.joins))
+    }
+
+    class TestQueryFeature : QueryFeature {
+        override fun <T : Any?, R : Any?> before(request: JoinerQuery<T, R>): JoinerQuery<T, R> {
+            return request
+        }
     }
 
 }

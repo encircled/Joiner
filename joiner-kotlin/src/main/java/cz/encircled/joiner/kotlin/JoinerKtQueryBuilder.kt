@@ -8,6 +8,7 @@ import com.querydsl.core.types.dsl.BooleanExpression
 import com.querydsl.core.types.dsl.SimpleExpression
 import cz.encircled.joiner.query.JoinerQuery
 import cz.encircled.joiner.query.Q
+import cz.encircled.joiner.query.QueryFeature
 
 /**
  * List of missing stuff in Kt:
@@ -24,7 +25,6 @@ data class PredicateContinuation<T>(
 open class KConditionOps : ConditionOps
 
 
-
 object JoinerKtOps : ConditionOps, JoinOps
 
 class JoinerKtQuery<FROM_C, PROJ, FROM : EntityPath<FROM_C>>(
@@ -38,6 +38,11 @@ class JoinerKtQuery<FROM_C, PROJ, FROM : EntityPath<FROM_C>>(
 
     infix fun where(where: ConditionOps.(e: FROM) -> Predicate): JoinerKtQuery<FROM_C, PROJ, FROM> {
         delegate.where(where.invoke(KConditionOps(), entityPath))
+        return this
+    }
+
+    infix fun feature(feature: QueryFeature): JoinerKtQuery<FROM_C, PROJ, FROM> {
+        delegate.addFeatures(feature)
         return this
     }
 
@@ -63,6 +68,11 @@ class JoinerKtQuery<FROM_C, PROJ, FROM : EntityPath<FROM_C>>(
 
     infix fun desc(desc: (e: FROM) -> Expression<*>): JoinerKtQuery<FROM_C, PROJ, FROM> {
         delegate.desc(desc.invoke(entityPath))
+        return this
+    }
+
+    override infix fun desc(desc: Expression<*>): JoinerKtQuery<FROM_C, PROJ, FROM> {
+        delegate.desc(desc)
         return this
     }
 
