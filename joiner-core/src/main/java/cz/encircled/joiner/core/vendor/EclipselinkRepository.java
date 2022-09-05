@@ -26,6 +26,9 @@ public class EclipselinkRepository extends AbstractVendorRepository implements J
 
     @Override
     public <R> JPQLQuery<R> createQuery(EntityManager entityManager, JoinerProperties joinerProperties) {
+        if (joinerProperties.useStatelessSessions) {
+            throw new IllegalStateException("StatelessSession is not supported by Eclipselink!");
+        }
         JPAQuery<R> query = new JPAQuery<>(entityManager, EclipseLinkTemplates.DEFAULT);
         makeInsertionOrderHints(query);
         return query;
