@@ -22,15 +22,6 @@ import java.util.Map;
  */
 public class HibernateRepository extends AbstractVendorRepository implements JoinerVendorRepository {
 
-    private static StatelessSession statelessSession;
-
-    private static synchronized StatelessSession getStatelessSession(EntityManager entityManager) {
-        if (statelessSession == null || !statelessSession.isOpen()) {
-            statelessSession = entityManager.unwrap(Session.class).getSessionFactory().openStatelessSession();
-        }
-        return statelessSession;
-    }
-
     @Override
     public void addFetch(JPQLQuery<?> query, JoinDescription joinDescription, Collection<JoinDescription> joins, EntityPath<?> rootPath) {
         query.fetchJoin();
@@ -38,19 +29,22 @@ public class HibernateRepository extends AbstractVendorRepository implements Joi
 
     @Override
     public <T> List<T> getResultList(JoinerQuery<?, T> request, JPQLQuery<T> query, JoinerProperties joinerProperties) {
-        if (query instanceof HibernateQuery) {
-            Query<T> jpaQuery = ((HibernateQuery<T>) query).createQuery();
-            for (Map.Entry<String, List<Object>> entry : request.getHints().entrySet()) {
-                for (Object value : entry.getValue()) {
-                    jpaQuery.setHint(entry.getKey(), value);
+        if (query instanceof HibernateQueryWithSession) {
+            HibernateQueryWithSession<T> hq = (HibernateQueryWithSession<T>) query;
+            try (hq.session) {
+                Query<T> jpaQuery = hq.createQuery();
+                for (Map.Entry<String, List<Object>> entry : request.getHints().entrySet()) {
+                    for (Object value : entry.getValue()) {
+                        jpaQuery.setHint(entry.getKey(), value);
+                    }
                 }
-            }
-            for (Map.Entry<String, List<Object>> entry : joinerProperties.defaultHints.entrySet()) {
-                for (Object value : entry.getValue()) {
-                    jpaQuery.setHint(entry.getKey(), value);
+                for (Map.Entry<String, List<Object>> entry : joinerProperties.defaultHints.entrySet()) {
+                    for (Object value : entry.getValue()) {
+                        jpaQuery.setHint(entry.getKey(), value);
+                    }
                 }
+                return jpaQuery.getResultList();
             }
-            return jpaQuery.getResultList();
         }
         return super.getResultList(request, query, joinerProperties);
     }
@@ -58,11 +52,20 @@ public class HibernateRepository extends AbstractVendorRepository implements Joi
     @Override
     public <R> JPQLQuery<R> createQuery(EntityManager entityManager, JoinerProperties joinerProperties) {
         if (joinerProperties.useStatelessSessions) {
-            StatelessSession session = getStatelessSession(entityManager);
-            return new HibernateQuery<>(session);
+            StatelessSession session = entityManager.unwrap(Session.class).getSessionFactory().openStatelessSession();
+            return new HibernateQueryWithSession<>(session);
         }
 
         return new JPAQuery<>(entityManager, HQLTemplates.DEFAULT);
+    }
+
+    static class HibernateQueryWithSession<T> extends HibernateQuery<T> {
+        final StatelessSession session;
+
+        HibernateQueryWithSession(StatelessSession session) {
+            super(session);
+            this.session = session;
+        }
     }
 
 }
