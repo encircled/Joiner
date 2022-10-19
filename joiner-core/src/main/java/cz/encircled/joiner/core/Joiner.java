@@ -110,6 +110,18 @@ public class Joiner {
         return result;
     }
 
+    public <I, T extends Collection<I>> T save(T entities)  {
+        for (Object entity : entities) {
+            save(entity);
+        }
+        return entities;
+    }
+
+    public <T> T save(T entity)  {
+        entityManager.persist(entity);
+        return entity;
+    }
+
     public <T, R> JPQLQuery<R> toJPAQuery(JoinerQuery<T, R> request) {
         notNull(request);
         notNull(request.getFrom());

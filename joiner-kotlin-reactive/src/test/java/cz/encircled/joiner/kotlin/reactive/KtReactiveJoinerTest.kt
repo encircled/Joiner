@@ -2,6 +2,8 @@ package cz.encircled.joiner.kotlin.reactive
 
 import cz.encircled.joiner.exception.JoinerException
 import cz.encircled.joiner.exception.JoinerExceptions
+import cz.encircled.joiner.kotlin.JoinerKtOps.eq
+import cz.encircled.joiner.kotlin.JoinerKtOps.isIn
 import cz.encircled.joiner.kotlin.JoinerKtQueryBuilder.all
 import cz.encircled.joiner.kotlin.JoinerKtQueryBuilder.from
 import cz.encircled.joiner.model.QUser.user1

@@ -1,7 +1,11 @@
 package cz.encircled.joiner.kotlin
 
+import cz.encircled.joiner.kotlin.JoinerKtOps.and
+import cz.encircled.joiner.kotlin.JoinerKtOps.eq
 import cz.encircled.joiner.kotlin.JoinerKtOps.innerJoin
 import cz.encircled.joiner.kotlin.JoinerKtOps.leftJoin
+import cz.encircled.joiner.kotlin.JoinerKtOps.ne
+import cz.encircled.joiner.kotlin.JoinerKtOps.or
 import cz.encircled.joiner.kotlin.JoinerKtQueryBuilder.all
 import cz.encircled.joiner.kotlin.JoinerKtQueryBuilder.countOf
 import cz.encircled.joiner.kotlin.JoinerKtQueryBuilder.from
@@ -33,6 +37,14 @@ class JoinerKtQueryBuilderTest {
         assertEquals(
             (user1.name from user1).delegate,
             Q.select(user1.name).from(user1)
+        )
+    }
+
+    @Test
+    fun `tuple projection`() {
+        assertEquals(
+            (listOf(user1.id, user1.name) from user1).delegate,
+            Q.select(user1.id, user1.name).from(user1)
         )
     }
 

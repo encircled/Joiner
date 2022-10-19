@@ -1,7 +1,13 @@
 package cz.encircled.joiner.kotlin
 
+import cz.encircled.joiner.kotlin.JoinerKtOps.eq
 import cz.encircled.joiner.kotlin.JoinerKtOps.innerJoin
+import cz.encircled.joiner.kotlin.JoinerKtOps.isIn
 import cz.encircled.joiner.kotlin.JoinerKtOps.leftJoin
+import cz.encircled.joiner.kotlin.JoinerKtOps.ne
+import cz.encircled.joiner.kotlin.JoinerKtOps.on
+import cz.encircled.joiner.kotlin.JoinerKtOps.or
+import cz.encircled.joiner.kotlin.JoinerKtQueryBuilder.all
 import cz.encircled.joiner.kotlin.JoinerKtQueryBuilder.countOf
 import cz.encircled.joiner.kotlin.JoinerKtQueryBuilder.from
 import cz.encircled.joiner.model.QAddress
@@ -40,6 +46,29 @@ class JoinerKtTest : AbstractTest() {
         QAddress.address from QAddress.address where { it.user.id eq (QUser.user1.id from QUser.user1) }
 
         assertNotNull(find)
+    }
+
+    @Test
+    fun `left join on`() {
+        val actual = (QGroup.group.all()
+                leftJoin QUser.user1 on QUser.user1.name.eq("user1")).delegate.getJoin(QUser.user1).on
+        assertEquals(QUser.user1.name.eq("user1"), actual)
+    }
+
+    @Test
+    fun `inner join on`() {
+        val actual = (QGroup.group.all()
+                innerJoin QGroup.group.users on QUser.user1.name.eq("user1")).delegate.getJoin(QUser.user1).on
+        assertEquals(QUser.user1.name.eq("user1"), actual)
+    }
+
+    @Test
+    fun `tuple with count projection`() {
+        val tuples = joinerKt.find(
+            listOf(QUser.user1.count(), QUser.user1.id) from QUser.user1
+                    groupBy QUser.user1.id
+        )
+        assertEquals(tuples.size, joinerKt.findOne(QUser.user1.countOf()).toInt())
     }
 
     @Test

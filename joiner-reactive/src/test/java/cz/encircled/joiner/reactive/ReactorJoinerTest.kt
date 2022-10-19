@@ -2,12 +2,15 @@ package cz.encircled.joiner.reactive
 
 import cz.encircled.joiner.exception.JoinerException
 import cz.encircled.joiner.exception.JoinerExceptions
+import cz.encircled.joiner.kotlin.JoinerKtOps.contains
+import cz.encircled.joiner.kotlin.JoinerKtOps.eq
+import cz.encircled.joiner.kotlin.JoinerKtOps.ne
+import cz.encircled.joiner.kotlin.JoinerKtOps.or
 import cz.encircled.joiner.kotlin.JoinerKtQueryBuilder.countOf
 import cz.encircled.joiner.kotlin.JoinerKtQueryBuilder.from
 import cz.encircled.joiner.model.QStatus
 import cz.encircled.joiner.model.QUser.user1
 import cz.encircled.joiner.model.User
-import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Nested
 import reactor.test.StepVerifier
 import kotlin.test.Test

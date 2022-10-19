@@ -1,23 +1,21 @@
 package cz.encircled.joiner.reactive
 
 import cz.encircled.joiner.exception.JoinerException
+import cz.encircled.joiner.kotlin.JoinerKtOps.contains
+import cz.encircled.joiner.kotlin.JoinerKtOps.eq
+import cz.encircled.joiner.kotlin.JoinerKtOps.isIn
 import cz.encircled.joiner.kotlin.JoinerKtQueryBuilder.all
 import cz.encircled.joiner.kotlin.JoinerKtQueryBuilder.countOf
 import cz.encircled.joiner.kotlin.JoinerKtQueryBuilder.from
 import cz.encircled.joiner.model.QStatus
-import cz.encircled.joiner.model.QUser
 import cz.encircled.joiner.model.QUser.user1
 import cz.encircled.joiner.model.User
-import cz.encircled.joiner.reactive.ReactorExtension.publish
 import cz.encircled.joiner.reactive.composer.JoinerComposer
-import org.hibernate.reactive.mutiny.Mutiny
-import org.hibernate.reactive.stage.Stage
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.assertThrows
 import reactor.core.publisher.Mono
 import reactor.test.StepVerifier
 import java.util.*
-import java.util.concurrent.atomic.AtomicInteger
 import kotlin.test.Test
 import kotlin.test.assertFalse
 
