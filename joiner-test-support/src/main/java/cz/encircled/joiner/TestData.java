@@ -63,6 +63,15 @@ public class TestData {
         address.setUser(user);
         entityManager.persist(address);
 
+        Status addressStatus = new Status();
+        addressStatus.setAddress(address);
+        addressStatus.setName("Address Status");
+        entityManager.persist(addressStatus);
+        Status addressStatus2 = new Status();
+        addressStatus2.setAddress(address);
+        addressStatus2.setName("Address Status2");
+        entityManager.persist(addressStatus2);
+
         SuperUser superUser = new SuperUser();
         superUser.setName("superUser2");
         superUser.setGroups(Collections.singletonList(group));

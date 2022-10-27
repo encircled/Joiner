@@ -1,6 +1,11 @@
 package cz.encircled.joiner.core;
 
-import com.querydsl.core.types.*;
+import com.querydsl.core.types.EntityPath;
+import com.querydsl.core.types.Expression;
+import com.querydsl.core.types.Order;
+import com.querydsl.core.types.OrderSpecifier;
+import com.querydsl.core.types.Path;
+import com.querydsl.core.types.Predicate;
 import com.querydsl.jpa.JPQLQuery;
 import com.querydsl.jpa.impl.AbstractJPAQuery;
 import cz.encircled.joiner.core.vendor.EclipselinkRepository;
@@ -24,7 +29,14 @@ import org.slf4j.LoggerFactory;
 import javax.persistence.EntityManager;
 import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Field;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import static cz.encircled.joiner.util.Assert.notNull;
@@ -41,6 +53,7 @@ import static cz.encircled.joiner.util.Assert.notNull;
  * @author Kisel on 26.01.2016.
  */
 public class Joiner {
+    // TODO query level conf ?
 
     private static final Logger log = LoggerFactory.getLogger(Joiner.class);
 
@@ -65,7 +78,7 @@ public class Joiner {
 
         this.joinerProperties = joinerProperties;
         this.entityManager = entityManager;
-        aliasResolver = new DefaultAliasResolver(entityManager);
+        this.aliasResolver = new DefaultAliasResolver(entityManager);
 
         String implName = entityManager.getDelegate().getClass().getName();
         if (implName.startsWith("org.hibernate")) {
@@ -80,6 +93,10 @@ public class Joiner {
                 log.info("Joiner is using non-enchanced EclipselinkRepository, consider adding joiner-eclipse module to the classpath");
             }
         }
+    }
+
+    public Joiner withProperties(JoinerProperties props) {
+        return new Joiner(entityManager, props);
     }
 
     public <T, R> R findOne(JoinerQuery<T, R> request) {

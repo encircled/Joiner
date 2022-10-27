@@ -2,6 +2,7 @@ package cz.encircled.joiner.core;
 
 import cz.encircled.joiner.exception.AliasMissingException;
 import cz.encircled.joiner.model.AbstractEntity;
+import cz.encircled.joiner.model.Address;
 import cz.encircled.joiner.model.Group;
 import cz.encircled.joiner.model.QAddress;
 import cz.encircled.joiner.model.QGroup;
@@ -29,6 +30,13 @@ public abstract class PaginationAndOrderTest extends AbstractTest {
     public void testLimit() {
         assertEquals(1, joiner.find(Q.from(QAddress.address).limit(1L)).size());
         assertEquals(2, joiner.find(Q.from(QAddress.address).limit(2L)).size());
+    }
+
+    @Test
+    public void testLimitWithJoin() {
+        List<Address> res = joiner.find(Q.from(QAddress.address).limit(5L).joins(J.left(QStatus.status)));
+        assertEquals(5, res.size());
+        assertTrue(isLoaded(res.get(0), "statuses"));
     }
 
     @Test

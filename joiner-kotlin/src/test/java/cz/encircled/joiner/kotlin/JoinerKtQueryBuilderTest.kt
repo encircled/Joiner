@@ -61,8 +61,8 @@ class JoinerKtQueryBuilderTest {
         assertEquals(
             (user1.name from user1
                     where {
-                it.name eq "1" and it.id.eq(2) or it.name.eq("3") or (it.id eq 4 or it.name ne "5" or
-                        it.name.eq("6"))
+                it.name eq "1" and it.id eq 2 or it.name eq "3" or (it.id eq 4 or it.name ne "5" or
+                        it.name eq "6")
             }).delegate,
 
             Q.select(user1.name).from(user1)
@@ -136,19 +136,17 @@ class JoinerKtQueryBuilderTest {
 
     @Test
     fun `complex query`() {
-        val query =
-            (user1 from user1
-                    where { it.name eq "Test" }
-                    asc { it.id }
+        val query = (user1 from user1
+                where (user1.name eq "Test")
+                asc { it.id }
 
-                    innerJoin QStatus.status
-                    innerJoin QAddress.address
-                    leftJoin QPhone.phone
+                innerJoin QStatus.status
+                innerJoin QAddress.address
+                leftJoin QPhone.phone
 
-                    leftJoin (
-                    QGroup.group leftJoin (QStatus.status innerJoin (user1 leftJoin QAddress.address leftJoin QPhone.phone))
-                    )
-                    )
+                leftJoin (
+                QGroup.group leftJoin (QStatus.status innerJoin (user1 leftJoin QAddress.address leftJoin QPhone.phone))
+                ))
 
         val userTree = J.inner(user1).nested(QAddress.address, QPhone.phone)
 

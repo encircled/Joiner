@@ -1,5 +1,6 @@
 package cz.encircled.joiner.kotlin
 
+import cz.encircled.joiner.exception.JoinerException
 import cz.encircled.joiner.kotlin.JoinerKtOps.eq
 import cz.encircled.joiner.kotlin.JoinerKtOps.innerJoin
 import cz.encircled.joiner.kotlin.JoinerKtOps.isIn
@@ -15,10 +16,8 @@ import cz.encircled.joiner.model.QGroup
 import cz.encircled.joiner.model.QStatus
 import cz.encircled.joiner.model.QUser
 import org.junit.jupiter.api.TestInfo
-import kotlin.test.BeforeTest
-import kotlin.test.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertNotNull
+import org.junit.jupiter.api.assertThrows
+import kotlin.test.*
 
 class JoinerKtTest : AbstractTest() {
 
@@ -28,6 +27,16 @@ class JoinerKtTest : AbstractTest() {
     fun before(test: TestInfo) {
         super.beforeEach(test)
         joinerKt = JoinerKt(entityManager)
+    }
+
+    @Test
+    fun getOne() {
+        assertThrows<JoinerException> { joinerKt.getOne(QUser.user1 from QUser.user1 where { it.id eq -1 }) }
+    }
+
+    @Test
+    fun testFindOne() {
+        assertNull(joinerKt.findOne(QUser.user1 from QUser.user1 where { it.id eq -1 }))
     }
 
     @Test
@@ -68,7 +77,7 @@ class JoinerKtTest : AbstractTest() {
             listOf(QUser.user1.count(), QUser.user1.id) from QUser.user1
                     groupBy QUser.user1.id
         )
-        assertEquals(tuples.size, joinerKt.findOne(QUser.user1.countOf()).toInt())
+        assertEquals(tuples.size, joinerKt.getOne(QUser.user1.countOf()).toInt())
     }
 
     @Test
