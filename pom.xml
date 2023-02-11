@@ -44,17 +44,16 @@
 
     <properties>
         <querydsl.version>5.0.0</querydsl.version>
-        <spring.version>5.3.22</spring.version>
-        <hibernate.version>5.6.11.Final</hibernate.version>
+        <spring.version>5.3.25</spring.version>
+        <hibernate.version>5.6.15.Final</hibernate.version>
         <eclipselink.version>2.7.10</eclipselink.version>
-        <vendor.name>hibernate</vendor.name>
-        <kotlin.version>1.6.21</kotlin.version>
-        <reactor.version>3.4.17</reactor.version>
-        <junit-jupiter.version>5.8.2</junit-jupiter.version>
-        <slf4j.version>1.7.36</slf4j.version>
-        <vertx.version>4.3.0</vertx.version>
-        <maven.compiler.source>11</maven.compiler.source>
-        <maven.compiler.target>11</maven.compiler.target>
+        <kotlin.version>1.8.10</kotlin.version>
+        <reactor.version>3.5.2</reactor.version>
+        <junit-jupiter.version>5.9.2</junit-jupiter.version>
+        <slf4j.version>2.0.6</slf4j.version>
+        <vertx.version>4.3.8</vertx.version>
+        <maven.compiler.source>17</maven.compiler.source>
+        <maven.compiler.target>17</maven.compiler.target>
     </properties>
 
     <distributionManagement>
@@ -321,14 +320,6 @@
                 </plugins>
             </build>
         </profile>
-
-        <!-- Test -->
-        <profile>
-            <id>eclipse</id>
-            <properties>
-                <vendor.name>eclipse</vendor.name>
-            </properties>
-        </profile>
     </profiles>
 
     <build>
@@ -377,11 +368,6 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>2.22.2</version>
-                <configuration>
-                    <systemPropertyVariables>
-                        <spring.profiles.active>${vendor.name}</spring.profiles.active>
-                    </systemPropertyVariables>
-                </configuration>
             </plugin>
 
             <plugin>
