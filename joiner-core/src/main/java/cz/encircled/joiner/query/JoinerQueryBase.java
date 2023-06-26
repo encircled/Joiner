@@ -76,6 +76,7 @@ public class JoinerQueryBase<T, R> implements JoinerQuery<T, R>, JoinRoot, SubQu
     }
 
     @Override
+    @Deprecated
     public JoinerQueryBase<T, R> distinct(boolean isDistinct) {
         distinct = isDistinct;
         return this;

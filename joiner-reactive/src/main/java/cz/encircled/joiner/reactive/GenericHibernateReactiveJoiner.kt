@@ -8,11 +8,11 @@ import com.querydsl.jpa.JPQLTemplates
 import cz.encircled.joiner.core.Joiner
 import cz.encircled.joiner.query.JoinerQuery
 import cz.encircled.joiner.reactive.composer.JoinerComposer
+import jakarta.persistence.EntityManagerFactory
 import org.hibernate.reactive.stage.Stage
 import org.hibernate.reactive.stage.Stage.SessionFactory
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.CompletionStage
-import javax.persistence.EntityManagerFactory
 
 /**
  * Encapsulates Hibernate Reactive API and provides internal reactive API instead.
@@ -37,6 +37,10 @@ abstract class GenericHibernateReactiveJoiner(val emf: EntityManagerFactory) {
 
             (1 until c.steps.size).forEach { i ->
                 curr = curr.thenCompose { v ->
+                    val vv = v
+                    if (vv is List<*> && vv.isNotEmpty()) {
+                        println(vv)
+                    }
                     executeChainStep(v, session, c.steps[i])
                 }
             }
@@ -97,9 +101,11 @@ abstract class GenericHibernateReactiveJoiner(val emf: EntityManagerFactory) {
         }
     }
 
-    protected fun doRemove(entity: Any): CompletionStage<Void> {
+    protected fun doRemove(entity: Any): CompletionStage<Any> {
+        // TODO enforce jdbc thread?
         return sessionFactory().withTransaction { session, _ ->
-            session.remove(session.getReference(entity))
+            val reference = session.getReference(entity)
+            session.remove(reference).thenApply { reference }
         }
     }
 
@@ -149,7 +155,11 @@ abstract class GenericHibernateReactiveJoiner(val emf: EntityManagerFactory) {
      * Persist multiple entities at once
      */
     protected fun <T> Stage.Session.persistMultiple(entities: Collection<T>): CompletionStage<List<T>> {
-        return persist(*entities.stream().toArray()).thenApply { entities.map { getReference(it) } }
+        return persist(*entities.stream().toArray()).thenApply {
+            val e = entities
+            println(e)
+            e.map { getReference(it) }
+        }
     }
 
 }

@@ -16,6 +16,22 @@ public class HibernateStatelessSessionTest extends AbstractTest {
 
     @Test
     public void testStatelessSessionIsUsed() {
+        /*try {
+            Field f = HibernateUtil.class.getDeclaredField("TYPES");
+            f.setAccessible(true);
+
+            // remove final modifier from field
+            Field modifiersField = Field.class.getDeclaredField("modifiers");
+            modifiersField.setAccessible(true);
+            modifiersField.setInt(f, f.getModifiers() & ~Modifier.FINAL);
+
+
+            f.set(null, new HashMap());
+            Map<?, ?> c = (Map<?, ?>) f.get(null);
+            c.clear();
+        } catch (Throwable e) {
+            throw new RuntimeException(e);
+        }*/
         try {
             joiner.setJoinerProperties(new JoinerProperties().setUseStatelessSessions(true));
 

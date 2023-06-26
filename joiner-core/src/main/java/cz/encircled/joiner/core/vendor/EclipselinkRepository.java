@@ -11,8 +11,8 @@ import cz.encircled.joiner.exception.JoinerException;
 import cz.encircled.joiner.query.join.JoinDescription;
 import cz.encircled.joiner.util.MultiValueMap;
 import cz.encircled.joiner.util.ReflectionUtils;
+import jakarta.persistence.EntityManager;
 
-import javax.persistence.EntityManager;
 import java.lang.reflect.Field;
 import java.util.Collection;
 

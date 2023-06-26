@@ -1,11 +1,10 @@
 package cz.encircled.joiner.model;
 
-import javax.persistence.Column;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.MappedSuperclass;
-import javax.persistence.SequenceGenerator;
+import jakarta.persistence.Column;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.Id;
+import jakarta.persistence.MappedSuperclass;
+import org.hibernate.annotations.GenericGenerator;
 
 /**
  * @author Kisel on 21.01.2016.
@@ -15,8 +14,10 @@ public class AbstractEntity {
 
     @Column
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "id_generator")
-    @SequenceGenerator(name = "id_generator", sequenceName = "id_seq", initialValue = 1, allocationSize = 1)
+//    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(generator = "prod-generator")
+    @GenericGenerator(name = "prod-generator",
+            strategy = "cz.encircled.joiner.model.MyGenerator")
     protected Long id;
 
     @Column

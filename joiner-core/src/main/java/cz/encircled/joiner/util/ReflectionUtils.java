@@ -1,9 +1,9 @@
 package cz.encircled.joiner.util;
 
 import cz.encircled.joiner.exception.JoinerException;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.metamodel.Type;
 
-import javax.persistence.EntityManager;
-import javax.persistence.metamodel.Type;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.util.Arrays;

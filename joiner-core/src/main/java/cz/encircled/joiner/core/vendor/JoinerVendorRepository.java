@@ -5,8 +5,8 @@ import com.querydsl.jpa.JPQLQuery;
 import cz.encircled.joiner.core.JoinerProperties;
 import cz.encircled.joiner.query.JoinerQuery;
 import cz.encircled.joiner.query.join.JoinDescription;
+import jakarta.persistence.EntityManager;
 
-import javax.persistence.EntityManager;
 import java.util.Collection;
 import java.util.List;
 

@@ -1,10 +1,7 @@
 package cz.encircled.joiner.model;
 
-import javax.persistence.Column;
-import javax.persistence.DiscriminatorValue;
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.OneToMany;
+import jakarta.persistence.*;
+
 import java.util.Set;
 
 /**

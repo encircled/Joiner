@@ -70,13 +70,13 @@ interface ConditionOps {
      */
     infix fun <T> NumberExpression<T>.gt(to: T): BooleanExpression where T : Number, T : Comparable<*> = gt(to)
 
-    infix fun <T> NumberExpression<T>.goe(to: T): BooleanExpression where T : Number, T : Comparable<*> = goe(to)
+    infix fun <T> NumberExpression<*>.goe(to: T): BooleanExpression where T : Number, T : Comparable<*> = goe(to)
 
     /**
      * Less than
      */
     infix fun <T> NumberExpression<T>.lt(to: T): BooleanExpression where T : Number, T : Comparable<*> = lt(to)
 
-    infix fun <T> NumberExpression<T>.loe(to: T): BooleanExpression where T : Number, T : Comparable<*> = loe(to)
+    infix fun <T> NumberExpression<*>.loe(to: T): BooleanExpression where T : Number, T : Comparable<*> = loe(to)
 
 }

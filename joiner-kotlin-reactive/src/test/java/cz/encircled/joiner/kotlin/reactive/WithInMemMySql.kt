@@ -4,13 +4,13 @@ import ch.vorburger.mariadb4j.DB
 import cz.encircled.joiner.TestWithLogging
 import cz.encircled.joiner.kotlin.JoinerKtQueryBuilder.all
 import cz.encircled.joiner.model.QUser
+import jakarta.persistence.EntityManagerFactory
+import jakarta.persistence.Persistence
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.TestInfo
 import org.slf4j.LoggerFactory
-import javax.persistence.EntityManagerFactory
-import javax.persistence.Persistence
 import kotlin.test.BeforeTest
 
 

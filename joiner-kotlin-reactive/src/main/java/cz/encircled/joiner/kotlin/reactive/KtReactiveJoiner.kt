@@ -3,8 +3,8 @@ package cz.encircled.joiner.kotlin.reactive
 import cz.encircled.joiner.query.JoinerQuery
 import cz.encircled.joiner.reactive.GenericHibernateReactiveJoiner
 import cz.encircled.joiner.reactive.ReactorExtension.getExactlyOne
+import jakarta.persistence.EntityManagerFactory
 import kotlinx.coroutines.future.await
-import javax.persistence.EntityManagerFactory
 
 class KtReactiveJoiner(emf: EntityManagerFactory) : GenericHibernateReactiveJoiner(emf) {
 

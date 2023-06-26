@@ -8,11 +8,11 @@ import com.querydsl.jpa.impl.JPAQuery;
 import cz.encircled.joiner.core.JoinerProperties;
 import cz.encircled.joiner.query.JoinerQuery;
 import cz.encircled.joiner.query.join.JoinDescription;
+import jakarta.persistence.EntityManager;
 import org.hibernate.Session;
 import org.hibernate.StatelessSession;
 import org.hibernate.query.Query;
 
-import javax.persistence.EntityManager;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;

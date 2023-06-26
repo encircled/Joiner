@@ -54,6 +54,10 @@ class AsyncFluxCallbackOuterScopeExecution<T, E>(private val callback: (T) -> Mo
         Flux.fromStream((arg as List<T>).stream())
             .flatMap(callback)
             .collectList()
+            .onErrorMap {
+                println("error")
+                it
+            }
             .subscribe { result ->
                 f.complete(result)
             }

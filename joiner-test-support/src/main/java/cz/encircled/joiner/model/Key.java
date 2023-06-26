@@ -1,7 +1,7 @@
 package cz.encircled.joiner.model;
 
-import javax.persistence.Entity;
-import javax.persistence.Table;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Table;
 
 /**
  * Created by Kisel on 28.01.2016.
