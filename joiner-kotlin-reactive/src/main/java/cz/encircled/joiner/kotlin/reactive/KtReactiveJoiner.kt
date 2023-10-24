@@ -16,6 +16,6 @@ class KtReactiveJoiner(emf: EntityManagerFactory) : GenericHibernateReactiveJoin
 
     suspend fun <E> persist(entities: List<E>): List<E> = doPersistMultiple(entities).await()
 
-    suspend fun <E : Any> remove(entity: E): Void = doRemove(entity).await()
+    suspend fun <E : Any> remove(entity: E): E = doRemove(entity).await()
 
 }

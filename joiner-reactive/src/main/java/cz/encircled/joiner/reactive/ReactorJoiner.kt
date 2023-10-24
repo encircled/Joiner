@@ -62,24 +62,7 @@ class ReactorJoiner(emf: EntityManagerFactory) : GenericHibernateReactiveJoiner(
     }
 
     fun remove(entity: Any): Mono<Any> {
-        /*val create = Mono.create { mono ->
-            doRemove(entity).handle { _, error ->
-                {
-                    println("remove handle")
-                    mono.publish(true, error)
-                }
-            }
-        }*/
         return Mono.fromFuture(doRemove(entity).toCompletableFuture())
-
-        /*doRemove(entity).handle { _, error ->
-            {
-                println("remove handle")
-                ""
-            }
-        }
-
-        return Mono.just(true)*/
     }
 
 }

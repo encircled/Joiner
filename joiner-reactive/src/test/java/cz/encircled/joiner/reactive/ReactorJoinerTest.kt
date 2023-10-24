@@ -82,7 +82,7 @@ class ReactorJoinerTest : AbstractReactorTest() {
             createUsers("Test Name")
 
             StepVerifier.create(reactorJoiner.findOne(user1.name from QStatus.status))
-                .expectErrorMatches { it.message!!.contains("QuerySyntaxException") }
+                .expectErrorMatches { it.message!!.contains("Could not interpret path") }
                 .verify()
         }
 
@@ -192,7 +192,7 @@ class ReactorJoinerTest : AbstractReactorTest() {
         @Test
         fun `find multiple exception`() {
             StepVerifier.create(reactorJoiner.find(user1.name from QStatus.status))
-                .expectErrorMatches { it.message!!.contains("QuerySyntaxException") }
+                .expectErrorMatches { it.message!!.contains("Could not interpret path") }
                 .verify()
         }
 

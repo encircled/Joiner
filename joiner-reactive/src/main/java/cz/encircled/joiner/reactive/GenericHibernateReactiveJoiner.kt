@@ -37,10 +37,6 @@ abstract class GenericHibernateReactiveJoiner(val emf: EntityManagerFactory) {
 
             (1 until c.steps.size).forEach { i ->
                 curr = curr.thenCompose { v ->
-                    val vv = v
-                    if (vv is List<*> && vv.isNotEmpty()) {
-                        println(vv)
-                    }
                     executeChainStep(v, session, c.steps[i])
                 }
             }
@@ -101,7 +97,7 @@ abstract class GenericHibernateReactiveJoiner(val emf: EntityManagerFactory) {
         }
     }
 
-    protected fun doRemove(entity: Any): CompletionStage<Any> {
+    protected fun <E: Any> doRemove(entity: E): CompletionStage<E> {
         // TODO enforce jdbc thread?
         return sessionFactory().withTransaction { session, _ ->
             val reference = session.getReference(entity)
@@ -156,9 +152,7 @@ abstract class GenericHibernateReactiveJoiner(val emf: EntityManagerFactory) {
      */
     protected fun <T> Stage.Session.persistMultiple(entities: Collection<T>): CompletionStage<List<T>> {
         return persist(*entities.stream().toArray()).thenApply {
-            val e = entities
-            println(e)
-            e.map { getReference(it) }
+            entities.map { getReference(it) }
         }
     }
 

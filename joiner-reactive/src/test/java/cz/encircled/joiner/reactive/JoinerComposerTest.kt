@@ -582,7 +582,7 @@ class JoinerComposerTest : AbstractReactorTest() {
                 persist(User("1"))
                     .findOneOptional(user1.name from QStatus.status)
             })
-                .expectErrorMatches { it.message!!.contains("QuerySyntaxException") }
+                .expectErrorMatches { it.message!!.contains("Could not interpret path") }
                 .verify()
         }
 
