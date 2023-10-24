@@ -14,10 +14,10 @@
     <name>spring-webflux-example</name>
     <description>Demo project for Spring Boot</description>
     <properties>
-        <java.version>11</java.version>
+        <java.version>17</java.version>
         <kotlin.version>1.6.0</kotlin.version>
         <querydsl.version>5.0.0</querydsl.version>
-        <joiner.version>0.4.2-SNAPSHOT</joiner.version>
+        <joiner.version>0.5.1-SNAPSHOT</joiner.version>
     </properties>
     <dependencies>
         <!-- QueryDSL -->
