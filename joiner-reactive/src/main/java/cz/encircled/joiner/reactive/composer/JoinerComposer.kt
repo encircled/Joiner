@@ -77,9 +77,9 @@ open class JoinerComposer<ENTITY, ENTITY_CONTAINER, PUBLISHER>(
     /**
      * Persist multiple entities at once, return references to persisted entities
      */
-    fun <E : Any> persist(entity: List<E>): FluxJoinerComposer<E> {
+    fun <E : Any> persist(entities: List<E>): FluxJoinerComposer<E> {
         markChainStarted()
-        return plural(entity)
+        return plural(entities)
     }
 
     /**

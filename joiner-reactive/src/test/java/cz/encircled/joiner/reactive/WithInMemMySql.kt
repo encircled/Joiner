@@ -1,9 +1,10 @@
 package cz.encircled.joiner.reactive
 
 import ch.vorburger.mariadb4j.DB
+import ch.vorburger.mariadb4j.DBConfigurationBuilder
 import cz.encircled.joiner.TestWithLogging
 import cz.encircled.joiner.exception.JoinerException
-import cz.encircled.joiner.kotlin.JoinerKtQueryBuilder.all
+import cz.encircled.joiner.kotlin.JoinerKtQueryBuilder.from
 import cz.encircled.joiner.model.QUser
 import cz.encircled.joiner.model.User
 import jakarta.persistence.EntityManagerFactory
@@ -19,6 +20,7 @@ abstract class WithInMemMySql : TestWithLogging() {
     companion object {
         @JvmStatic
         private var db: DB? = null
+
         @JvmStatic
         private var emf: EntityManagerFactory? = null
 
@@ -27,7 +29,11 @@ abstract class WithInMemMySql : TestWithLogging() {
         fun before() {
             if (db == null) {
                 LoggerFactory.getLogger(this::class.java).info("Starting DB on 3307 port")
-                db = DB.newEmbeddedDB(3307)
+                val build = DBConfigurationBuilder.newBuilder()
+//                    .setDatabaseVersion("mariaDB4j-db-10.3")
+                    .setPort(3307)
+                    .build()
+                db = DB.newEmbeddedDB(build)
                 db!!.start()
             }
             emf = Persistence.createEntityManagerFactory("reactiveTest")
@@ -55,12 +61,14 @@ abstract class WithInMemMySql : TestWithLogging() {
         reactorJoiner = ReactorJoiner(emf!!)
 
         log.info("Drop old test data")
-        StepVerifier.create(reactorJoiner.find(QUser.user1.all())
-            .flatMap { reactorJoiner.remove(it) }
-            .collectList()
-        )
-            .expectNextMatches { true }
-            .verifyComplete()
+        val users = reactorJoiner.transaction {
+            find(QUser.user1 from QUser.user1)
+        }.collectList().block()
+        users?.forEach {
+            log.info("Remove user " + it.name)
+            reactorJoiner.remove(it).block()
+        }
+        log.info("Drop old test data finished")
     }
 
     fun createUsers(vararg names: String = arrayOf("1", "2")) {

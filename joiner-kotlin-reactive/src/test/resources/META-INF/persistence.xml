@@ -21,12 +21,12 @@
                     name="eclipselink.weaving"
                     value="static"
             />
-            <property name="javax.persistence.schema-generation.database.action" value="drop-and-create"/>
+            <property name="jakarta.persistence.schema-generation.database.action" value="drop-and-create"/>
             <property name="hibernate.connection.pool_size" value="10"/>
             <property name="hibernate.show_sql" value="false"/>
-            <property name="javax.persistence.jdbc.url" value="jdbc:mysql://localhost:3306/test"/>
-            <property name="javax.persistence.jdbc.user" value="root"/>
-            <property name="javax.persistence.jdbc.password" value=""/>
+            <property name="jakarta.persistence.jdbc.url" value="jdbc:mysql://localhost:3306/test"/>
+            <property name="jakarta.persistence.jdbc.user" value="root"/>
+            <property name="jakarta.persistence.jdbc.password" value=""/>
             <!--            <property name="hibernate.dialect" value="org.hibernate.dialect.Mysq"/>-->
         </properties>
     </persistence-unit>

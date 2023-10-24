@@ -461,7 +461,7 @@ joiner.find(QUser.user.all()
 
 ## Reactive setup
 
-Reactive API supports Hibernate only, its initialization is very similar and requires `javax.persistence.EntityManagerFactory`:
+Reactive API supports Hibernate only, its initialization is very similar and requires `jakarta.persistence.EntityManagerFactory`:
 ```java
 ReactorJoiner joiner = new ReactorJoiner(getEntityManagerFactory())
 ...
