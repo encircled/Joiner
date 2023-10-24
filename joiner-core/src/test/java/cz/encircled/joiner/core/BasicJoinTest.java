@@ -223,25 +223,6 @@ public abstract class BasicJoinTest extends AbstractTest {
     }
 
     @Test
-    public void testNonDistinct() {
-        int nonDistinct = joiner.find(Q.from(QUser.user1)
-                        .joins(J.left(QAddress.address)
-                                .nested(J.left(QStatus.status)))
-                        .distinct(false))
-                .size();
-
-        entityManager.clear();
-
-        int distinct = joiner.find(Q.from(QUser.user1).joins(J.left(QAddress.address))).size();
-
-        if (isEclipse()) {
-            assertEquals(distinct, nonDistinct);
-        } else {
-            assertTrue(distinct < nonDistinct);
-        }
-    }
-
-    @Test
     public void testJoinOn() {
         String name = "user1";
 

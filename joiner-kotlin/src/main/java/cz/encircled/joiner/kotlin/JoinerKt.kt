@@ -4,7 +4,7 @@ import cz.encircled.joiner.core.Joiner
 import cz.encircled.joiner.exception.JoinerExceptions
 import cz.encircled.joiner.query.JoinerQuery
 import cz.encircled.joiner.query.join.JoinDescription
-import javax.persistence.EntityManager
+import jakarta.persistence.EntityManager
 
 class JoinerKt(entityManager: EntityManager) : Joiner(entityManager), JoinOps {
     override var lastJoin: JoinDescription? = null

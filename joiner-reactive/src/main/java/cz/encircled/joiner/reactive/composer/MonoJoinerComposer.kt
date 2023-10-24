@@ -3,7 +3,6 @@ package cz.encircled.joiner.reactive.composer
 import cz.encircled.joiner.reactive.AsyncMonoCallbackOuterScopeExecution
 import cz.encircled.joiner.reactive.ExecutionStep
 import cz.encircled.joiner.reactive.MonoCallbackOuterScopeExecution
-import cz.encircled.joiner.reactive.ReactorExtension.publish
 import cz.encircled.joiner.reactive.ReactorExtension.publishOptional
 import cz.encircled.joiner.reactive.ReactorJoiner
 import reactor.core.publisher.Mono
@@ -37,7 +36,7 @@ class MonoJoinerComposer<T>(steps: MutableList<ExecutionStep<*>>) : JoinerCompos
 
 }
 
-class OptionalMonoJoinerComposer<ENTITY>(
+class OptionalMonoJoinerComposer<ENTITY : Any>(
     steps: MutableList<ExecutionStep<*>>,
 ) : JoinerComposerWithReceiver<ENTITY, Optional<ENTITY>, Mono<Optional<ENTITY>>>(steps) {
 

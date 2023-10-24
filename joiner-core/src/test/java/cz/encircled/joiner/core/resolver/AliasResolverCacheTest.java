@@ -9,9 +9,9 @@ import cz.encircled.joiner.model.QSuperUser;
 import cz.encircled.joiner.model.QUser;
 import cz.encircled.joiner.query.join.J;
 import cz.encircled.joiner.query.join.JoinDescription;
+import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.Test;
 
-import javax.persistence.EntityManager;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;

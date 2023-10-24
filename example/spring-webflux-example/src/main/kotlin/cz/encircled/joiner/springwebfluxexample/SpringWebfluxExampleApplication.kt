@@ -7,8 +7,8 @@ import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.runApplication
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.DependsOn
-import javax.persistence.EntityManagerFactory
-import javax.persistence.Persistence
+import jakarta.persistence.EntityManagerFactory
+import jakarta.persistence.Persistence
 
 @SpringBootApplication
 class SpringWebfluxExampleApplication {

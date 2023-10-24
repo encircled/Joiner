@@ -8,11 +8,11 @@ import cz.encircled.joiner.core.vendor.EclipselinkRepository;
 import cz.encircled.joiner.core.vendor.JoinerVendorRepository;
 import cz.encircled.joiner.query.JoinerQuery;
 import cz.encircled.joiner.util.ReflectionUtils;
+import jakarta.persistence.Query;
 import org.eclipse.persistence.internal.jpa.QueryImpl;
 import org.eclipse.persistence.internal.queries.JoinedAttributeManager;
 import org.eclipse.persistence.queries.ObjectLevelReadQuery;
 
-import javax.persistence.Query;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;

@@ -39,7 +39,7 @@ object ReactorExtension {
     /**
      * Expect at most one result and publish it to mono wrapped as [Optional]
      */
-    fun <T> MonoSink<Optional<T>>.publishOptional(result: Optional<T>?, error: Throwable?): Disposable = reactor(this) {
+    fun <T : Any> MonoSink<Optional<T>>.publishOptional(result: Optional<T>?, error: Throwable?): Disposable = reactor(this) {
         if (error != null) error(error)
         else success(result ?: Optional.empty<T>())
     }

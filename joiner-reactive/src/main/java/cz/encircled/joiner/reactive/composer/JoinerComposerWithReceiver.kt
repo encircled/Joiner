@@ -17,7 +17,7 @@ open class JoinerComposerWithReceiver<ENTITY, ENTITY_CONTAINER, PUBLISHER>(
     /**
      * Execute a select query and expect at most one result
      */
-    fun <F, R> findOneOptional(query: (ENTITY_CONTAINER) -> JoinerQuery<F, R>): OptionalMonoJoinerComposer<R> =
+    fun <F, R: Any> findOneOptional(query: (ENTITY_CONTAINER) -> JoinerQuery<F, R>): OptionalMonoJoinerComposer<R> =
         optional {
             query(it)
         }

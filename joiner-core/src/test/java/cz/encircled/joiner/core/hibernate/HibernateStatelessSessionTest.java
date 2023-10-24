@@ -20,7 +20,7 @@ public class HibernateStatelessSessionTest extends AbstractTest {
             joiner.setJoinerProperties(new JoinerProperties().setUseStatelessSessions(true));
 
             String testName = "SHOULD_BE_IGNORED";
-            List<Password> passwords = joiner.find(Q.from(QPassword.password));
+            List<Password> passwords = joiner.find(Q.from(QPassword.password).where(QPassword.password.id.gt(0)));
             assertFalse(passwords.isEmpty());
 
             for (Password password : passwords) {

@@ -8,11 +8,11 @@ import com.querydsl.jpa.JPQLTemplates
 import cz.encircled.joiner.core.Joiner
 import cz.encircled.joiner.query.JoinerQuery
 import cz.encircled.joiner.reactive.composer.JoinerComposer
+import jakarta.persistence.EntityManagerFactory
 import org.hibernate.reactive.stage.Stage
 import org.hibernate.reactive.stage.Stage.SessionFactory
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.CompletionStage
-import javax.persistence.EntityManagerFactory
 
 /**
  * Encapsulates Hibernate Reactive API and provides internal reactive API instead.

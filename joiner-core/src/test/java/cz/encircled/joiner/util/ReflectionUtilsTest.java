@@ -7,10 +7,10 @@ import cz.encircled.joiner.model.NormalUser;
 import cz.encircled.joiner.model.QSuperUser;
 import cz.encircled.joiner.model.SuperUser;
 import cz.encircled.joiner.model.User;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import org.junit.jupiter.api.Test;
 
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;

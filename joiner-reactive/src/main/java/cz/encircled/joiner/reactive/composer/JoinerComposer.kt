@@ -53,7 +53,7 @@ open class JoinerComposer<ENTITY, ENTITY_CONTAINER, PUBLISHER>(
     /**
      * Execute a select query and expect at most one result
      */
-    fun <F, R> findOneOptional(query: JoinerQuery<F, R>): OptionalMonoJoinerComposer<R> {
+    fun <F, R : Any> findOneOptional(query: JoinerQuery<F, R>): OptionalMonoJoinerComposer<R> {
         markChainStarted()
         return optional(query)
     }
@@ -101,7 +101,7 @@ open class JoinerComposer<ENTITY, ENTITY_CONTAINER, PUBLISHER>(
     /**
      * Creates new composer with optional singular (Mono) result projection
      */
-    protected fun <R> optional(value: Any): OptionalMonoJoinerComposer<R> {
+    protected fun <R: Any> optional(value: Any): OptionalMonoJoinerComposer<R> {
         steps.add(OptionalComputedExecutionStep(value))
         return OptionalMonoJoinerComposer(steps)
     }
@@ -109,7 +109,7 @@ open class JoinerComposer<ENTITY, ENTITY_CONTAINER, PUBLISHER>(
     /**
      * Creates new composer with optional singular (Mono) result projection
      */
-    protected fun <R> optional(callback: (ENTITY_CONTAINER) -> Any): OptionalMonoJoinerComposer<R> {
+    protected fun <R: Any> optional(callback: (ENTITY_CONTAINER) -> Any): OptionalMonoJoinerComposer<R> {
         steps.add(OptionalCallbackExecutionStep(callback))
         return OptionalMonoJoinerComposer(steps)
     }

@@ -44,17 +44,17 @@
 
     <properties>
         <querydsl.version>5.0.0</querydsl.version>
-        <spring.version>5.3.22</spring.version>
-        <hibernate.version>5.6.11.Final</hibernate.version>
-        <eclipselink.version>2.7.10</eclipselink.version>
+        <spring.version>6.0.9</spring.version>
+        <hibernate.version>6.2.13.Final</hibernate.version>
+        <eclipselink.version>4.0.2</eclipselink.version>
         <vendor.name>hibernate</vendor.name>
-        <kotlin.version>1.6.21</kotlin.version>
-        <reactor.version>3.4.17</reactor.version>
+        <kotlin.version>1.9.10</kotlin.version>
+        <reactor.version>3.5.11</reactor.version>
         <junit-jupiter.version>5.8.2</junit-jupiter.version>
         <slf4j.version>1.7.36</slf4j.version>
-        <vertx.version>4.3.0</vertx.version>
-        <maven.compiler.source>11</maven.compiler.source>
-        <maven.compiler.target>11</maven.compiler.target>
+        <vertx.version>4.4.5</vertx.version>
+        <maven.compiler.source>17</maven.compiler.source>
+        <maven.compiler.target>17</maven.compiler.target>
     </properties>
 
     <distributionManagement>
@@ -87,36 +87,30 @@
             <version>2.17.2</version>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>jakarta.persistence</groupId>
+            <artifactId>jakarta.persistence-api</artifactId>
+            <version>3.1.0</version>
+        </dependency>
+
+        <!-- QueryDSL -->
+        <dependency>
+            <groupId>com.querydsl</groupId>
+            <artifactId>querydsl-core</artifactId>
+            <version>${querydsl.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.querydsl</groupId>
+            <artifactId>querydsl-jpa</artifactId>
+            <version>${querydsl.version}</version>
+            <classifier>jakarta</classifier>
+        </dependency>
     </dependencies>
 
     <dependencyManagement>
         <dependencies>
-            <!-- QueryDSL -->
-            <dependency>
-                <groupId>com.querydsl</groupId>
-                <artifactId>querydsl-core</artifactId>
-                <version>${querydsl.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>com.querydsl</groupId>
-                <artifactId>querydsl-jpa</artifactId>
-                <version>${querydsl.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>com.querydsl</groupId>
-                <artifactId>querydsl-apt</artifactId>
-                <version>${querydsl.version}</version>
-            </dependency>
-
             <!--Eclipse-->
-            <dependency>
-                <groupId>org.eclipse.persistence</groupId>
-                <artifactId>javax.persistence</artifactId>
-                <version>2.1.1</version>
-            </dependency>
-
             <dependency>
                 <groupId>org.eclipse.persistence</groupId>
                 <artifactId>org.eclipse.persistence.core</artifactId>
@@ -144,20 +138,8 @@
 
             <!-- Hibernate -->
             <dependency>
-                <groupId>org.hibernate.javax.persistence</groupId>
-                <artifactId>hibernate-jpa-2.1-api</artifactId>
-                <version>1.0.0.Final</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.hibernate</groupId>
+                <groupId>org.hibernate.orm</groupId>
                 <artifactId>hibernate-core</artifactId>
-                <version>${hibernate.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.hibernate</groupId>
-                <artifactId>hibernate-entitymanager</artifactId>
                 <version>${hibernate.version}</version>
             </dependency>
 

@@ -1,18 +1,27 @@
 package cz.encircled.joiner.core.vendor;
 
+import com.querydsl.core.QueryModifiers;
 import com.querydsl.core.types.EntityPath;
+import com.querydsl.core.types.Expression;
+import com.querydsl.core.types.FactoryExpression;
+import com.querydsl.core.types.Path;
+import com.querydsl.jpa.FactoryExpressionTransformer;
 import com.querydsl.jpa.HQLTemplates;
 import com.querydsl.jpa.JPQLQuery;
+import com.querydsl.jpa.JPQLSerializer;
 import com.querydsl.jpa.hibernate.HibernateQuery;
 import com.querydsl.jpa.impl.JPAQuery;
 import cz.encircled.joiner.core.JoinerProperties;
 import cz.encircled.joiner.query.JoinerQuery;
 import cz.encircled.joiner.query.join.JoinDescription;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.FlushModeType;
+import org.hibernate.FlushMode;
+import org.hibernate.LockMode;
 import org.hibernate.Session;
 import org.hibernate.StatelessSession;
 import org.hibernate.query.Query;
 
-import javax.persistence.EntityManager;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -65,6 +74,71 @@ public class HibernateRepository extends AbstractVendorRepository implements Joi
         HibernateQueryWithSession(StatelessSession session) {
             super(session);
             this.session = session;
+        }
+
+        @Override
+        public Query createQuery() {
+            JPQLSerializer serializer = serialize(false);
+            String queryString = serializer.toString();
+            logQuery(queryString);
+            Query query = session.createQuery(queryString);
+            List<Object> constants = serializer.getConstants();
+
+            for (int i = 0; i < constants.size(); i++) {
+                Object val = constants.get(i);
+                if (val instanceof Collection<?>) {
+                    query.setParameterList(i + 1, (Collection<?>) val);
+                } else {
+                    query.setParameter(i + 1, val);
+                }
+            }
+            if (fetchSize > 0) {
+                query.setFetchSize(fetchSize);
+            }
+            if (timeout > 0) {
+                query.setTimeout(timeout);
+            }
+            if (cacheable != null) {
+                query.setCacheable(cacheable);
+            }
+            if (cacheRegion != null) {
+                query.setCacheRegion(cacheRegion);
+            }
+            if (comment != null) {
+                query.setComment(comment);
+            }
+            if (readOnly != null) {
+                query.setReadOnly(readOnly);
+            }
+            for (Map.Entry<Path<?>, LockMode> entry : lockModes.entrySet()) {
+                query.setLockMode(entry.getKey().toString(), entry.getValue());
+            }
+            if (flushMode != null) {
+                if (flushMode == FlushMode.AUTO) {
+                    query.setFlushMode(FlushModeType.AUTO);
+                } else {
+                    query.setFlushMode(FlushModeType.COMMIT);
+                }
+            }
+
+            QueryModifiers modifiers = getMetadata().getModifiers();
+            if (modifiers != null && modifiers.isRestricting()) {
+                Integer limit = modifiers.getLimitAsInteger();
+                Integer offset = modifiers.getOffsetAsInteger();
+                if (limit != null) {
+                    query.setMaxResults(limit);
+                }
+                if (offset != null) {
+                    query.setFirstResult(offset);
+                }
+            }
+
+            // set transformer, if necessary
+            Expression<?> projection = getMetadata().getProjection();
+            if (projection instanceof FactoryExpression) {
+                query.setResultTransformer(new FactoryExpressionTransformer((FactoryExpression<?>) projection));
+            }
+            return query;
         }
     }
 

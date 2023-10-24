@@ -4,13 +4,13 @@ import cz.encircled.joiner.model.Contact;
 import cz.encircled.joiner.model.Password;
 import cz.encircled.joiner.model.Phone;
 import cz.encircled.joiner.model.User;
+import jakarta.persistence.Query;
 import org.eclipse.persistence.config.QueryHints;
 import org.eclipse.persistence.internal.jpa.EJBQueryImpl;
 import org.eclipse.persistence.internal.queries.JoinedAttributeManager;
 import org.junit.jupiter.api.Test;
 import org.springframework.util.ReflectionUtils;
 
-import javax.persistence.Query;
 import java.lang.reflect.Field;
 import java.util.List;
 

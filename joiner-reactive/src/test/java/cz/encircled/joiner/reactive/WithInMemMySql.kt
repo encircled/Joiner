@@ -6,12 +6,12 @@ import cz.encircled.joiner.exception.JoinerException
 import cz.encircled.joiner.kotlin.JoinerKtQueryBuilder.all
 import cz.encircled.joiner.model.QUser
 import cz.encircled.joiner.model.User
+import jakarta.persistence.EntityManagerFactory
+import jakarta.persistence.Persistence
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll
 import org.slf4j.LoggerFactory
 import reactor.test.StepVerifier
-import javax.persistence.EntityManagerFactory
-import javax.persistence.Persistence
 import kotlin.test.BeforeTest
 
 abstract class WithInMemMySql : TestWithLogging() {

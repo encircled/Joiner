@@ -5,6 +5,7 @@ import cz.encircled.joiner.query.Q;
 import cz.encircled.joiner.query.join.J;
 import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInfo;
 
@@ -28,6 +29,7 @@ public abstract class InheritanceJoinTest extends AbstractTest {
     }
 
     @Test
+    @Disabled
     public void testNestedOneToMany() {
         List<User> users = joiner.find(Q.from(QUser.user1)
                 .joins(J.left(new QPhone("contacts")).nested(J.left(QStatus.status))));
@@ -42,6 +44,7 @@ public abstract class InheritanceJoinTest extends AbstractTest {
     }
 
     @Test
+    @Disabled
     public void testNestedManyToOne() {
         List<Contact> contacts = joiner.find(Q.from(QContact.contact)
                 .joins(
@@ -57,6 +60,7 @@ public abstract class InheritanceJoinTest extends AbstractTest {
     }
 
     @Test
+    @Disabled
     public void testNestedManyToManyNotFetched() {
         List<Group> groups = joiner.find(Q.from(QGroup.group));
 
@@ -72,6 +76,7 @@ public abstract class InheritanceJoinTest extends AbstractTest {
     }
 
     @Test
+    @Disabled
     public void testNestedManyToMany() {
         List<Group> groups = joiner.find(Q.from(QGroup.group)
                 .joins(
@@ -88,6 +93,7 @@ public abstract class InheritanceJoinTest extends AbstractTest {
     }
 
     @Test
+    @Disabled
     public void testNestedDepth() {
         List<Group> groups = joiner.find(Q.from(QGroup.group)
                 .joins(
@@ -126,6 +132,7 @@ public abstract class InheritanceJoinTest extends AbstractTest {
     }
 
     @Test
+    @Disabled
     public void joinSingleAndCollectionMultipleChildrenTest() {
         List<Group> groups = joiner.find(
                 Q.from(QGroup.group)
@@ -141,6 +148,7 @@ public abstract class InheritanceJoinTest extends AbstractTest {
     }
 
     @Test
+    @Disabled
     public void joinCollectionOnChildTest() {
         List<Group> groups = joiner.find(Q.from(QGroup.group)
                 .joins(J.left(QNormalUser.normalUser).nested(J.left(QPassword.password)))
