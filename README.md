@@ -1,6 +1,11 @@
 [![CI build](https://github.com/encircled/Joiner/actions/workflows/run-tests-action.yml/badge.svg)](https://github.com/encircled/Joiner/actions/workflows/run-tests-action.yml)
 [![codecov](https://codecov.io/gh/encircled/Joiner/branch/master/graph/badge.svg)](https://codecov.io/gh/encircled/Joiner)
 
+# Versions
+
+0.4.7 is the last version for javax API and Hiberante 5
+1.2 is the latest version for jakarta and Hiberante 6. It also workarounds the bugs in Querydsl 5 related to Hibernate 6
+
 # Overview
 
 Joiner is a Java library which allows creating type-safe JPA queries. It is focused on applications with complex domain model, which require a lot of work with query joins.
