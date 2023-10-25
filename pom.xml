@@ -4,7 +4,7 @@
 
     <groupId>cz.encircled</groupId>
     <artifactId>joiner-parent</artifactId>
-    <version>0.5.1</version>
+    <version>0.4.8-SNAPSHOT</version>
     <name>joiner</name>
     <description>Joiner parent module</description>
 
@@ -12,7 +12,7 @@
     <scm>
         <connection>scm:git:git@github.com:encircled/Joiner.git</connection>
         <url>https://github.com/encircled/Joiner/</url>
-        <tag>joiner-parent-0.5.1</tag>
+        <tag>HEAD</tag>
     </scm>
 
     <licenses>
@@ -325,8 +325,9 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.11.0</version>
+                <version>3.8.1</version>
                 <configuration>
+                    <forceJavacCompilerUse>true</forceJavacCompilerUse>
                     <forceJavacCompilerUse>true</forceJavacCompilerUse>
                     <release>${maven.compiler.release}</release>
                     <source>${maven.compiler.source}</source>
