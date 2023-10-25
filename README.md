@@ -4,6 +4,7 @@
 # Versions
 
 0.4.7 is the last version for javax API and Hiberante 5
+
 1.2 is the latest version for jakarta and Hiberante 6. It also workarounds the bugs in Querydsl 5 related to Hibernate 6
 
 # Overview
