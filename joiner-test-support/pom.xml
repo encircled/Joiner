@@ -70,11 +70,6 @@
             <artifactId>h2</artifactId>
         </dependency>
 
-        <dependency>
-            <groupId>hsqldb</groupId>
-            <artifactId>hsqldb</artifactId>
-        </dependency>
-
         <!-- Hibernate -->
         <dependency>
             <groupId>org.hibernate.orm</groupId>
