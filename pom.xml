@@ -44,7 +44,7 @@
 
     <properties>
         <querydsl.version>5.0.0</querydsl.version>
-        <spring.version>6.0.9</spring.version>
+        <spring.version>6.0.15</spring.version>
         <hibernate.version>6.2.13.Final</hibernate.version>
         <eclipselink.version>4.0.2</eclipselink.version>
         <vendor.name>hibernate</vendor.name>
