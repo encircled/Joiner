@@ -1,11 +1,7 @@
 package cz.encircled.joiner.query;
 
 import com.querydsl.core.QueryMetadata;
-import com.querydsl.core.types.EntityPath;
-import com.querydsl.core.types.Expression;
-import com.querydsl.core.types.Path;
-import com.querydsl.core.types.Predicate;
-import com.querydsl.core.types.SubQueryExpression;
+import com.querydsl.core.types.*;
 import com.querydsl.core.types.dsl.CollectionPathBase;
 import cz.encircled.joiner.query.join.JoinDescription;
 
@@ -35,9 +31,9 @@ public interface JoinerQuery<T, R> extends JoinRoot, SubQueryExpression<R> {
 
     boolean isDistinct();
 
-    JoinerQuery<T, R> groupBy(Path<?> groupBy);
+    JoinerQuery<T, R> groupBy(Path<?>... groupBy);
 
-    Path<?> getGroupBy();
+    Path<?>[] getGroupBy();
 
     JoinerQuery<T, R> having(Predicate having);
 

@@ -2,27 +2,14 @@ package cz.encircled.joiner.query;
 
 import com.querydsl.core.DefaultQueryMetadata;
 import com.querydsl.core.QueryMetadata;
-import com.querydsl.core.types.EntityPath;
-import com.querydsl.core.types.Expression;
-import com.querydsl.core.types.Path;
-import com.querydsl.core.types.Predicate;
-import com.querydsl.core.types.SubQueryExpression;
-import com.querydsl.core.types.Visitor;
+import com.querydsl.core.types.*;
 import com.querydsl.core.types.dsl.CollectionPathBase;
 import cz.encircled.joiner.query.join.J;
 import cz.encircled.joiner.query.join.JoinDescription;
 import cz.encircled.joiner.util.Assert;
 import cz.encircled.joiner.util.JoinerUtils;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -46,7 +33,7 @@ public class JoinerQueryBase<T, R> implements JoinerQuery<T, R>, JoinRoot, SubQu
 
     private boolean distinct = true;
 
-    private Path<?> groupBy;
+    private Path<?>[] groupBy;
 
     private Predicate having;
 
@@ -99,13 +86,13 @@ public class JoinerQueryBase<T, R> implements JoinerQuery<T, R>, JoinRoot, SubQu
     }
 
     @Override
-    public JoinerQueryBase<T, R> groupBy(Path<?> groupBy) {
+    public JoinerQueryBase<T, R> groupBy(Path<?>... groupBy) {
         this.groupBy = groupBy;
         return this;
     }
 
     @Override
-    public Path<?> getGroupBy() {
+    public Path<?>[] getGroupBy() {
         return groupBy;
     }
 

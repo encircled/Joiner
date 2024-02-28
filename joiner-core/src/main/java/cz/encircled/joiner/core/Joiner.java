@@ -212,9 +212,11 @@ public class Joiner {
         if (request.getGroupBy() != null) {
             Map<AnnotatedElement, List<JoinDescription>> grouped = joins.stream()
                     .collect(Collectors.groupingBy(j -> j.getOriginalAlias().getAnnotatedElement()));
-            Path<?> grouping = predicateAliasResolver.resolvePath(request.getGroupBy(), grouped, usedAliases);
-            checkAliasesArePresent(grouping, usedAliases);
-            query.groupBy(grouping);
+            for (Path<?> path : request.getGroupBy()) {
+                Path<?> grouping = predicateAliasResolver.resolvePath(path, grouped, usedAliases);
+                checkAliasesArePresent(grouping, usedAliases);
+                query.groupBy(grouping);
+            }
         }
         if (request.getHaving() != null) {
             Predicate having = predicateAliasResolver.resolvePredicate(request.getHaving(), joins, usedAliases);

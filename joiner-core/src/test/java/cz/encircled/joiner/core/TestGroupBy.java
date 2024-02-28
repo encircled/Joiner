@@ -1,11 +1,12 @@
 package cz.encircled.joiner.core;
 
-import cz.encircled.joiner.model.QAddress;
 import cz.encircled.joiner.query.Q;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
 
+import static cz.encircled.joiner.model.QAddress.address;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
@@ -16,20 +17,30 @@ public abstract class TestGroupBy extends AbstractTest {
     @Test
     public void testGroupBy() {
         List<Double> avg = joiner.find(
-                Q.select(QAddress.address.id.avg())
-                        .from(QAddress.address).groupBy(QAddress.address.user)
+                Q.select(address.id.avg())
+                        .from(address).groupBy(address.user)
         );
-        assertTrue(avg.size() > 0);
-        assertTrue(avg.size() < joiner.find(Q.from(QAddress.address)).size());
+        assertFalse(avg.isEmpty());
+        assertTrue(avg.size() < joiner.find(Q.from(address)).size());
+    }
+
+    @Test
+    public void testGroupByMultiple() {
+        List<Double> avg = joiner.find(
+                Q.select(address.id.avg())
+                        .from(address).groupBy(address.user, address.name)
+        );
+        assertFalse(avg.isEmpty());
+        assertTrue(avg.size() < joiner.find(Q.from(address)).size());
     }
 
     @Test
     public void testGroupByHaving() {
         List<Double> avg = joiner.find(
-                Q.select(QAddress.address.id.avg())
-                        .from(QAddress.address)
-                        .groupBy(QAddress.address.user)
-                        .having(QAddress.address.id.count().gt(2))
+                Q.select(address.id.avg())
+                        .from(address)
+                        .groupBy(address.user)
+                        .having(address.id.count().gt(2))
         );
         assertTrue(avg.isEmpty());
     }
