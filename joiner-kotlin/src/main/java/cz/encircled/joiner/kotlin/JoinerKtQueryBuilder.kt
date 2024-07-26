@@ -9,11 +9,8 @@ import cz.encircled.joiner.query.join.JoinDescription
 
 /**
  * List of missing stuff in Kt:
- * - distinct
  * - missing operators
  * - join (non)fetch
- * - query features
- * - groupBy/having
  */
 
 data class PredicateContinuation<T>(
