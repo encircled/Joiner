@@ -43,15 +43,15 @@
     <packaging>pom</packaging>
 
     <properties>
-        <querydsl.version>5.0.0</querydsl.version>
-        <spring.version>6.0.15</spring.version>
+        <querydsl.version>5.1.0</querydsl.version>
+        <spring.version>6.1.11</spring.version>
         <hibernate.version>6.2.13.Final</hibernate.version>
         <eclipselink.version>4.0.2</eclipselink.version>
         <vendor.name>hibernate</vendor.name>
-        <kotlin.version>1.9.10</kotlin.version>
-        <kotlin.coroutines.version>1.7.3</kotlin.coroutines.version>
+        <kotlin.version>2.0.0</kotlin.version>
+        <kotlin.coroutines.version>1.8.1</kotlin.coroutines.version>
         <reactor.version>3.5.11</reactor.version>
-        <junit-jupiter.version>5.8.2</junit-jupiter.version>
+        <junit-jupiter.version>5.9.3</junit-jupiter.version>
         <slf4j.version>1.7.36</slf4j.version>
         <vertx.version>4.4.5</vertx.version>
         <maven.compiler.source>17</maven.compiler.source>
@@ -215,7 +215,12 @@
             <dependency>
                 <groupId>org.junit.platform</groupId>
                 <artifactId>junit-platform-commons</artifactId>
-                <version>1.8.2</version>
+                <version>1.10.3</version>
+            </dependency>
+            <dependency>
+                <groupId>org.junit.platform</groupId>
+                <artifactId>junit-platform-engine</artifactId>
+                <version>1.10.3</version>
             </dependency>
 
             <!-- Reactive -->
