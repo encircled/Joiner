@@ -280,7 +280,7 @@ joiner.findOne(Q.from(QGroup.group)
 ## Result projection
 
 By default, `find` and `findOne` return an object(s) of type passed to `from` method. Customizing of result projection
-is possible using `Q.select` method. Finding the active phone number of John:
+is possible using `Q.select` method. Selecting a single object, for example the active phone number of John:
 
 ```java
 String number = joiner.findOne(Q.select(phone.number)
@@ -298,7 +298,23 @@ List<Tuple> tuple = joiner.findOne(Q.select(user.firstName, user.lastName, phone
                                       .joins(J.inner(phone).nested(status))
                                       .where(user.name.eq("John").and(status.active.isTrue()))
         );
-  String number = tuple.get(0).get(phone.number)
+String number = tuple.get(0).get(phone.number);
+```
+
+Custom projection may be mapped to a DTO object:
+
+```java
+List<TestDto> dto = joiner.find(Q.select(TestDto.class, user.id, user.name).from(user));
+
+public static class TestDto {
+  public Long id;
+  public String name;
+
+  public TestDto(Long id, String name) {
+    this.id = id;
+    this.name = name;
+  }
+}
 ```
 
 in Kotlin:
@@ -308,6 +324,14 @@ val number = joiner.findOne(phone.number from user
         innerJoin (phone leftJoin status)
         where { user.name eq "John" and status.active eq true }
 )
+```
+
+```kotlin
+val dto = joinerKt.getOne(
+            listOf(user.id, user.name)
+                    mappingTo TestDto::class
+                    from user
+        )
 ```
 
 ## Sorting

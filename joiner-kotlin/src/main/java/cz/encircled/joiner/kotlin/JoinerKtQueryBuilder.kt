@@ -1,11 +1,14 @@
 package cz.encircled.joiner.kotlin
 
 import com.querydsl.core.Tuple
+import com.querydsl.core.types.ConstructorExpression
 import com.querydsl.core.types.EntityPath
 import com.querydsl.core.types.Expression
+import com.querydsl.core.types.Projections
 import com.querydsl.core.types.dsl.BooleanExpression
 import com.querydsl.core.types.dsl.SimpleExpression
 import cz.encircled.joiner.query.join.JoinDescription
+import kotlin.reflect.KClass
 
 /**
  * List of missing stuff in Kt:
@@ -38,8 +41,19 @@ object JoinerKtQueryBuilder {
         return TupleJoinerKtQuery(path, this.toTypedArray())
     }
 
+    /**
+     * Creates a 'select * from path' query
+     */
+    fun <FROM_C, FROM : EntityPath<FROM_C>> from(path: FROM): JoinerKtQuery<FROM_C, FROM_C, FROM> {
+        return select(SelectFrom(path, path))
+    }
+
     fun <FROM_C, FROM : EntityPath<FROM_C>> FROM.all(): JoinerKtQuery<FROM_C, FROM_C, FROM> {
         return select(SelectFrom(this, this))
+    }
+
+    infix fun <PROJ : Collection<Expression<*>>, R : Any> PROJ.mappingTo(to: KClass<R>): ConstructorExpression<R> {
+        return Projections.constructor(to.java, *this.toTypedArray())
     }
 
     fun <FROM_C, FROM : EntityPath<FROM_C>> FROM.countOf(): JoinerKtQuery<FROM_C, Long, FROM> {

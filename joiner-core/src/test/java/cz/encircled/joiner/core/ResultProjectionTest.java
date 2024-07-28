@@ -9,7 +9,7 @@ import org.junit.jupiter.api.Test;
 import java.util.List;
 
 import static cz.encircled.joiner.model.QUser.user1;
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.*;
 
 public abstract class ResultProjectionTest extends AbstractTest {
 
@@ -47,6 +47,26 @@ public abstract class ResultProjectionTest extends AbstractTest {
         assertEquals(2, tuple.size());
         assertEquals("user1", tuple.get(0).get(user1.name));
         assertEquals("superUser1", tuple.get(1).get(user1.name));
+    }
+
+    @Test
+    public void tupleToDto() {
+        List<TestDto> dto = joiner.find(Q.select(TestDto.class, user1.id, user1.name).from(user1));
+        assertFalse(dto.isEmpty());
+        dto.forEach(d -> {
+            assertNotNull(d.id);
+            assertNotNull(d.name);
+        });
+    }
+
+    public static class TestDto {
+        public Long id;
+        public String name;
+
+        public TestDto(Long id, String name) {
+            this.id = id;
+            this.name = name;
+        }
     }
 
 }

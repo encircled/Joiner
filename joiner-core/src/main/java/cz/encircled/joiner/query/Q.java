@@ -3,6 +3,7 @@ package cz.encircled.joiner.query;
 import com.querydsl.core.Tuple;
 import com.querydsl.core.types.EntityPath;
 import com.querydsl.core.types.Expression;
+import com.querydsl.core.types.Projections;
 import cz.encircled.joiner.util.Assert;
 
 /**
@@ -11,7 +12,7 @@ import cz.encircled.joiner.util.Assert;
 public class Q {
 
     /**
-     * Build tuple query projections (i.e. select clause)
+     * Build a tuple query projections (i.e. select clause)
      *
      * @param returnProjections path to query projection
      * @return joiner query with custom tuple query projection
@@ -22,9 +23,9 @@ public class Q {
     }
 
     /**
-     * Build  query projection (i.e. select clause)
+     * Build a query projection (i.e. select clause)
      *
-     * @param returnProjection path to query projection
+     * @param returnProjection path to be selected
      * @param <R>              type of source entity
      * @return joiner query with custom query projection
      */
@@ -33,10 +34,21 @@ public class Q {
     }
 
     /**
+     * Build a query projection (i.e. select clause) with result mapping to another object
+     *
+     * @param mapTo class for result to be mapped to. Must contain a constructor matching given 'returnProjections'
+     * @param returnProjections paths to be selected
+     * @return joiner query with custom query projection
+     */
+    public static <R> FromBuilder<R> select(Class<R> mapTo, Expression<?>... returnProjections) {
+        return new ExpressionQueryFromBuilder<>(Projections.constructor(mapTo, returnProjections));
+    }
+
+    /**
      * Build "from" clause of query
      *
      * @param from alias of source entity
-     * @param <T> type of source entity
+     * @param <T>  type of source entity
      * @return joiner query
      */
     public static <T> JoinerQuery<T, T> from(EntityPath<T> from) {
@@ -47,7 +59,7 @@ public class Q {
      * Build count query
      *
      * @param from alias of source entity
-     * @param <T> type of source entity
+     * @param <T>  type of source entity
      * @return count joiner query
      */
     public static <T> JoinerQuery<T, Long> count(EntityPath<T> from) {
