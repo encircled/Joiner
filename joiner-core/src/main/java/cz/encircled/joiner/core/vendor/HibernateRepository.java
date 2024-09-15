@@ -1,5 +1,6 @@
 package cz.encircled.joiner.core.vendor;
 
+import com.querydsl.core.QueryException;
 import com.querydsl.core.QueryModifiers;
 import com.querydsl.core.types.EntityPath;
 import com.querydsl.core.types.Expression;
@@ -77,8 +78,28 @@ public class HibernateRepository extends AbstractVendorRepository implements Joi
         }
 
         @Override
+        public long fetchCount() {
+            QueryModifiers modifiers = getMetadata().getModifiers();
+            try {
+                Query query = doCreateQuery(modifiers, true);
+                Long rv = (Long) query.uniqueResult();
+                if (rv != null) {
+                    return rv;
+                } else {
+                    throw new QueryException("Query returned null");
+                }
+            } finally {
+                reset();
+            }
+        }
+
+        @Override
         public Query createQuery() {
-            JPQLSerializer serializer = serialize(false);
+            return doCreateQuery(getMetadata().getModifiers(), false);
+        }
+
+        protected Query doCreateQuery(QueryModifiers modifiers, boolean forCount) {
+            JPQLSerializer serializer = serialize(forCount);
             String queryString = serializer.toString();
             logQuery(queryString);
             Query query = session.createQuery(queryString);
@@ -121,7 +142,6 @@ public class HibernateRepository extends AbstractVendorRepository implements Joi
                 }
             }
 
-            QueryModifiers modifiers = getMetadata().getModifiers();
             if (modifiers != null && modifiers.isRestricting()) {
                 Integer limit = modifiers.getLimitAsInteger();
                 Integer offset = modifiers.getOffsetAsInteger();
@@ -135,7 +155,7 @@ public class HibernateRepository extends AbstractVendorRepository implements Joi
 
             // set transformer, if necessary
             Expression<?> projection = getMetadata().getProjection();
-            if (projection instanceof FactoryExpression) {
+            if (!forCount && projection instanceof FactoryExpression) {
                 query.setResultTransformer(new FactoryExpressionTransformer((FactoryExpression<?>) projection));
             }
             return query;

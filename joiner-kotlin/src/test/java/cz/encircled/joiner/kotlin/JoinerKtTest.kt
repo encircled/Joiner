@@ -104,6 +104,11 @@ class JoinerKtTest : AbstractTest() {
     }
 
     @Test
+    fun ktCountQueryWithPredicate() {
+        assertEquals(1, joinerKt.findOne(QUser.user1.countOf() where QUser.user1.name.eq("user1")))
+    }
+
+    @Test
     fun ktCountQueryIntegrationTest() {
         val find = joinerKt.findOne(
             QUser.user1.countOf()
