@@ -63,6 +63,9 @@ public abstract class PredicateTest extends AbstractTest {
         JoinerQuery<Address, Address> q = Q.from(QAddress.address)
                 .where(QAddress.address.user.id.ne(Q.select(QUser.user1.id.max()).from(QUser.user1)));
 
+        JoinerQuery<Address, Address> q2 = Q.from(QAddress.address)
+                .where(QAddress.address.user.id.in(Q.select(QUser.user1.id.max()).from(QUser.user1)));
+
         assertQueryContains("select distinct address\n" +
                         "from Address address\n" +
                         "where address.user.id <> (select distinct max(user1.id)\n" +
