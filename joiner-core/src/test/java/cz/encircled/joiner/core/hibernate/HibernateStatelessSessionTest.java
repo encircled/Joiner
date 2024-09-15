@@ -62,7 +62,10 @@ public class HibernateStatelessSessionTest extends AbstractTest {
         try {
             joiner.setJoinerProperties(new JoinerProperties().setUseStatelessSessions(true));
 
-            joiner.find(Q.count(QAddress.address).where(QAddress.address.name.eq("normalUser1street1").and(QAddress.address.id.gt(0))));
+            joiner.find(Q.count(QAddress.address)
+                    .groupBy(QAddress.address.id)
+                    .having(QAddress.address.id.gt(0))
+                    .where(QAddress.address.name.eq("normalUser1street1").and(QAddress.address.id.gt(0))));
         } finally {
             joiner.setJoinerProperties(null);
         }

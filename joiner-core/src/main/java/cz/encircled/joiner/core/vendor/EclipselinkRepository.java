@@ -25,7 +25,7 @@ public class EclipselinkRepository extends AbstractVendorRepository implements J
     private static final String DOT_ESCAPED = "\\.";
 
     @Override
-    public <R> JPQLQuery<R> createQuery(EntityManager entityManager, JoinerProperties joinerProperties) {
+    public <R> JPQLQuery<R> createQuery(EntityManager entityManager, JoinerProperties joinerProperties, boolean isForCount) {
         if (joinerProperties.useStatelessSessions) {
             throw new IllegalStateException("StatelessSession is not supported by Eclipselink!");
         }
