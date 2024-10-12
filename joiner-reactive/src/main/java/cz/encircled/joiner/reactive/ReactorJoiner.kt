@@ -34,14 +34,14 @@ class ReactorJoiner(emf: EntityManagerFactory) : GenericHibernateReactiveJoiner(
     /**
      * Persist multiple entities in a transaction, returns Flux with references to persisted entities
      */
-    fun <T> persist(entities: Collection<T>): Flux<T> = Flux.create { flux ->
+    fun <T : Any> persist(entities: Collection<T>): Flux<T> = Flux.create { flux ->
         doPersistMultiple(entities).handle { result, error -> flux.publish(result, error) }
     }
 
     /**
      * Execute a select query and expect exactly one result, returned as a [Mono]
      */
-    fun <T, R> findOne(query: JoinerQuery<T, R>): Mono<R> = Mono.create { mono ->
+    fun <T, R : Any> findOne(query: JoinerQuery<T, R>): Mono<R> = Mono.create { mono ->
         doFind(query).handle { result, error ->
             mono.publish(result, error)
         }
@@ -50,14 +50,14 @@ class ReactorJoiner(emf: EntityManagerFactory) : GenericHibernateReactiveJoiner(
     /**
      * Execute a select query and expect at most one result, returned as a [Mono]
      */
-    fun <T, R> findOneOptional(query: JoinerQuery<T, R>): Mono<R> = Mono.create { mono ->
+    fun <T, R : Any> findOneOptional(query: JoinerQuery<T, R>): Mono<R> = Mono.create { mono ->
         doFind(query).handle { result, error -> mono.publish(result, error, true) }
     }
 
     /**
      * Execute a select query, returns result set as a Flux
      */
-    fun <T, R> find(query: JoinerQuery<T, R>): Flux<R> = Flux.create { flux ->
+    fun <T, R : Any> find(query: JoinerQuery<T, R>): Flux<R> = Flux.create { flux ->
         doFind(query).handle { result, error -> flux.publish(result, error) }
     }
 

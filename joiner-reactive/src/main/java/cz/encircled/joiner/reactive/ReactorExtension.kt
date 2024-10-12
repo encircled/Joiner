@@ -13,12 +13,12 @@ object ReactorExtension {
     /**
      * Expect exactly one result and publish it to mono
      */
-    fun <T> MonoSink<T>.publish(result: List<T>?, error: Throwable?, allowNull: Boolean = false): Disposable =
+    fun <T : Any> MonoSink<T>.publish(result: List<T>?, error: Throwable?, allowNull: Boolean = false): Disposable =
         reactor(this) {
             if (error != null) {
                 error(error)
             } else when {
-                result == null || result.isEmpty() -> if (allowNull) success() else error(JoinerExceptions.entityNotFound())
+                result.isNullOrEmpty() -> if (allowNull) success() else error(JoinerExceptions.entityNotFound())
                 result.size > 1 -> error(JoinerExceptions.multipleEntitiesFound())
                 else -> success(result[0])
             }
@@ -27,7 +27,7 @@ object ReactorExtension {
     /**
      * Expect exactly one result and publish it to mono
      */
-    fun <T> MonoSink<T>.publish(result: T?, error: Throwable?): Disposable = reactor(this) {
+    fun <T : Any> MonoSink<T>.publish(result: T?, error: Throwable?): Disposable = reactor(this) {
         if (error != null) {
             error(error)
         } else when (result) {
@@ -44,7 +44,7 @@ object ReactorExtension {
         else success(result ?: Optional.empty<T>())
     }
 
-    fun <T> FluxSink<T>.publish(result: List<T>?, error: Throwable?): Disposable = reactor(this) {
+    fun <T : Any> FluxSink<T>.publish(result: List<T>?, error: Throwable?): Disposable = reactor(this) {
         if (error != null) error(error)
         else {
             result?.forEach { next(it) }
