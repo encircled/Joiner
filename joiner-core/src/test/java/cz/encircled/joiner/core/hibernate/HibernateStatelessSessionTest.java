@@ -2,10 +2,13 @@ package cz.encircled.joiner.core.hibernate;
 
 import cz.encircled.joiner.core.AbstractTest;
 import cz.encircled.joiner.core.JoinerProperties;
+import cz.encircled.joiner.model.Address;
 import cz.encircled.joiner.model.Password;
 import cz.encircled.joiner.model.QAddress;
 import cz.encircled.joiner.model.QPassword;
+import cz.encircled.joiner.query.JoinerQuery;
 import cz.encircled.joiner.query.Q;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
@@ -58,6 +61,7 @@ public class HibernateStatelessSessionTest extends AbstractTest {
     }
 
     @Test
+    @Disabled("To be fixed in querydsl, count+groupBy+having generates a jpa query w/o 'group by' clause")
     public void testCountInStatelessSession() {
         try {
             joiner.setJoinerProperties(new JoinerProperties().setUseStatelessSessions(true));
