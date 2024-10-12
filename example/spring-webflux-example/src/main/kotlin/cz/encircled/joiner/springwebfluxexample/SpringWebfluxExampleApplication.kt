@@ -6,7 +6,6 @@ import cz.encircled.joiner.reactive.ReactorJoiner
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.runApplication
 import org.springframework.context.annotation.Bean
-import org.springframework.context.annotation.DependsOn
 import jakarta.persistence.EntityManagerFactory
 import jakarta.persistence.Persistence
 
@@ -17,7 +16,8 @@ class SpringWebfluxExampleApplication {
     fun emf(): EntityManagerFactory {
         val db = DB.newEmbeddedDB(3306)
         db.start()
-        return Persistence.createEntityManagerFactory("reactiveTest")
+        val createEntityManagerFactory = Persistence.createEntityManagerFactory("reactiveTest")
+        return createEntityManagerFactory
     }
 
     @Bean

@@ -4,7 +4,7 @@
              version="2.0">
     <persistence-unit name="reactiveTest">
         <provider>org.hibernate.reactive.provider.ReactivePersistenceProvider</provider>
-        <class>cz.encircled.joiner.springwebfluxexample.Employment</class>
+        <class>cz.encircled.joiner.springbootexample.Employment</class>
         <properties>
             <property name="jakarta.persistence.schema-generation.database.action" value="drop-and-create"/>
             <property name="hibernate.connection.pool_size" value="10"/>

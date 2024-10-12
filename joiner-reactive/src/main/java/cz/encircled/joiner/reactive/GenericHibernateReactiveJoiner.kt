@@ -28,7 +28,7 @@ abstract class GenericHibernateReactiveJoiner(val emf: EntityManagerFactory) {
     private val constantPrefix: String = "a"
 
     init {
-        println("Creating GenericHibernateReactiveJoiner")
+        println("Creating ${this::class.qualifiedName}")
     }
 
     fun <T, C, P> executeComposed(c: JoinerComposer<T, C, P>): CompletionStage<C> {

@@ -1,5 +1,6 @@
 package cz.encircled.joiner.springwebfluxexample.controller
 
+import cz.encircled.joiner.kotlin.JoinerKtOps.eq
 import cz.encircled.joiner.kotlin.JoinerKtQueryBuilder.all
 import cz.encircled.joiner.kotlin.JoinerKtQueryBuilder.from
 import cz.encircled.joiner.reactive.ReactorJoiner
@@ -12,7 +13,6 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
-import javax.annotation.PostConstruct
 
 
 @RestController
@@ -21,18 +21,6 @@ class ReactorEmploymentController {
 
     @Autowired
     lateinit var joiner: ReactorJoiner
-
-    @PostConstruct
-    fun init() {
-        // Insert test data
-        joiner.persist(
-            listOf(
-                Employment().apply { name = "Employment 1" },
-                Employment().apply { name = "Employment 2" },
-                Employment().apply { name = "Employment 3" },
-            )
-        ).subscribe()
-    }
 
     @GetMapping("{id}")
     fun getOne(@PathVariable id: Long): Mono<Employment> {

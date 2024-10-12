@@ -9,7 +9,7 @@
 
 # Overview
 
-Joiner is a Java library that allows the creation of type-safe JPA queries. It is designed for applications with complex domain models that require extensive use of query joins.
+Joiner is a Java library that enables the creation of type-safe JPA queries. It is designed for applications with complex domain models that require extensive use of query joins.
 
 Joiner can be used either as a replacement for, or in conjunction with, QueryDSL. It leverages the QueryDSL APT Maven plugin for entity metamodel generation. See more about QueryDSL installation
 at [QueryDSL](http://www.querydsl.com/static/querydsl/latest/reference/html/ch02.html#jpa_integration).
@@ -411,7 +411,7 @@ where
 - `QUser.user1.name from QUser.user1` specifies both the result projection (the names of users) and the target entity (user).
 - `leftJoin QUser.user1.addresses` and `innerJoin QPhone.phone` can be set as a path through the parent (e.g., joining user addresses via `QUser.user1.addresses`) or through an entity alias (e.g. `QPhone.phone`)
 - `leftJoin (QGroup.group innerJoin QStatus.status)` makes nested joins much easier to read and write, as they are simply marked by parentheses.
-- `where { it.name eq "user1" and it.id notIn listOf(1, 2) }` the root entity is passed as a parameter, allowing direct access (`it.name` instead of `QUser.user.name`). All operators are supported as infix functions.
+- `where { it.name eq "user1" and it.id notIn listOf(1, 2) }` the root entity is passed as a parameter, allowing direct access (`it.name` instead of `QUser.user.name`). All operators support infix function syntax.
 
 ### Select all and count queries
 
@@ -460,8 +460,25 @@ fun createSuperUsersIsApplicable(ids : List<Long>): Flux<SuperUser> {
 
 # Example setup
 
-As per [QueryDSL documentation](http://www.querydsl.com/static/querydsl/latest/reference/html/ch02.html#jpa_integration),
-`apt-maven-plugin` must be used to generate a metamodel of entities (so called Q-classes).
+Include `QueryDSL` dependencies:
+```xml
+<dependency>
+    <groupId>com.querydsl</groupId>
+    <artifactId>querydsl-jpa</artifactId>
+    <classifier>jakarta</classifier>
+    <version>${querydsl.version}</version>
+</dependency>
+<dependency>
+    <groupId>com.querydsl</groupId>
+    <artifactId>querydsl-apt</artifactId>
+    <classifier>jakarta</classifier>
+    <version>${querydsl.version}</version>
+</dependency>
+```
+
+For `Hibernate 5` and below it is also required to add a `apt-maven-plugin` plugin for generation a metamodel (so called Q-classes):  
+
+visit [QueryDSL documentation](http://www.querydsl.com/static/querydsl/latest/reference/html/ch02.html#jpa_integration) for detais.
 
 Then all you need is an instance of the JPA entity manager (via `Hibernate` or `EclipseLink`), and setting up Joiner is as simple as:
 
@@ -483,7 +500,7 @@ joiner.find(QUser.user.all()
 
 ## Reactive setup
 
-The reactive API supports Hibernate only, and its initialization is very similar, requiring the `jakarta.persistence.EntityManagerFactory`:
+The reactive API supports Hibernate only, and its initialization is quite similar and requires `jakarta.persistence.EntityManagerFactory`:
 ```java
 ReactorJoiner joiner = new ReactorJoiner(getEntityManagerFactory())
 ...

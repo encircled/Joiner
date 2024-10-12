@@ -9,16 +9,16 @@
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
     <groupId>cz.encircled.joiner</groupId>
-    <artifactId>spring-webflux-example</artifactId>
+    <artifactId>spring-boot-example</artifactId>
     <version>0.0.1-SNAPSHOT</version>
-    <name>spring-webflux-example</name>
+    <name>spring-boot-example</name>
     <description>Demo project for Spring Boot</description>
     <properties>
         <java.version>17</java.version>
         <kotlin.version>2.0.21</kotlin.version>
         <querydsl.version>5.1.0</querydsl.version>
         <joiner.version>1.5</joiner.version>
-        <vertx-mysql-client.version>4.5.10</vertx-mysql-client.version>
+        <hibernate.version>6.6.1.Final</hibernate.version>
     </properties>
     <dependencies>
         <!-- QueryDSL -->
@@ -34,39 +34,45 @@
             <classifier>jakarta</classifier>
             <version>${querydsl.version}</version>
         </dependency>
-        <dependency>
-            <groupId>com.querydsl</groupId>
-            <artifactId>querydsl-core</artifactId>
-            <version>${querydsl.version}</version>
-        </dependency>
 
         <!-- Joiner -->
         <dependency>
             <groupId>cz.encircled</groupId>
-            <artifactId>joiner-reactive</artifactId>
-            <version>${joiner.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>cz.encircled</groupId>
-            <artifactId>joiner-kotlin-reactive</artifactId>
+            <artifactId>joiner-kotlin</artifactId>
             <version>${joiner.version}</version>
         </dependency>
 
         <!-- DB driver dependencies -->
         <dependency>
-            <groupId>io.vertx</groupId>
-            <artifactId>vertx-mysql-client</artifactId>
-            <version>${vertx-mysql-client.version}</version>
+            <groupId>mysql</groupId>
+            <artifactId>mysql-connector-java</artifactId>
+            <version>8.0.33</version>
         </dependency>
         <dependency>
             <groupId>ch.vorburger.mariaDB4j</groupId>
             <artifactId>mariaDB4j</artifactId>
             <version>3.0.1</version>
         </dependency>
+        <dependency>
+            <groupId>ch.vorburger.mariaDB4j</groupId>
+            <artifactId>mariaDB4j-springboot</artifactId>
+            <version>3.0.1</version>
+        </dependency>
+        <dependency>
+            <groupId>org.mariadb.jdbc</groupId>
+            <artifactId>mariadb-java-client</artifactId>
+            <version>3.4.1</version> <!-- Latest version at the time -->
+        </dependency>
 
+
+        <!-- Generic Spring & Kotlin stuff -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-webflux</artifactId>
+            <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-jpa</artifactId>
         </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.module</groupId>
@@ -97,7 +103,7 @@
         <dependency>
             <groupId>org.hibernate.orm</groupId>
             <artifactId>hibernate-core</artifactId>
-            <version>6.2.4.Final</version>
+            <version>${hibernate.version}</version>
         </dependency>
     </dependencies>
 
@@ -128,7 +134,6 @@
                     </dependency>
                 </dependencies>
             </plugin>
-
         </plugins>
     </build>
 
