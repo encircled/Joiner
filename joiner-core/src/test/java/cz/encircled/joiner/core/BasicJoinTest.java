@@ -181,7 +181,7 @@ public abstract class BasicJoinTest extends AbstractTest {
         if (isEclipse()) {
             assertThrows(JoinerException.class, () -> joiner.find(q), "Right join is not supported in EclipseLink!");
         } else {
-            List<Address> addresses = joiner.find(q).stream().filter(Objects::nonNull).collect(Collectors.toList());
+            List<Address> addresses = joiner.find(q).stream().filter(Objects::nonNull).toList();
 
             assertFalse(addresses.isEmpty());
             for (Address address : addresses) {
