@@ -26,7 +26,7 @@ public abstract class HintsTest extends AbstractTest {
                     .addDefaultHint("testHint", "testHintValue"));
             joiner.find(Q.from(QUser.user1).addFeatures(new HintQueryFeature()));
 
-            joiner.setJoinerProperties(null);
+            joiner.getJoinerProperties().removeDefaultHint("testHint");
 
             assertThrows(NoSuchElementException.class, () -> {
                 joiner.find(Q.from(QUser.user1).addFeatures(new HintQueryFeature()));

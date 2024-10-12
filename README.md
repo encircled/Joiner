@@ -90,6 +90,8 @@ val names = runBlocking {
 }
 ```
 
+See example projects in https://github.com/encircled/Joiner/tree/master/example
+
 # Features
 
 ## Basic query
@@ -460,6 +462,10 @@ fun createSuperUsersIsApplicable(ids : List<Long>): Flux<SuperUser> {
 
 # Example setup
 
+See example projects in https://github.com/encircled/Joiner/tree/master/example
+
+### QueryDSL dependencies
+
 Include `QueryDSL` dependencies:
 ```xml
 <dependency>
@@ -476,11 +482,15 @@ Include `QueryDSL` dependencies:
 </dependency>
 ```
 
+### Hibernate 5 additional setup
+
 For `Hibernate 5` and below it is also required to add a `apt-maven-plugin` plugin for generation a metamodel (so called Q-classes):  
 
 visit [QueryDSL documentation](http://www.querydsl.com/static/querydsl/latest/reference/html/ch02.html#jpa_integration) for detais.
 
-Then all you need is an instance of the JPA entity manager (via `Hibernate` or `EclipseLink`), and setting up Joiner is as simple as:
+### Joiner instantiation
+
+Instantiate a JPA entity manager (via `Hibernate` or `EclipseLink`), and setting up Joiner is as simple as:
 
 ```java
 Joiner joiner = new Joiner(getEntityManager());

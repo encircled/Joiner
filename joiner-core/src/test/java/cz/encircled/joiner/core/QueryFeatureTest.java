@@ -84,14 +84,18 @@ public abstract class QueryFeatureTest extends AbstractTest {
     @Test
     public void testDefaultQueryFeature() {
         try {
-            joiner.setJoinerProperties(new JoinerProperties().addDefaultQueryFeature(new QueryFeature() {
+            QueryFeature feature = new QueryFeature() {
                 @Override
                 public <T, R> void postLoad(JoinerQuery<T, R> request, List<R> result) {
                     throw new TestException();
                 }
-            }));
+            };
+            joiner.setJoinerProperties(new JoinerProperties().addDefaultQueryFeature(feature));
 
             assertThrows(TestException.class, () -> joiner.find(Q.from(QUser.user1)));
+
+            joiner.getJoinerProperties().removeDefaultQueryFeature(feature);
+            joiner.find(Q.from(QUser.user1));
         } finally {
             joiner.setJoinerProperties(null);
         }

@@ -50,6 +50,8 @@ public class HibernateStatelessSessionTest extends AbstractTest {
         try {
             joiner.setJoinerProperties(new JoinerProperties().setUseStatelessSessions(true));
 
+            joiner.find(Q.from(QAddress.address).addHint("org.hibernate.timeout", "30"));
+
             assertThrows(NumberFormatException.class, () -> {
                 joiner.find(Q.from(QAddress.address)
                         .addHint("org.hibernate.timeout", "wrong_val")
@@ -82,10 +84,21 @@ public class HibernateStatelessSessionTest extends AbstractTest {
                     .addDefaultHint("org.hibernate.timeout", "wrong_val")
                     .setUseStatelessSessions(true));
 
-
             assertThrows(NumberFormatException.class, () -> {
                 joiner.find(Q.from(QAddress.address));
             });
+        } finally {
+            joiner.setJoinerProperties(null);
+        }
+    }
+
+    @Test
+    public void testLimit() {
+        try {
+            joiner.setJoinerProperties(new JoinerProperties()
+                    .setUseStatelessSessions(true));
+
+            assertEquals(1, joiner.find(Q.from(QAddress.address).limit(1L)).size());
         } finally {
             joiner.setJoinerProperties(null);
         }

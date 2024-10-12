@@ -78,22 +78,6 @@ public class HibernateRepository extends AbstractVendorRepository implements Joi
         }
 
         @Override
-        public long fetchCount() {
-            QueryModifiers modifiers = getMetadata().getModifiers();
-            try {
-                Query query = doCreateQuery(modifiers, true);
-                Long rv = (Long) query.uniqueResult();
-                if (rv != null) {
-                    return rv;
-                } else {
-                    throw new QueryException("Query returned null");
-                }
-            } finally {
-                reset();
-            }
-        }
-
-        @Override
         public Query createQuery() {
             return doCreateQuery(getMetadata().getModifiers(), false);
         }
@@ -112,9 +96,6 @@ public class HibernateRepository extends AbstractVendorRepository implements Joi
                 } else {
                     query.setParameter(i + 1, val);
                 }
-            }
-            if (fetchSize > 0) {
-                query.setFetchSize(fetchSize);
             }
             if (timeout > 0) {
                 query.setTimeout(timeout);
