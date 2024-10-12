@@ -2,11 +2,9 @@ package cz.encircled.joiner.core.hibernate;
 
 import cz.encircled.joiner.core.AbstractTest;
 import cz.encircled.joiner.core.JoinerProperties;
-import cz.encircled.joiner.model.Address;
 import cz.encircled.joiner.model.Password;
 import cz.encircled.joiner.model.QAddress;
 import cz.encircled.joiner.model.QPassword;
-import cz.encircled.joiner.query.JoinerQuery;
 import cz.encircled.joiner.query.Q;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
@@ -52,11 +50,9 @@ public class HibernateStatelessSessionTest extends AbstractTest {
 
             joiner.find(Q.from(QAddress.address).addHint("org.hibernate.timeout", "30"));
 
-            assertThrows(NumberFormatException.class, () -> {
-                joiner.find(Q.from(QAddress.address)
-                        .addHint("org.hibernate.timeout", "wrong_val")
-                );
-            });
+            assertThrows(NumberFormatException.class, () -> joiner.find(Q.from(QAddress.address)
+                    .addHint("org.hibernate.timeout", "wrong_val")
+            ));
         } finally {
             joiner.setJoinerProperties(null);
         }
@@ -84,9 +80,7 @@ public class HibernateStatelessSessionTest extends AbstractTest {
                     .addDefaultHint("org.hibernate.timeout", "wrong_val")
                     .setUseStatelessSessions(true));
 
-            assertThrows(NumberFormatException.class, () -> {
-                joiner.find(Q.from(QAddress.address));
-            });
+            assertThrows(NumberFormatException.class, () -> joiner.find(Q.from(QAddress.address)));
         } finally {
             joiner.setJoinerProperties(null);
         }

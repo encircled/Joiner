@@ -5,7 +5,6 @@ import com.querydsl.core.Tuple;
 import cz.encircled.joiner.exception.JoinerException;
 import cz.encircled.joiner.model.*;
 import cz.encircled.joiner.query.JoinerQuery;
-import cz.encircled.joiner.query.JoinerQueryBase;
 import cz.encircled.joiner.query.Q;
 import cz.encircled.joiner.query.join.J;
 import cz.encircled.joiner.query.join.JoinDescription;
@@ -30,7 +29,7 @@ public abstract class BasicJoinTest extends AbstractTest {
 
     @Test
     public void testNestedJoinAlias() {
-        JoinerQueryBase<Group, Group> q = Q.from(QGroup.group).joins(J.left(QUser.user1)
+        JoinerQuery<Group, Group> q = Q.from(QGroup.group).joins(J.left(QUser.user1)
                 .nested(J.left(QAddress.address).nested(QStatus.status)));
         List<JoinDescription> j = J.unrollChildrenJoins(q.getAllJoins().values());
         assertEquals(3, j.size());
@@ -39,7 +38,7 @@ public abstract class BasicJoinTest extends AbstractTest {
 
     @Test
     public void testNestedJoinAliasWithNestedParentPath() {
-        JoinerQueryBase<Group, Group> q = Q.from(QGroup.group).joins(J.left(QUser.user1)
+        JoinerQuery<Group, Group> q = Q.from(QGroup.group).joins(J.left(QUser.user1)
                 .nested(J.left(QAddress.address).nested(QAddress.address.statuses)));
         List<JoinDescription> j = J.unrollChildrenJoins(q.getAllJoins().values());
         assertEquals(3, j.size());
@@ -48,7 +47,7 @@ public abstract class BasicJoinTest extends AbstractTest {
 
     @Test
     public void testNestedJoinAliasWithAllPathsViaParents() {
-        JoinerQueryBase<Group, Group> q = Q.from(QGroup.group).joins(J.left(QGroup.group.users)
+        JoinerQuery<Group, Group> q = Q.from(QGroup.group).joins(J.left(QGroup.group.users)
                 .nested(J.left(QUser.user1.addresses).nested(QAddress.address.statuses)));
         List<JoinDescription> j = J.unrollChildrenJoins(q.getAllJoins().values());
         assertEquals(3, j.size());
@@ -151,7 +150,7 @@ public abstract class BasicJoinTest extends AbstractTest {
 
     @Test
     public void testRightJoin() {
-        JoinerQueryBase<Address, Tuple> q = Q.select(QUser.user1.name, QAddress.address.name)
+        JoinerQuery<Address, Tuple> q = Q.select(QUser.user1.name, QAddress.address.name)
                 .from(QAddress.address)
                 .joins(J.right(QUser.user1))
                 .where(QUser.user1.name.in("user1", USER_NO_ADDRESS));
@@ -175,7 +174,7 @@ public abstract class BasicJoinTest extends AbstractTest {
 
     @Test
     public void testFetchRightJoin() {
-        JoinerQueryBase<Address, Address> q = Q.from(QAddress.address)
+        JoinerQuery<Address, Address> q = Q.from(QAddress.address)
                 .joins(J.right(QUser.user1))
                 .where(QUser.user1.name.isNotNull());
 
@@ -238,7 +237,7 @@ public abstract class BasicJoinTest extends AbstractTest {
 
     @Test
     public void testDefaultJoinFromEntityPath() {
-        JoinerQueryBase<Group, Group> query = Q.from(QGroup.group).joins(QUser.user1);
+        JoinerQuery<Group, Group> query = Q.from(QGroup.group).joins(QUser.user1);
 
         JoinDescription join = query.getJoins().iterator().next();
         assertEquals(JoinType.LEFTJOIN, join.getJoinType());
@@ -247,7 +246,7 @@ public abstract class BasicJoinTest extends AbstractTest {
 
     @Test
     public void testDefaultNestedJoinFromEntityPath() {
-        JoinerQueryBase<Group, Group> query = Q.from(QGroup.group).joins(J.left(QUser.user1).nested(QStatus.status));
+        JoinerQuery<Group, Group> query = Q.from(QGroup.group).joins(J.left(QUser.user1).nested(QStatus.status));
 
         JoinDescription join = query.getJoins().iterator().next().getChildren().iterator().next();
         assertEquals(JoinType.LEFTJOIN, join.getJoinType());
@@ -262,7 +261,7 @@ public abstract class BasicJoinTest extends AbstractTest {
 
     @Test
     public void testJoinUsingParentPath() {
-        JoinerQueryBase<User, User> query = Q.from(QUser.user1).joins(QUser.user1.groups, QUser.user1.statuses);
+        JoinerQuery<User, User> query = Q.from(QUser.user1).joins(QUser.user1.groups, QUser.user1.statuses);
 
         assertNotNull(query.getJoin(QStatus.status));
         assertNotNull(query.getJoin(QGroup.group));
@@ -294,7 +293,7 @@ public abstract class BasicJoinTest extends AbstractTest {
 
     @Test
     public void testQueryGetJoin() {
-        JoinerQueryBase<User, User> query = Q.from(QUser.user1).addHint("", null);
+        JoinerQuery<User, User> query = Q.from(QUser.user1).addHint("", null);
 
         assertNull(query.getJoin(QGroup.group));
         query.joins(QGroup.group);
@@ -303,7 +302,7 @@ public abstract class BasicJoinTest extends AbstractTest {
 
     @Test
     public void testGetNestedJoin() {
-        JoinerQueryBase<User, User> query = Q.from(QUser.user1)
+        JoinerQuery<User, User> query = Q.from(QUser.user1)
                 .joins(J.left(QGroup.group))
                 .addHint("", null);
 
@@ -322,7 +321,7 @@ public abstract class BasicJoinTest extends AbstractTest {
 
     @Test
     public void testPredicateAliasInWhere() {
-        JoinerQueryBase<Group, Group> query = Q.from(QGroup.group)
+        JoinerQuery<Group, Group> query = Q.from(QGroup.group)
                 .joins(J.left(new QStatus("groupStatus")), J.left(QUser.user1).nested(new QStatus("userStatus")))
                 .where(new QStatus("userStatus").id.isNotNull());
         assertQueryContains("userStatus_on_user1.id is not null", query);
@@ -330,7 +329,7 @@ public abstract class BasicJoinTest extends AbstractTest {
 
     @Test
     public void testPredicateAliasInJoinOn() {
-        JoinerQueryBase<Group, Group> query = Q.from(QGroup.group)
+        JoinerQuery<Group, Group> query = Q.from(QGroup.group)
                 .joins(J.left(new QStatus("groupStatus")), J.left(QUser.user1).nested(
                         J.left(new QStatus("userStatus")).on(new QStatus("userStatus").id.isNotNull())
                 ));

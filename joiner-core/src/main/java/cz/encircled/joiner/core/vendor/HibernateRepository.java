@@ -1,6 +1,5 @@
 package cz.encircled.joiner.core.vendor;
 
-import com.querydsl.core.QueryException;
 import com.querydsl.core.QueryModifiers;
 import com.querydsl.core.types.EntityPath;
 import com.querydsl.core.types.Expression;
@@ -39,8 +38,7 @@ public class HibernateRepository extends AbstractVendorRepository implements Joi
 
     @Override
     public <T> List<T> getResultList(JoinerQuery<?, T> request, JPQLQuery<T> query, JoinerProperties joinerProperties) {
-        if (query instanceof HibernateQueryWithSession) {
-            HibernateQueryWithSession<T> hq = (HibernateQueryWithSession<T>) query;
+        if (query instanceof HibernateQueryWithSession<T> hq) {
             try (hq.session) {
                 Query<T> jpaQuery = hq.createQuery();
                 for (Map.Entry<String, List<Object>> entry : request.getHints().entrySet()) {

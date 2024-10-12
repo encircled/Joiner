@@ -28,9 +28,7 @@ public abstract class HintsTest extends AbstractTest {
 
             joiner.getJoinerProperties().removeDefaultHint("testHint");
 
-            assertThrows(NoSuchElementException.class, () -> {
-                joiner.find(Q.from(QUser.user1).addFeatures(new HintQueryFeature()));
-            });
+            assertThrows(NoSuchElementException.class, () -> joiner.find(Q.from(QUser.user1).addFeatures(new HintQueryFeature())));
         } finally {
             joiner.setJoinerProperties(null);
         }
@@ -38,16 +36,12 @@ public abstract class HintsTest extends AbstractTest {
 
     @Test
     public void testOfTest() {
-        assertThrows(TestException.class, () -> {
-            joiner.find(Q.from(QUser.user1).addHint("testHint", "exception").addFeatures(new HintQueryFeature()));
-        });
+        assertThrows(TestException.class, () -> joiner.find(Q.from(QUser.user1).addHint("testHint", "exception").addFeatures(new HintQueryFeature())));
     }
 
     @Test
     public void testNullKeyHint() {
-        assertThrows(IllegalArgumentException.class, () -> {
-            joiner.find(Q.from(QUser.user1).addHint(null, "testHintValue").addFeatures(new HintQueryFeature()));
-        });
+        assertThrows(IllegalArgumentException.class, () -> joiner.find(Q.from(QUser.user1).addHint(null, "testHintValue").addFeatures(new HintQueryFeature())));
     }
 
 }

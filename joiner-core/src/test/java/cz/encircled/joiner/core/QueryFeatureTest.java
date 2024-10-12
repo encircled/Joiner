@@ -26,11 +26,6 @@ public abstract class QueryFeatureTest extends AbstractTest {
             public <T, R> JoinerQuery<T, R> before(final JoinerQuery<T, R> request) {
                 throw new TestException();
             }
-
-            @Override
-            public <T, R> JPQLQuery<R> after(JoinerQuery<T, R> request, JPQLQuery<R> query) {
-                return query;
-            }
         });
 
         assertThrows(TestException.class, () -> joiner.find(request));
@@ -44,11 +39,6 @@ public abstract class QueryFeatureTest extends AbstractTest {
             public <T, R> JoinerQuery<T, R> before(final JoinerQuery<T, R> request) {
                 throw new TestException();
             }
-
-            @Override
-            public <T, R> JPQLQuery<R> after(JoinerQuery<T, R> request, JPQLQuery<R> query) {
-                return query;
-            }
         }));
         assertThrows(TestException.class, () -> joiner.find(request));
     }
@@ -57,11 +47,6 @@ public abstract class QueryFeatureTest extends AbstractTest {
     public void testQueryFeatureAfter() {
         JoinerQuery<User, User> request = Q.from(QUser.user1);
         request.addFeatures(new QueryFeature() {
-            @Override
-            public <T, R> JoinerQuery<T, R> before(final JoinerQuery<T, R> request) {
-                return request;
-            }
-
             @Override
             public <T, R> JPQLQuery<R> after(JoinerQuery<T, R> request, JPQLQuery<R> query) {
                 throw new TestException();
