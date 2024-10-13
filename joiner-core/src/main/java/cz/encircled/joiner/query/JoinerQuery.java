@@ -126,4 +126,10 @@ public interface JoinerQuery<T, R> extends JoinRoot, SubQueryExpression<R> {
 
     void setSubQueryMetadata(QueryMetadata metadata);
 
+    Boolean isStatelessSession();
+
+    JoinerQuery<T, R> setStatelessSession(Boolean isStatelessSession);
+
+    JoinerQuery<T, R> useStatelessSession();
+
 }

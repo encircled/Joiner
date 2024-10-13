@@ -17,7 +17,7 @@ import java.util.List;
  */
 public interface JoinerVendorRepository {
 
-    <R> JPQLQuery<R> createQuery(EntityManager entityManager, JoinerProperties joinerProperties);
+    <R> JPQLQuery<R> createQuery(JoinerQuery<?, R> request, EntityManager entityManager, JoinerProperties joinerProperties);
 
     void addJoin(JPQLQuery<?> query, JoinDescription joinDescription);
 

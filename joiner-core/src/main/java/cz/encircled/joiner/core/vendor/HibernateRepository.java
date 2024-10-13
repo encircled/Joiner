@@ -58,8 +58,10 @@ public class HibernateRepository extends AbstractVendorRepository implements Joi
     }
 
     @Override
-    public <R> JPQLQuery<R> createQuery(EntityManager entityManager, JoinerProperties joinerProperties) {
-        if (joinerProperties.useStatelessSessions) {
+    public <R> JPQLQuery<R> createQuery(JoinerQuery<?, R> request, EntityManager entityManager, JoinerProperties joinerProperties) {
+        boolean isStateless = request.isStatelessSession() != null ? request.isStatelessSession() : joinerProperties.useStatelessSessions;
+        if (isStateless) {
+            request.setStatelessSession(true);
             StatelessSession session = entityManager.unwrap(Session.class).getSessionFactory().openStatelessSession();
             return new HibernateQueryWithSession<>(session);
         }

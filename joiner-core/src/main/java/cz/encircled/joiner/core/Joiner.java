@@ -138,7 +138,7 @@ public class Joiner {
             request = doPreProcess(request, feature);
         }
 
-        JPQLQuery<R> query = joinerVendorRepository.createQuery(entityManager, getJoinerProperties());
+        JPQLQuery<R> query = joinerVendorRepository.createQuery(request, entityManager, getJoinerProperties());
         makeInsertionOrderHints(query);
 
         query.from(request.getFrom());

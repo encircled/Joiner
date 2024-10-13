@@ -16,30 +16,44 @@ import static org.junit.jupiter.api.Assertions.*;
 public class HibernateStatelessSessionTest extends AbstractTest {
 
     @Test
-    public void testStatelessSessionIsUsed() {
+    public void testStatelessSessionIsUsedViaGlobalProperty() {
         try {
-            joiner.setJoinerProperties(new JoinerProperties().setUseStatelessSessions(true));
+            joiner.getJoinerProperties().setUseStatelessSessions(true);
 
-            String testName = "SHOULD_BE_IGNORED";
             List<Password> passwords = joiner.find(Q.from(QPassword.password).where(QPassword.password.id.gt(0)));
-            assertFalse(passwords.isEmpty());
-
-            for (Password password : passwords) {
-                password.setName(testName);
-            }
-
-            // Flush should have no effect in stateless session
-            entityManager.flush();
-            entityManager.clear();
-
-            passwords = joiner.find(Q.from(QPassword.password));
-            assertFalse(passwords.isEmpty());
-
-            for (Password password : passwords) {
-                assertNotEquals(testName, password.getName());
-            }
+            assertIsStateless(passwords);
         } finally {
-            joiner.setJoinerProperties(null);
+            joiner.getJoinerProperties().setUseStatelessSessions(false);
+        }
+    }
+
+    @Test
+    public void testStatelessSessionIsUsed() {
+        joiner.getJoinerProperties().setUseStatelessSessions(false);
+
+        List<Password> passwords = joiner.find(Q.from(QPassword.password)
+                .setStatelessSession(true)
+                .where(QPassword.password.id.gt(0)));
+        assertIsStateless(passwords);
+    }
+
+    private void assertIsStateless(List<Password> passwords) {
+        assertFalse(passwords.isEmpty());
+
+        String testName = "SHOULD_BE_IGNORED";
+        for (Password password : passwords) {
+            password.setName(testName);
+        }
+
+        // Flush should have no effect in stateless session
+        entityManager.flush();
+        entityManager.clear();
+
+        passwords = joiner.find(Q.from(QPassword.password));
+        assertFalse(passwords.isEmpty());
+
+        for (Password password : passwords) {
+            assertNotEquals(testName, password.getName());
         }
     }
 
@@ -89,12 +103,11 @@ public class HibernateStatelessSessionTest extends AbstractTest {
     @Test
     public void testLimit() {
         try {
-            joiner.setJoinerProperties(new JoinerProperties()
-                    .setUseStatelessSessions(true));
+            joiner.getJoinerProperties().setUseStatelessSessions(true);
 
             assertEquals(1, joiner.find(Q.from(QAddress.address).limit(1L)).size());
         } finally {
-            joiner.setJoinerProperties(null);
+            joiner.getJoinerProperties().setUseStatelessSessions(false);
         }
     }
 

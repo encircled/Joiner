@@ -54,6 +54,8 @@ public class JoinerQueryBase<T, R> implements JoinerQuery<T, R>, JoinRoot, SubQu
      */
     private QueryMetadata subQueryMetadata;
 
+    private Boolean isStatelessSession;
+
     protected JoinDescription lastJoin;
 
     public JoinerQueryBase(EntityPath<T> from) {
@@ -314,6 +316,22 @@ public class JoinerQueryBase<T, R> implements JoinerQuery<T, R>, JoinRoot, SubQu
 
     public void count() {
         isCount = true;
+    }
+
+    @Override
+    public Boolean isStatelessSession() {
+        return isStatelessSession;
+    }
+
+    @Override
+    public JoinerQuery<T, R> setStatelessSession(Boolean statelessSession) {
+        isStatelessSession = statelessSession;
+        return this;
+    }
+
+    @Override
+    public JoinerQuery<T, R> useStatelessSession() {
+        return setStatelessSession(true);
     }
 
     @Override

@@ -33,8 +33,7 @@ public class TestData {
         baseUserCreate(group, 2, true);
         baseUserCreate(group, 2, false);
         baseUserCreate(group, 3, false);
-        superUser(group);
-        normalUser(group);
+        normalUser(group, superUser(group));
 
         WithSelfReference parentRef = new WithSelfReference();
         entityManager.persist(parentRef);
@@ -47,8 +46,9 @@ public class TestData {
         entityManager.clear();
     }
 
-    private void normalUser(Group group) {
+    private void normalUser(Group group, User parent) {
         NormalUser user = new NormalUser();
+        user.setUser(parent);
         user.setGroups(Collections.singletonList(group));
         user.setName("normalUser1");
         entityManager.persist(user);
@@ -89,7 +89,7 @@ public class TestData {
         entityManager.persist(phoneStatus);
     }
 
-    private void superUser(Group group) {
+    private User superUser(Group group) {
         Key key = new Key();
         key.setName("key1");
         entityManager.persist(key);
@@ -104,6 +104,8 @@ public class TestData {
         superUserStatus.setUser(superUser);
         superUserStatus.setName("SuperUserTestStatus");
         entityManager.persist(superUserStatus);
+
+        return superUser;
     }
 
     private void baseUserCreate(Group group, int index, boolean withAddresses) {

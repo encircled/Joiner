@@ -73,8 +73,8 @@ public abstract class AbstractTest extends TestWithLogging {
     protected boolean isLoaded(Object entity, String attribute) {
         List<PersistenceProvider> providers = PersistenceProviderResolverHolder.getPersistenceProviderResolver().getPersistenceProviders();
         Assertions.assertEquals(2, providers.size());
-        PersistenceProvider eclipse = providers.get(0).getClass().getName().contains("eclipse") ? providers.get(0) : providers.get(1);
-        PersistenceProvider hibernate = providers.get(0).getClass().getName().contains("eclipse") ? providers.get(1) : providers.get(0);
+        PersistenceProvider eclipse = providers.stream().filter(p -> p.getClass().getName().contains("eclipse")).findFirst().orElseThrow();
+        PersistenceProvider hibernate = providers.stream().filter(p -> !p.getClass().getName().contains("eclipse")).findFirst().orElseThrow();
         return doIsLoaded(entity, attribute, isEclipse() ? eclipse : hibernate);
     }
 

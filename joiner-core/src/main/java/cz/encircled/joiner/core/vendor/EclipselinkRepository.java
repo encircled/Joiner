@@ -8,6 +8,7 @@ import com.querydsl.jpa.impl.AbstractJPAQuery;
 import com.querydsl.jpa.impl.JPAQuery;
 import cz.encircled.joiner.core.JoinerProperties;
 import cz.encircled.joiner.exception.JoinerException;
+import cz.encircled.joiner.query.JoinerQuery;
 import cz.encircled.joiner.query.join.JoinDescription;
 import cz.encircled.joiner.util.MultiValueMap;
 import cz.encircled.joiner.util.ReflectionUtils;
@@ -25,8 +26,8 @@ public class EclipselinkRepository extends AbstractVendorRepository implements J
     private static final String DOT_ESCAPED = "\\.";
 
     @Override
-    public <R> JPQLQuery<R> createQuery(EntityManager entityManager, JoinerProperties joinerProperties) {
-        if (joinerProperties.useStatelessSessions) {
+    public <R> JPQLQuery<R> createQuery(JoinerQuery<?, R> request, EntityManager entityManager, JoinerProperties joinerProperties) {
+        if (request.isStatelessSession() == Boolean.TRUE || joinerProperties.useStatelessSessions) {
             throw new IllegalStateException("StatelessSession is not supported by Eclipselink!");
         }
         JPAQuery<R> query = new JPAQuery<>(entityManager, EclipseLinkTemplates.DEFAULT);
