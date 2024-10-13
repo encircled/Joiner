@@ -2,18 +2,11 @@
 [![codecov](https://codecov.io/gh/encircled/Joiner/branch/master/graph/badge.svg)](https://codecov.io/gh/encircled/Joiner)
 [![Maven Central](https://img.shields.io/maven-central/v/cz.encircled/joiner-core.svg?label=Maven%20Central)](https://search.maven.org/artifact/cz.encircled/joiner-core/1.6/jar)
 
-
-# Versions
-
-0.4.7 is the last version for javax API and Hiberante 5
-
-1.5 is the latest version for jakarta and Hiberante 6. It also workarounds the bugs in Querydsl 5 related to Hibernate 6
-
 # Overview
 
 Joiner is a Java library that enables the creation of type-safe JPA queries. It is designed for applications with complex domain models that require extensive use of query joins.
 
-Joiner can be used either as a replacement for, or in conjunction with, QueryDSL. It leverages the QueryDSL APT Maven plugin for entity metamodel generation. See more about QueryDSL installation
+Joiner can be used either as a replacement for, or in conjunction with, QueryDSL. It leverages the QueryDSL for entity metamodel generation. See more about QueryDSL installation
 at [QueryDSL](http://www.querydsl.com/static/querydsl/latest/reference/html/ch02.html#jpa_integration).
 
 Joiner offers Java, Kotlin and reactive API, which are described below
@@ -21,9 +14,14 @@ Joiner offers Java, Kotlin and reactive API, which are described below
 Joiner provides the following additional features:
 
 * A simple way to add complex joins to queries
-* Automatic resolution of alias uniqueness in queries
-* Fixed join fetching in EclipseLink (when using inheritance)
+* Fluent Kotlin API
+* Coroutines & Reactor using Hibernate Reactive
+* Queries intercepting using QueryFeature API
+* User's JoinGraphs for streamlining the addition of multiple joins to queries 
 * Fixed compatibility issues when using QueryDSL 5 with Spring Boot 3 
+* Fixed join fetching in EclipseLink (when using inheritance)
+
+0.4.7 is the last version for javax API and Hibernate 5.
 
 ### Readme
 
