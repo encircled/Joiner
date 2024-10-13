@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.RestController
 
 @RestController
 @RequestMapping("/kt/employment")
-class KtCoroutinesEmploymentController {
+class KtEmploymentController {
 
     @Autowired
     lateinit var joiner: JoinerKt

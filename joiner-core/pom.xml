@@ -14,7 +14,7 @@
     <name>joiner-core</name>
     <url>https://github.com/encircled/Joiner</url>
 
-    <description>Joiner is a Java library which allows to create type-safe JPA queries.</description>
+    <description>Joiner is a Java library that enables the creation of type-safe JPA queries</description>
 
     <developers>
         <developer>

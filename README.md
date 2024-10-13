@@ -1,5 +1,7 @@
 [![CI build](https://github.com/encircled/Joiner/actions/workflows/run-tests-action.yml/badge.svg)](https://github.com/encircled/Joiner/actions/workflows/run-tests-action.yml)
 [![codecov](https://codecov.io/gh/encircled/Joiner/branch/master/graph/badge.svg)](https://codecov.io/gh/encircled/Joiner)
+[![Maven Central](https://img.shields.io/maven-central/v/cz.encircled/joiner-core.svg?label=Maven%20Central)](https://search.maven.org/artifact/cz.encircled/joiner-core/1.6/jar)
+
 
 # Versions
 
@@ -357,13 +359,25 @@ joiner.findOne(group.all()
 ## Query features
 
 Query features allow you to modify the request/query in a declarative way before execution.
-For example, Joiner offers a built-in query feature for Spring-based pagination: `PageableFeature`.
+
+### Built-in features
+
+Joiner offers a built-in query feature for Spring-based pagination: `PageableFeature`.
 The usage of these features is as follows:
 
 ```java
 joiner.findOne(Q.from(QGroup.group)
-        .addFeatures(new PageableFeature(PageRequest.of(0,20))));
+        .addFeatures(new PageableFeature(PageRequest.of(0, 20))));
 ```
+
+Another built-in feature is `PostQueryLazyFetchBlockerFeature`, use it to prevent uninitialized lazy attributes from being fetched when accessed.
+```java
+Group group = joiner.findOne(Q.from(QGroup.group)
+        .addFeatures(new PostQueryLazyFetchBlockerFeature(entityManager)));
+group.getUsers().size(); // This will not trigger lazy initialization of 'users'; instead, it will return an empty collection. See the Javadoc for more details. 
+```
+
+### Custom query features
 
 You can implement your own features, such as a feature that adds an active status predicate to all existing joins:
 
