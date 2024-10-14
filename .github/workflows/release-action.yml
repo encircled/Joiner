@@ -2,7 +2,8 @@ name: Maven Release
 
 on:  
   workflow_dispatch:  # Optional: allows manual triggering
-
+permissions:
+  contents: write
 jobs:
   release:
     runs-on: ubuntu-latest
