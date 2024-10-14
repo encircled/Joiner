@@ -29,6 +29,9 @@ jobs:
           distribution: 'temurin'
           cache: maven
 
+      - name: View settings.xml
+        run: cat /home/runner/.m2/settings.xml
+
       - name: Import GPG key
         run: |
           echo "${{ secrets.GPG_PRIVATE_KEY }}" | gpg --batch --import
