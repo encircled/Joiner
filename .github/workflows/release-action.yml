@@ -28,6 +28,7 @@ jobs:
           java-version: '17'  # Specify the required Java version
           distribution: 'temurin'
           cache: maven
+          server-id: github
 
       - name: View settings.xml
         run: cat /home/runner/.m2/settings.xml
