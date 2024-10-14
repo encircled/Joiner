@@ -59,6 +59,7 @@
         <maven.compiler.target>17</maven.compiler.target>
         <maven.compiler.release>17</maven.compiler.release>
         <mariaDB4j.version>3.0.1</mariaDB4j.version>
+        <release.plugin.version>3.1.1</release.plugin.version>
         <junit-platform.version>1.11.2</junit-platform.version>
         <commons-collections4.version>4.4</commons-collections4.version>
     </properties>
@@ -329,7 +330,10 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-release-plugin</artifactId>
-                <version>${mariaDB4j.version}</version>
+                <version>${release.plugin.version}</version>
+                <configuration>
+                    <scmCommentPrefix>[ci skip]</scmCommentPrefix>
+                </configuration>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
