@@ -75,6 +75,9 @@ jobs:
                   </activeProfiles>
                 </settings>" > ~/.m2/settings.xml
 
+      - name: View settings.xml 2
+        run: cat /home/runner/.m2/settings.xml
+
       - name: Maven release prepare
         run: mvn -B release:prepare -Dgpg.passphrase="${{ secrets.GPG_PASSPHRASE }}"
 
