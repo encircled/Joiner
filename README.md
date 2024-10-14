@@ -11,6 +11,7 @@ at [QueryDSL](http://www.querydsl.com/static/querydsl/latest/reference/html/ch02
 
 Joiner provides the following additional features:
 
+* Type-safe database queries with autocompletion
 * A simple way to add complex joins to queries
 * Fluent Kotlin API
 * Coroutines & Reactor using Hibernate Reactive
