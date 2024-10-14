@@ -6,6 +6,7 @@ import cz.encircled.joiner.kotlin.JoinerKtOps.innerJoin
 import cz.encircled.joiner.kotlin.JoinerKtOps.isIn
 import cz.encircled.joiner.kotlin.JoinerKtOps.leftJoin
 import cz.encircled.joiner.kotlin.JoinerKtOps.ne
+import cz.encircled.joiner.kotlin.JoinerKtOps.notIn
 import cz.encircled.joiner.kotlin.JoinerKtOps.on
 import cz.encircled.joiner.kotlin.JoinerKtOps.or
 import cz.encircled.joiner.kotlin.JoinerKtQueryBuilder.all
@@ -123,5 +124,24 @@ class JoinerKtTest : AbstractTest() {
 
         assertEquals(7, find)
     }
+
+    @Test
+    fun `subquery predicate - in op`() {
+        val result = joinerKt.find(QGroup.group.all() where { it.id isIn (QGroup.group.id from QGroup.group limit 1) })
+        assertTrue(result.isNotEmpty())
+    }
+
+    @Test
+    fun `subquery predicate - not in op`() {
+        val result = joinerKt.find(QGroup.group.all() where { it.id notIn (QGroup.group.id from QGroup.group) })
+        assertTrue(result.isEmpty())
+    }
+
+    @Test
+    fun `subquery predicate - eq op`() {
+        val result = joinerKt.find(QGroup.group.all() where { it.id eq (QGroup.group.id from QGroup.group limit 1) })
+        assertTrue(result.isNotEmpty())
+    }
+
 
 }

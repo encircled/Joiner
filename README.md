@@ -9,8 +9,6 @@ Joiner is a Java library that enables the creation of type-safe JPA queries. It 
 Joiner can be used either as a replacement for, or in conjunction with, QueryDSL. It leverages the QueryDSL for entity metamodel generation. See more about QueryDSL installation
 at [QueryDSL](http://www.querydsl.com/static/querydsl/latest/reference/html/ch02.html#jpa_integration).
 
-Joiner offers Java, Kotlin and reactive API, which are described below
-
 Joiner provides the following additional features:
 
 * A simple way to add complex joins to queries
@@ -21,7 +19,9 @@ Joiner provides the following additional features:
 * Fixed compatibility issues when using QueryDSL 5 with Spring Boot 3 
 * Fixed join fetching in EclipseLink (when using inheritance)
 
-0.4.7 is the last version for javax API and Hibernate 5.
+0.4.7 is the last Joiner version for javax API and Hibernate 5.
+
+Joiner offers Java, Kotlin and reactive API, which are described below
 
 ### Readme
 
@@ -99,18 +99,17 @@ See example projects in https://github.com/encircled/Joiner/tree/master/example
 ```java
 QGroup group = QGroup.group;
 
-joiner.find(Q.select(group.name).from(group)
+joiner.find(Q.select(group.type).from(group)
                 .where(group.id.eq(1L))
                 .groupBy(group.type)
                 .limit(10)
-                .offset(2)
-                .distinct());
+                .offset(2));
 ```
 
 or in Kotlin
 
 ```kotlin
-joiner.find(group.name from group
+joiner.find(group.type from group
                           where { it.id eq 1 }
                           groupBy { it.type }
                           limit 10
@@ -361,18 +360,24 @@ Query features allow you to modify the request/query in a declarative way before
 ### Built-in features
 
 Joiner offers a built-in query feature for Spring-based pagination: `PageableFeature`.
-The usage of these features is as follows:
+The usage is as follows:
 
 ```java
 joiner.findOne(Q.from(QGroup.group)
         .addFeatures(new PageableFeature(PageRequest.of(0, 20))));
 ```
 
+This will apply limiting and sorting parameters from the Spring page request. 
+
+
 Another built-in feature is `PostQueryLazyFetchBlockerFeature`, use it to prevent uninitialized lazy attributes from being fetched when accessed.
 ```java
 Group group = joiner.findOne(Q.from(QGroup.group)
         .addFeatures(new PostQueryLazyFetchBlockerFeature(entityManager)));
-group.getUsers().size(); // This will not trigger lazy initialization of 'users'; instead, it will return an empty collection. See the Javadoc for more details. 
+
+// This will not trigger lazy initialization of 'users'; instead, it will return an empty collection. 
+// See the Javadoc for more details.
+group.getUsers().size(); 
 ```
 
 ### Custom query features
@@ -514,7 +519,7 @@ joiner.find(Q.from(QUser.user)
 or in Kotlin
 
 ```kotlin
-val joiner: Joiner = Joiner(getEntityManager())
+val joiner: JoinerKt = JoinerKt(getEntityManager())
 
 joiner.find(QUser.user.all()
         where { it.name eq "John" })

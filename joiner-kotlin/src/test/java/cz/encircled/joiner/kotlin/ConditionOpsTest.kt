@@ -53,6 +53,16 @@ class ConditionOpsTest : ConditionOps {
             user1.name.ne("").and(user1.name.eq(Q.select(user1.name).from(user1))).toString(),
             (user1.name ne "" and user1.name eq (user1.name from user1)).toString()
         )
+
+        assertEquals(
+            user1.name.ne("").and(user1.name.`in`(Q.select(user1.name).from(user1))).toString(),
+            (user1.name ne "" and user1.name isIn (user1.name from user1)).toString()
+        )
+
+        assertEquals(
+            user1.name.ne("").and(user1.name.notIn(Q.select(user1.name).from(user1))).toString(),
+            (user1.name ne "" and user1.name notIn (user1.name from user1)).toString()
+        )
     }
 
 }
