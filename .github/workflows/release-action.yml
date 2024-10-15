@@ -41,7 +41,7 @@ jobs:
         run: cat /home/runner/.m2/settings.xml
 
       - name: Prepare release
-        run: mvn -B release:prepare -Dgpg.passphrase="${{ secrets.GPG_PASSPHRASE }}"
+        run: mvn -B release:prepare -Dgpg.passphrase="${{ secrets.GPG_PASSPHRASE }}" -X -DscmLog=true -DskipTests
 
       - name: Perform release
         run: mvn -B release:perform -Dgpg.passphrase="${{ secrets.GPG_PASSPHRASE }}"
