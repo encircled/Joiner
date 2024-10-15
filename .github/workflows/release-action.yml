@@ -37,7 +37,11 @@ jobs:
 
       - name: Prepare release
         run: |
-          mvn -B release:prepare -Dgpg.passphrase="${{ secrets.GPG_PASSPHRASE }}" -DskipTests -Darguments=-DskipTests -Dusername=encircled -Dpassword=${{ secrets.PAT }} -DconnectionUrl=scm:git:https://github.com/encircled/Joiner.git -DdeveloperConnectionUrl=scm:git:https://github.com/encircled/Joiner.git
+          mvn -B release:prepare -Dgpg.passphrase="${{ secrets.GPG_PASSPHRASE }}" -DskipTests -Darguments=-DskipTests \
+          -Dusername=encircled \
+          -Dpassword=${{ secrets.PAT }} \ 
+          -DconnectionUrl=scm:git:https://github.com/encircled/Joiner.git \ 
+          -DdeveloperConnectionUrl=scm:git:https://github.com/encircled/Joiner.git
 
       - name: Perform release
         run: mvn -B release:perform -Dgpg.passphrase="${{ secrets.GPG_PASSPHRASE }}" -Dusername=encircled -Dpassword=${{ secrets.PAT }}
