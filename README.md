@@ -1,6 +1,6 @@
 [![CI build](https://github.com/encircled/Joiner/actions/workflows/run-tests-action.yml/badge.svg)](https://github.com/encircled/Joiner/actions/workflows/run-tests-action.yml)
 [![codecov](https://codecov.io/gh/encircled/Joiner/branch/master/graph/badge.svg)](https://codecov.io/gh/encircled/Joiner)
-[![Maven Central](https://img.shields.io/maven-central/v/cz.encircled/joiner-core.svg?label=Maven%20Central)](https://search.maven.org/artifact/cz.encircled/joiner-core/1.6/jar)
+[![Maven Central](https://img.shields.io/maven-central/v/cz.encircled/joiner-core.svg?label=Maven%20Central)](https://search.maven.org/artifact/cz.encircled/joiner-core/1.12/jar)
 
 # Overview
 
