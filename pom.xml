@@ -10,7 +10,7 @@
 
     <url>https://github.com/encircled/Joiner/</url>
     <scm>
-        <connection>scm:git:git@github.com:encircled/Joiner.git</connection>
+        <connection>scm:git:https://github.com/encircled/Joiner.git</connection>
         <url>https://github.com/encircled/Joiner/</url>
         <tag>joiner-parent-1.6</tag>
     </scm>
