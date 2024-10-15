@@ -21,8 +21,8 @@ jobs:
           java-version: '17'
           check-latest: true
           server-id: 'ossrh'
-          server-username: ${{ secrets.OSSRH_USERNAME }}
-          server-password: ${{ secrets.OSSRH_PASSWORD }}
+          server-username: OSSRH_USERNAME
+          server-password: OSSRH_PASSWORD
           gpg-private-key: ${{ secrets.GPG_PRIVATE_KEY }}
           gpg-passphrase: ${{ secrets.GPG_PASSPHRASE }}
           cache: 'maven'
@@ -47,6 +47,6 @@ jobs:
         run: mvn -B release:perform -Dgpg.passphrase="${{ secrets.GPG_PASSPHRASE }}" -Dusername=encircled -Dpassword=${{ secrets.PAT }} -P release
         env:
           OSSRH_USERNAME: ${{ secrets.OSSRH_USERNAME }}
-          OSSRH_TOKEN: ${{ secrets.OSSRH_PASSWORD }}
+          OSSRH_PASSWORD: ${{ secrets.OSSRH_PASSWORD }}
           MAVEN_GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
           MAVEN_GPG_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
