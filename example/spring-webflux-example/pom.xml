@@ -19,6 +19,7 @@
         <querydsl.version>5.1.0</querydsl.version>
         <joiner.version>1.5</joiner.version>
         <vertx-mysql-client.version>4.5.10</vertx-mysql-client.version>
+        <hibernate.version>6.6.1.Final</hibernate.version>
     </properties>
     <dependencies>
         <!-- QueryDSL -->
@@ -97,7 +98,7 @@
         <dependency>
             <groupId>org.hibernate.orm</groupId>
             <artifactId>hibernate-core</artifactId>
-            <version>6.2.4.Final</version>
+            <version>${hibernate.version}</version>
         </dependency>
     </dependencies>
 

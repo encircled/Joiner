@@ -17,6 +17,7 @@ jobs:
         run: |
           git config --global user.name "GitHub Actions"
           git config --global user.email "actions@github.com"
+          git remote set-url origin https://x-access-token:${{ secrets.PAT }}@github.com/encircled/Joiner.git
           touch .test
           git add .test
           git commit -m 'test'
