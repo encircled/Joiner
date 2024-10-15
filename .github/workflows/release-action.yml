@@ -13,16 +13,6 @@ jobs:
         with:
           token: ${{ secrets.PAT }}
 
-      - name: Set up Git user
-        run: |
-          git config --global user.name "GitHub Actions"
-          git config --global user.email "actions@github.com"
-          git remote set-url origin https://x-access-token:${{ secrets.PAT }}@github.com/encircled/Joiner.git
-          touch .test
-          git add .test
-          git commit -m 'test'
-          git push
-
       - name: Setup Java
         uses: actions/setup-java@v3
         with:
@@ -36,6 +26,16 @@ jobs:
           gpg-private-key: ${{ secrets.GPG_PRIVATE_KEY }}
           gpg-passphrase: ${{ secrets.GPG_PASSPHRASE }}
           cache: 'maven'
+
+      - name: Set up Git user
+        run: |
+          git config --global user.name "GitHub Actions"
+          git config --global user.email "actions@github.com"
+          git remote set-url origin https://x-access-token:${{ secrets.PAT }}@github.com/encircled/Joiner.git
+          touch .test
+          git add .test
+          git commit -m 'test'
+          git push
 
       - name: View settings.xml
         run: cat /home/runner/.m2/settings.xml
