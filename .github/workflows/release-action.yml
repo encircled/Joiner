@@ -39,6 +39,7 @@ jobs:
         run: |
           git remote set-url origin https://x-access-token:${{ secrets.PAT }}@github.com/encircled/Joiner.git
           mvn -B release:prepare -Dgpg.passphrase="${{ secrets.GPG_PASSPHRASE }}" -DskipTests -Darguments=-DskipTests \
+          -DpushChanges=false \
           -Dusername=encircled \
           -Dpassword=${{ secrets.PAT }} \ 
           -DconnectionUrl=scm:git:https://github.com/encircled/Joiner.git \ 
