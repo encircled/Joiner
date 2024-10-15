@@ -39,4 +39,4 @@ jobs:
         run: mvn -B release:prepare -Dgpg.passphrase="${{ secrets.GPG_PASSPHRASE }}" -Dusername=encircled -Dpassword=${{ secrets.PAT }} -DskipTests -Darguments=-DskipTests
 
       - name: Perform release
-        run: mvn -B release:perform -Dgpg.passphrase="${{ secrets.GPG_PASSPHRASE }}" -Dusername=encircled -Dpassword=${{ secrets.PAT }}
+        run: mvn -B release:perform -Dgpg.passphrase="${{ secrets.GPG_PASSPHRASE }}" -Dusername=encircled -Dpassword=${{ secrets.PAT }} -P release
