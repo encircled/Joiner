@@ -36,14 +36,7 @@ jobs:
         run: cat /home/runner/.m2/settings.xml
 
       - name: Prepare release
-        run: |
-          git remote set-url origin https://x-access-token:${{ secrets.PAT }}@github.com/encircled/Joiner.git
-          mvn -B release:prepare -Dgpg.passphrase="${{ secrets.GPG_PASSPHRASE }}" -DskipTests -Darguments=-DskipTests \
-          -DpushChanges=false \
-          -Dusername=encircled \
-          -Dpassword=${{ secrets.PAT }} \ 
-          -DconnectionUrl=scm:git:https://github.com/encircled/Joiner.git \ 
-          -DdeveloperConnectionUrl=scm:git:https://github.com/encircled/Joiner.git
+        run: mvn -B release:prepare -Dgpg.passphrase="${{ secrets.GPG_PASSPHRASE }}" -DskipTests -Darguments=-DskipTests -DpushChanges=false
 
       - name: Perform release
         run: mvn -B release:perform -Dgpg.passphrase="${{ secrets.GPG_PASSPHRASE }}" -Dusername=encircled -Dpassword=${{ secrets.PAT }}
