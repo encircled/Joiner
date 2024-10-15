@@ -37,6 +37,7 @@ jobs:
 
       - name: Prepare release
         run: |
+          git remote set-url origin https://x-access-token:${{ secrets.PAT }}@github.com/encircled/Joiner.git
           mvn -B release:prepare -Dgpg.passphrase="${{ secrets.GPG_PASSPHRASE }}" -DskipTests -Darguments=-DskipTests \
           -Dusername=encircled \
           -Dpassword=${{ secrets.PAT }} \ 
