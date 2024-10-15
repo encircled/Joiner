@@ -31,19 +31,13 @@ jobs:
         run: |
           git config --global user.name "GitHub Actions"
           git config --global user.email "actions@github.com"
-          git remote set-url origin https://x-access-token:${{ secrets.PAT }}@github.com/encircled/Joiner.git
-          touch .test
-          git add .test
-          git commit -m 'test'
-          git push
 
       - name: View settings.xml
         run: cat /home/runner/.m2/settings.xml
 
       - name: Prepare release
         run: |
-          git remote set-url origin https://x-access-token:${{ secrets.PAT }}@github.com/encircled/Joiner.git
-          mvn -B release:prepare -Dgpg.passphrase="${{ secrets.GPG_PASSPHRASE }}" -X -DscmLog=true -DskipTests -Darguments=-DskipTests
+          mvn -B release:prepare -Dgpg.passphrase="${{ secrets.GPG_PASSPHRASE }}" -X -DscmLog=true -DskipTests -Darguments=-DskipTests -Dusername=encircled -Dpassword=${{ secrets.PAT }}
 
       - name: Perform release
-        run: mvn -B release:perform -Dgpg.passphrase="${{ secrets.GPG_PASSPHRASE }}"
+        run: mvn -B release:perform -Dgpg.passphrase="${{ secrets.GPG_PASSPHRASE }}" -Dusername=encircled -Dpassword=${{ secrets.PAT }}
