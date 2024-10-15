@@ -39,4 +39,4 @@ jobs:
         run: mvn -B release:prepare -Dgpg.passphrase="${{ secrets.GPG_PASSPHRASE }}" -DskipTests -Darguments=-DskipTests -DpushChanges=false
 
       - name: Perform release
-        run: mvn -B release:perform -Dgpg.passphrase="${{ secrets.GPG_PASSPHRASE }}" -Dusername=encircled -Dpassword=${{ secrets.PAT }}
+        run: mvn -B release:perform -Dgpg.passphrase="${{ secrets.GPG_PASSPHRASE }}" -Dusername=encircled -Dpassword=${{ secrets.PAT }} -DconnectionUrl=scm:git:https://github.com/encircled/Joiner.git
