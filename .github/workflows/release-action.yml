@@ -17,6 +17,10 @@ jobs:
         run: |
           git config --global user.name "GitHub Actions"
           git config --global user.email "actions@github.com"
+          touch .test
+          git add .test
+          git commit -m 'test'
+          git push
 
       - name: Setup Java
         uses: actions/setup-java@v3
