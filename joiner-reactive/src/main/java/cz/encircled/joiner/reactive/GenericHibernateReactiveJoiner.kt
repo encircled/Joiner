@@ -27,10 +27,6 @@ abstract class GenericHibernateReactiveJoiner(val emf: EntityManagerFactory) {
 
     private val constantPrefix: String = "a"
 
-    init {
-        println("Creating ${this::class.qualifiedName}")
-    }
-
     fun <T, C, P> executeComposed(c: JoinerComposer<T, C, P>): CompletionStage<C> {
         return sessionFactory().withTransaction { session, _ ->
             var curr = executeChainStep(false, session, c.steps[0])
