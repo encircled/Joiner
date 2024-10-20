@@ -17,7 +17,7 @@
         <java.version>17</java.version>
         <kotlin.version>2.0.21</kotlin.version>
         <querydsl.version>5.1.0</querydsl.version>
-        <joiner.version>1.5</joiner.version>
+        <joiner.version>1.13</joiner.version>
         <hibernate.version>6.6.1.Final</hibernate.version>
     </properties>
     <dependencies>
