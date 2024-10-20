@@ -67,7 +67,6 @@ public class AliasResolverUnitTest extends AbstractTest {
         try {
             resolver.resolveFieldPathForJoinAlias(J.left(QUser.user1), QContact.contact);
         } catch (JoinerException e) {
-            e.printStackTrace();
             assertTrue(e.getMessage().contains("Multiple mappings found: [contact.employmentUser, contact.user]"));
             return;
         }

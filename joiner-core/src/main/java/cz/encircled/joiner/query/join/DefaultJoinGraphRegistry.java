@@ -7,7 +7,6 @@ import org.slf4j.LoggerFactory;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.stream.Collectors;
 
 /**
  * ConcurrentHashMap-based implementation of {@link JoinGraphRegistry}

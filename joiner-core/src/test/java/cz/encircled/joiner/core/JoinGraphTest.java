@@ -49,30 +49,22 @@ public abstract class JoinGraphTest extends AbstractTest {
 
     @Test
     public void testNullName() {
-        assertThrows(IllegalArgumentException.class, () -> {
-            mockRegistry.registerJoinGraph(null, Collections.singletonList(J.left(user1)), Group.class);
-        });
+        assertThrows(IllegalArgumentException.class, () -> mockRegistry.registerJoinGraph(null, Collections.singletonList(J.left(user1)), Group.class));
     }
 
     @Test
     public void testNullJoins() {
-        assertThrows(IllegalArgumentException.class, () -> {
-            mockRegistry.registerJoinGraph("test", null, Group.class);
-        });
+        assertThrows(IllegalArgumentException.class, () -> mockRegistry.registerJoinGraph("test", null, Group.class));
     }
 
     @Test
     public void testNullClass() {
-        assertThrows(IllegalArgumentException.class, () -> {
-            mockRegistry.registerJoinGraph("test", Collections.singletonList(J.left(user1)), null);
-        });
+        assertThrows(IllegalArgumentException.class, () -> mockRegistry.registerJoinGraph("test", Collections.singletonList(J.left(user1)), null));
     }
 
     @Test
     public void testEmptyClasses() {
-        assertThrows(IllegalArgumentException.class, () -> {
-            mockRegistry.registerJoinGraph("test", Collections.singletonList(J.left(user1)));
-        });
+        assertThrows(IllegalArgumentException.class, () -> mockRegistry.registerJoinGraph("test", Collections.singletonList(J.left(user1))));
     }
 
     @Test

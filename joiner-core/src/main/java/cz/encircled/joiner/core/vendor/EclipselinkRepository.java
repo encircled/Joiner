@@ -50,7 +50,7 @@ public class EclipselinkRepository extends AbstractVendorRepository implements J
     }
 
     @Override
-    public void addJoin(JPQLQuery query, JoinDescription joinDescription) {
+    public void addJoin(JPQLQuery<?> query, JoinDescription joinDescription) {
         if (joinDescription.getJoinType().equals(JoinType.RIGHTJOIN)) {
             throw new JoinerException("Right join is not supported in EclipseLink!");
         }

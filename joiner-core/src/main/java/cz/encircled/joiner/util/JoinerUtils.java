@@ -54,8 +54,8 @@ public final class JoinerUtils {
      * Find default path of an entity (e.g. QUser.user for QUser class)
      */
     public static <T extends EntityPath<?>> T getDefaultPath(CollectionPathBase<?, ?, ?> path) {
-        Class qClass = (Class<?>) ReflectionUtils.getField(ReflectionUtils.findField(path.getClass(), "queryType"), path);
-        return (T) getDefaultPath(qClass);
+        Class<T> qClass = (Class<T>) ReflectionUtils.getField(ReflectionUtils.findField(path.getClass(), "queryType"), path);
+        return getDefaultPath(qClass);
     }
 
     /**
@@ -79,7 +79,7 @@ public final class JoinerUtils {
         if (expression instanceof Path) {
             paths.add((Path<?>) expression);
         } else if (expression instanceof Operation) {
-            for (Expression exp : ((Operation<?>) expression).getArgs()) {
+            for (Expression<?> exp : ((Operation<?>) expression).getArgs()) {
                 collectPredicatePathsInternal(exp, paths);
             }
         }

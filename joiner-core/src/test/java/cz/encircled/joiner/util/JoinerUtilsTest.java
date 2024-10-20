@@ -1,13 +1,11 @@
 package cz.encircled.joiner.util;
 
-import cz.encircled.joiner.exception.JoinerException;
 import cz.encircled.joiner.model.*;
 import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class JoinerUtilsTest {
 

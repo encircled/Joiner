@@ -222,9 +222,7 @@ public class JoinDescription implements JoinRoot {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof JoinDescription)) return false;
-
-        JoinDescription that = (JoinDescription) o;
+        if (!(o instanceof JoinDescription that)) return false;
 
         if (!alias.equals(that.alias)) return false;
         return parent != null ? parent.equals(that.parent) : that.parent == null;
