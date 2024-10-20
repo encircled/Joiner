@@ -64,8 +64,8 @@ public class EclipselinkRepository extends AbstractVendorRepository implements J
 
         if (targetJoinDescription.getCollectionPath() != null) {
             holder = targetJoinDescription.getCollectionPath().toString().split(DOT_ESCAPED);
-        } else if (targetJoinDescription.getSinglePath() != null) {
-            holder = targetJoinDescription.getSinglePath().toString().split(DOT_ESCAPED);
+        } else if (targetJoinDescription.getSingularPath() != null) {
+            holder = targetJoinDescription.getSingularPath().toString().split(DOT_ESCAPED);
         } else {
             return null;
         }
@@ -90,8 +90,8 @@ public class EclipselinkRepository extends AbstractVendorRepository implements J
             if (candidate.equals(targetAlias)) {
                 if (join.getCollectionPath() != null) {
                     result = join.getCollectionPath().toString().split(DOT_ESCAPED);
-                } else if (join.getSinglePath() != null) {
-                    result = join.getSinglePath().toString().split(DOT_ESCAPED);
+                } else if (join.getSingularPath() != null) {
+                    result = join.getSingularPath().toString().split(DOT_ESCAPED);
                 }
                 break;
             }

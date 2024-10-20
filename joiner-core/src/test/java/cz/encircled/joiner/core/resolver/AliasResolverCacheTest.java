@@ -30,7 +30,7 @@ public class AliasResolverCacheTest extends AbstractTest {
         JoinDescription left = J.left(QUser.user1);
         resolver.resolveFieldPathForJoinAlias(left, QAddress.address);
 
-        assertNotNull(left.getSinglePath());
+        assertNotNull(left.getSingularPath());
         assertEquals(1, resolver.getCounter());
     }
 
@@ -42,7 +42,7 @@ public class AliasResolverCacheTest extends AbstractTest {
         JoinDescription left = J.left(QKey.key);
         resolver.resolveFieldPathForJoinAlias(left, QUser.user1);
 
-        assertNotNull(left.getSinglePath());
+        assertNotNull(left.getSingularPath());
         assertEquals(1, resolver.getCounter());
     }
 
@@ -55,7 +55,7 @@ public class AliasResolverCacheTest extends AbstractTest {
         JoinDescription left = J.left(QSuperUser.superUser);
         resolver.resolveFieldPathForJoinAlias(left, QAddress.address);
 
-        assertNotNull(left.getSinglePath());
+        assertNotNull(left.getSingularPath());
         assertEquals(1, resolver.getCounter());
     }
 

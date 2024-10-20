@@ -54,6 +54,34 @@ public abstract class BasicJoinTest extends AbstractTest {
     }
 
     @Test
+    public void testNestedJoinAliasWithSingularAssociationPathViaParent() {
+        JoinerQuery<Group, Group> q = Q.from(QGroup.group).joins(J.left(QGroup.group.statuses)
+                .nested(J.left(QStatus.status.user)));
+        List<JoinDescription> j = J.unrollChildrenJoins(q.getAllJoins().values());
+        assertEquals(2, j.size());
+        assertEquals("status", j.get(0).getAlias().toString());
+        assertEquals("user_on_status", j.get(1).getAlias().toString());
+        List<Group> groups = joiner.find(q);
+        assertTrue(isLoaded(groups.get(0), "statuses"));
+        assertTrue(isLoaded(groups.get(0).getStatuses().iterator().next(), "user"));
+    }
+
+    @Test
+    public void testAliasResolutionForSingularAssociation() {
+        assertEquals(new QUser("user"), J.left(QStatus.status.user).getOriginalAlias());
+        assertEquals(new QUser("user"), J.left(QStatus.status.user).getAlias());
+        assertEquals(new QUser("user1"), J.left(QUser.user1).getAlias());
+        assertEquals(QAddress.address, J.left(QUser.user1.addresses).getAlias());
+    }
+
+    @Test
+    public void testSingularAssociationJoinViaParentPath() {
+        JoinerQuery<Status, Status> q = Q.from(QStatus.status).joins(J.left(QStatus.status.user));
+        List<Status> statuses = joiner.find(q);
+        assertTrue(isLoaded(statuses.get(0), "user"));
+    }
+
+    @Test
     public void testRightJoinSingleAssociation() {
         Assumptions.assumeFalse(isEclipse());
         List<User> users = joiner.find(Q.from(QUser.user1).joins(new JoinDescription(QGroup.group).right().fetch(false)));

@@ -45,7 +45,7 @@ public class DefaultAliasResolver implements AliasResolver {
         if (fieldOnParent instanceof CollectionPathBase) {
             join.collectionPath((CollectionPathBase<?, ?, ?>) fieldOnParent);
         } else if (fieldOnParent instanceof EntityPath) {
-            join.singlePath((EntityPath<?>) fieldOnParent);
+            join.singularPath((EntityPath<?>) fieldOnParent);
         } else {
             throw new JoinerException("Target field not found for join " + join);
         }
@@ -89,7 +89,7 @@ public class DefaultAliasResolver implements AliasResolver {
             case 1:
                 return candidatePaths.get(0);
             default: {
-                // Multiple associations on parent, try find by specified alias
+                // Multiple associations on parent -> try to find by the specified alias
                 String targetFieldName = joinDescription.getOriginalAlias().toString();
                 for (Path<?> candidatePath : candidatePaths) {
                     if (targetFieldName.equals(candidatePath.getMetadata().getElement())) {

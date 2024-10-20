@@ -29,7 +29,7 @@ public abstract class AbstractVendorRepository implements JoinerVendorRepository
                     CollectionExpression<?, Object> collectionPath = (CollectionExpression<?, Object>) joinDescription.getCollectionPath();
                     query.leftJoin(collectionPath, alias);
                 } else {
-                    EntityPath<Object> singlePath = (EntityPath<Object>) joinDescription.getSinglePath();
+                    EntityPath<Object> singlePath = (EntityPath<Object>) joinDescription.getSingularPath();
                     query.leftJoin(singlePath, alias);
                 }
                 break;
@@ -38,7 +38,7 @@ public abstract class AbstractVendorRepository implements JoinerVendorRepository
                     CollectionExpression<?, Object> collectionPath = (CollectionExpression<?, Object>) joinDescription.getCollectionPath();
                     query.innerJoin(collectionPath, alias);
                 } else {
-                    EntityPath<Object> singlePath = (EntityPath<Object>) joinDescription.getSinglePath();
+                    EntityPath<Object> singlePath = (EntityPath<Object>) joinDescription.getSingularPath();
                     query.innerJoin(singlePath, alias);
                 }
                 break;
@@ -47,7 +47,7 @@ public abstract class AbstractVendorRepository implements JoinerVendorRepository
                     CollectionExpression<?, Object> collectionPath = (CollectionExpression<?, Object>) joinDescription.getCollectionPath();
                     query.rightJoin(collectionPath, alias);
                 } else {
-                    EntityPath<Object> singlePath = (EntityPath<Object>) joinDescription.getSinglePath();
+                    EntityPath<Object> singlePath = (EntityPath<Object>) joinDescription.getSingularPath();
                     query.rightJoin(singlePath, alias);
                 }
                 break;

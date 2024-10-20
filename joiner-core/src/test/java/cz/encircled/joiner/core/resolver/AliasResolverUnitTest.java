@@ -50,7 +50,7 @@ public class AliasResolverUnitTest extends AbstractTest {
         JoinDescription left = J.left(QSuperUser.superUser);
         resolver.resolveFieldPathForJoinAlias(left, QAddress.address);
 
-        assertEquals(QAddress.address.user, left.getSinglePath());
+        assertEquals(QAddress.address.user, left.getSingularPath());
     }
 
     @Test

@@ -29,6 +29,12 @@ public class TestData {
         group.setName("group1");
         entityManager.persist(group);
 
+        Status groupStatus = new Status();
+        groupStatus.setName("status1group1");
+        groupStatus.setGroup(group);
+        group.setStatuses(Collections.singleton(groupStatus));
+        entityManager.persist(groupStatus);
+
         baseUserCreate(group, 1, true);
         baseUserCreate(group, 2, true);
         baseUserCreate(group, 2, false);

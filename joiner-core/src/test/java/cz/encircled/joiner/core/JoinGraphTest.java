@@ -36,14 +36,14 @@ public abstract class JoinGraphTest extends AbstractTest {
         mockRegistry = new DefaultJoinGraphRegistry();
 
         try {
-            joinGraphRegistry.getJoinGraph(Group.class, "users");
-        } catch (Exception e) {
             joinGraphRegistry.registerJoinGraph("statuses", Collections.singletonList(J.left(status)), Group.class);
             joinGraphRegistry.registerJoinGraph("users", Collections.singletonList(J.left(user1)), Group.class);
             joinGraphRegistry.registerJoinGraph("userStatuses", Collections.singletonList(J.left(user1).nested(status)), Group.class);
             joinGraphRegistry.registerJoinGraph("usersAddress", Collections.singletonList(J.left(user1).nested(QAddress.address)), Group.class);
             joinGraphRegistry.registerJoinGraph("addressStatuses", Collections.singletonList(J.left(user1)
                     .nested(J.left(QAddress.address).nested(status))), Group.class);
+        } catch (Exception e) {
+            // OK
         }
     }
 
@@ -85,9 +85,7 @@ public abstract class JoinGraphTest extends AbstractTest {
 
     @Test
     public void testGraphMissing() {
-        assertThrows(JoinerException.class, () -> {
-            mockRegistry.getJoinGraph(Group.class, "NotExists");
-        });
+        assertTrue(mockRegistry.getJoinGraph(Group.class, "NotExists").isEmpty());
     }
 
     @Test
@@ -95,15 +93,8 @@ public abstract class JoinGraphTest extends AbstractTest {
         mockRegistry.registerJoinGraph("test", Collections.singletonList(J.left(user1)), Group.class);
         assertEquals(Collections.singletonList(J.left(user1)), mockRegistry.getJoinGraph(Group.class, "test"));
 
-        mockRegistry.replaceJoinGraph("test", Collections.singletonList(J.left(status)), Group.class);
+        mockRegistry.registerOrReplaceJoinGraph("test", Collections.singletonList(J.left(status)), Group.class);
         assertEquals(Collections.singletonList(J.left(status)), mockRegistry.getJoinGraph(Group.class, "test"));
-    }
-
-    @Test
-    public void testReplaceNonExistingGraph() {
-        assertThrows(JoinerException.class, () -> {
-            mockRegistry.replaceJoinGraph("test", Collections.singletonList(J.left(status)), Group.class);
-        });
     }
 
     @Test

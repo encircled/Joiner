@@ -2,6 +2,8 @@ package cz.encircled.joiner.query.join;
 
 import cz.encircled.joiner.exception.JoinerException;
 import cz.encircled.joiner.util.Assert;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -14,7 +16,9 @@ import java.util.stream.Collectors;
  */
 public class DefaultJoinGraphRegistry implements JoinGraphRegistry {
 
-    private final Map<Class, Map<Object, List<JoinDescription>>> registry = new ConcurrentHashMap<>();
+    private static final Logger log = LoggerFactory.getLogger(DefaultJoinGraphRegistry.class);
+
+    private final Map<Class<?>, Map<Object, List<JoinDescription>>> registry = new ConcurrentHashMap<>();
 
     @Override
     public void registerJoinGraph(Object graphName, Collection<JoinDescription> joins, Class<?>... rootClasses) {
@@ -35,26 +39,6 @@ public class DefaultJoinGraphRegistry implements JoinGraphRegistry {
     }
 
     @Override
-    public void replaceJoinGraph(Object graphName, Collection<JoinDescription> joins, Class<?>... rootClasses) {
-        Assert.notNull(graphName);
-        Assert.notNull(joins);
-        Assert.notNull(rootClasses);
-        Assert.assertThat(rootClasses.length > 0);
-
-        for (Class<?> clazz : rootClasses) {
-            Map<Object, List<JoinDescription>> existing = registry.get(clazz);
-            if (existing != null) {
-                if (existing.containsKey(graphName)) {
-                    existing.put(graphName, new ArrayList<>(joins));
-                    continue;
-                }
-            }
-
-            throw new JoinerException(String.format("JoinGraph with name [%s] is not defined for the class [%s]", graphName, clazz.getName()));
-        }
-    }
-
-    @Override
     public void registerOrReplaceJoinGraph(Object graphName, Collection<JoinDescription> joins, Class<?>... rootClasses) {
         Assert.notNull(graphName);
         Assert.notNull(joins);
@@ -71,15 +55,17 @@ public class DefaultJoinGraphRegistry implements JoinGraphRegistry {
     @Override
     public List<JoinDescription> getJoinGraph(Class<?> clazz, Object name) {
         // TODO add tests for join description modifying
+        Assert.notNull(name);
         Map<Object, List<JoinDescription>> joinsOfClass = registry.get(clazz);
         if (joinsOfClass != null) {
             List<JoinDescription> joins = joinsOfClass.get(name);
             if (joins != null) {
-                return joins.stream().map(JoinDescription::copy).collect(Collectors.toList());
+                return joins.stream().map(JoinDescription::copy).toList();
             }
         }
 
-        throw new JoinerException(String.format("JoinGraph with name [%s] is not defined for class [%s]", name, clazz));
+        log.warn(String.format("JoinGraph with name [%s] is not defined for class [%s]", name, clazz));
+        return Collections.emptyList();
     }
 
     @Override

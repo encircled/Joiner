@@ -2,10 +2,12 @@ package cz.encircled.joiner.query.join;
 
 import com.querydsl.core.JoinType;
 import com.querydsl.core.types.EntityPath;
+import com.querydsl.core.types.Path;
 import com.querydsl.core.types.Predicate;
 import com.querydsl.core.types.dsl.CollectionPathBase;
 import cz.encircled.joiner.query.JoinRoot;
 import cz.encircled.joiner.util.Assert;
+import cz.encircled.joiner.util.JoinerUtils;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -14,7 +16,7 @@ import java.util.Map;
 
 /**
  * Represents query join.
- * For collection joins - {@link JoinDescription#collectionPath collectionPath} is used, for single entity joins - {@link JoinDescription#singlePath singlePath}.
+ * For collection joins - {@link JoinDescription#collectionPath collectionPath} is used, for single entity joins - {@link JoinDescription#singularPath singlePath}.
  * <p>
  * By default, all joins are <b>left fetch</b> joins
  * </p>
@@ -25,7 +27,7 @@ public class JoinDescription implements JoinRoot {
 
     private final EntityPath<?> originalAlias;
     private CollectionPathBase<?, ?, ?> collectionPath;
-    private EntityPath<?> singlePath;
+    private EntityPath<?> singularPath;
     private EntityPath<?> alias;
     private JoinType joinType = JoinType.LEFTJOIN;
 
@@ -40,8 +42,13 @@ public class JoinDescription implements JoinRoot {
     public JoinDescription(EntityPath<?> alias) {
         Assert.notNull(alias);
 
-        originalAlias = alias;
-        alias(alias);
+        if (alias.getMetadata().getParent() != null) {
+            this.originalAlias = JoinerUtils.getLastElementPath(alias);
+            this.alias = originalAlias;
+        } else {
+            this.originalAlias = alias;
+            this.alias = alias;
+        }
     }
 
     public JoinDescription copy() {
@@ -55,7 +62,7 @@ public class JoinDescription implements JoinRoot {
         copy.on = on;
         copy.parent = parent;
         copy.collectionPath = collectionPath;
-        copy.singlePath = singlePath;
+        copy.singularPath = singularPath;
         copy.joinType = joinType;
         return copy;
     }
@@ -107,14 +114,14 @@ public class JoinDescription implements JoinRoot {
         return collectionPath;
     }
 
-    public EntityPath<?> getSinglePath() {
-        return singlePath;
+    public EntityPath<?> getSingularPath() {
+        return singularPath;
     }
 
-    public JoinDescription singlePath(EntityPath<?> path) {
+    public JoinDescription singularPath(EntityPath<?> path) {
         Assert.notNull(path);
 
-        singlePath = path;
+        singularPath = path;
         collectionPath = null;
         return this;
     }
@@ -123,7 +130,7 @@ public class JoinDescription implements JoinRoot {
         Assert.notNull(path);
 
         collectionPath = path;
-        singlePath = null;
+        singularPath = null;
         return this;
     }
 
@@ -162,7 +169,7 @@ public class JoinDescription implements JoinRoot {
     }
 
     /**
-     * Re-alias due to order of 'nested' method execution (the very last nested is executed first and it's parent is not re-aliased yet)
+     * Re-alias due to order of 'nested' method execution (the very last nested is executed first, and it's parent is not re-aliased yet)
      */
     private void reAliasChildren(JoinDescription join) {
         for (JoinDescription child : join.children.values()) {
@@ -235,7 +242,7 @@ public class JoinDescription implements JoinRoot {
     public String toString() {
         return "JoinDescription{" +
                 "collectionPath=" + collectionPath +
-                ", singlePath=" + singlePath +
+                ", singlePath=" + singularPath +
                 ", alias=" + alias +
                 '}';
     }

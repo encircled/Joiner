@@ -180,7 +180,7 @@ public class Joiner {
     private <T, R> List<JoinDescription> preprocessJoins(JoinerQuery<T, R> request, Set<Path<?>> usedAliases) {
         List<JoinDescription> joins = J.unrollChildrenJoins(request.getJoins());
         for (JoinDescription join : joins) {
-            if (join.getCollectionPath() == null && join.getSinglePath() == null) {
+            if (join.getCollectionPath() == null && join.getSingularPath() == null) {
                 aliasResolver.resolveFieldPathForJoinAlias(join, request.getFrom());
             }
             usedAliases.add(join.getAlias());
