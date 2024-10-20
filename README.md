@@ -39,6 +39,7 @@ Joiner offers Java, Kotlin and reactive API, which are described below
 - [Kotlin API showcase](#kotlin-api-showcase)
 - [Reactive API](#reactive-api)
 - [Example setup](#example-setup)
+- [Example with GraphQL](#example-setup-graphql)
 - [Maven dependencies](#maven-dependencies)
 
 # TL;DR
@@ -481,6 +482,10 @@ fun createSuperUsersIsApplicable(ids : List<Long>): Flux<SuperUser> {
 # Example setup
 
 See example projects in https://github.com/encircled/Joiner/tree/master/example
+
+# Example setup GraphQL
+
+Joiner can be used for dynamic adding required joins to the queries when using with GraphQL, see an example for more details https://github.com/encircled/Joiner/tree/master/example/spring-boot-graphql
 
 ### QueryDSL dependencies
 

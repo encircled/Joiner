@@ -21,7 +21,7 @@ public class TestData {
     @Transactional
     @Commit
     public void prepareData() {
-        if (entityManager.createQuery("select u from User u").setMaxResults(1).getResultList().size() > 0) {
+        if (!entityManager.createQuery("select u from User u").setMaxResults(1).getResultList().isEmpty()) {
             return;
         }
 

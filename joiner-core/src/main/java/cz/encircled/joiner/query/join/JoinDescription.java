@@ -43,6 +43,7 @@ public class JoinDescription implements JoinRoot {
         Assert.notNull(alias);
 
         if (alias.getMetadata().getParent() != null) {
+            // TODO if parent is present, then it should be moved to a nested join perhaps? Unless parent is the root
             this.originalAlias = JoinerUtils.getLastElementPath(alias);
             this.alias = originalAlias;
         } else {
