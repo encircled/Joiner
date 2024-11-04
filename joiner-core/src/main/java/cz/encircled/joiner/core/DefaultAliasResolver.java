@@ -71,7 +71,7 @@ public class DefaultAliasResolver implements AliasResolver {
     protected Path<?> doFindPathOnParent(Path<?> parent, Class<?> targetType, JoinDescription joinDescription) {
         List<Path<?>> candidatePaths = new ArrayList<>();
 
-        for (Field field : parent.getClass().getFields()) {
+        for (Field field : parent.getClass().getDeclaredFields()) {
             // skip self-reference and 'super' reference
             if (!Modifier.isStatic(field.getModifiers()) && !field.getName().equals("_super")) {
                 testAliasCandidate(targetType, candidatePaths, getField(field, parent));
