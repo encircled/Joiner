@@ -128,7 +128,12 @@ class JoinerKtQueryBuilderTest {
     fun addFeature() {
         val testFeature = TestQueryFeature()
         val testFeature2 = TestQueryFeature()
-        val features = (user1 from user1 feature testFeature feature testFeature2).delegate.features
+        var features = (user1 from user1 feature testFeature feature testFeature2).delegate.features
+        assertEquals(2, features.size)
+        assertTrue(features.contains(testFeature))
+        assertTrue(features.contains(testFeature2))
+
+        features = (user1 from user1 features listOf(testFeature, testFeature2)).delegate.features
         assertEquals(2, features.size)
         assertTrue(features.contains(testFeature))
         assertTrue(features.contains(testFeature2))
