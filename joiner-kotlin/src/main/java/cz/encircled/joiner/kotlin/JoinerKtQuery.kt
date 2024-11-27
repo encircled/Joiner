@@ -48,6 +48,11 @@ open class JoinerKtQuery<FROM_C, PROJ, FROM : EntityPath<FROM_C>>(
         return this
     }
 
+    infix fun features(features: Collection<QueryFeature>): JoinerKtQuery<FROM_C, PROJ, FROM> {
+        delegate.addFeatures(features)
+        return this
+    }
+
     override infix fun limit(limit: Long?): JoinerKtQuery<FROM_C, PROJ, FROM> {
         delegate.limit(limit)
         return this
