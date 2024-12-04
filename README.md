@@ -19,6 +19,7 @@ Joiner provides the following additional features:
 * User's JoinGraphs for streamlining the addition of multiple joins to queries 
 * Fixed compatibility issues when using QueryDSL 5 with Spring Boot 3 
 * Fixed join fetching in EclipseLink (when using inheritance)
+* Fixed high security vulnerability [CVE-2024-49203] (https://github.com/advisories/GHSA-6q3q-6v5j-h6vg)
 
 0.4.7 is the last Joiner version for javax API and Hibernate 5.
 
