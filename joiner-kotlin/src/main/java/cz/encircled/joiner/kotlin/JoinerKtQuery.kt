@@ -6,6 +6,7 @@ import com.querydsl.core.types.Expression
 import com.querydsl.core.types.Path
 import com.querydsl.core.types.Predicate
 import cz.encircled.joiner.query.JoinerQuery
+import cz.encircled.joiner.query.JoinerQueryBase
 import cz.encircled.joiner.query.Q
 import cz.encircled.joiner.query.QueryFeature
 import cz.encircled.joiner.query.join.JoinDescription
@@ -100,6 +101,11 @@ open class JoinerKtQuery<FROM_C, PROJ, FROM : EntityPath<FROM_C>>(
 
     override infix fun distinct(isDistinct: Boolean): JoinerQuery<FROM_C, PROJ> {
         delegate.distinct(isDistinct)
+        return this
+    }
+
+    fun count(): JoinerKtQuery<FROM_C, PROJ, FROM> {
+        (delegate as JoinerQueryBase).count()
         return this
     }
 

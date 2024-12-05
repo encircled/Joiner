@@ -141,6 +141,11 @@ public class JoinerQueryBase<T, R> implements JoinerQuery<T, R>, JoinRoot, SubQu
     }
 
     @Override
+    public JoinDescription removeJoin(JoinDescription join) {
+        return joins.remove(join.getOriginalAlias().toString());
+    }
+
+    @Override
     public JoinerQueryBase<T, R> joinGraphs(final String... names) {
         Collections.addAll(joinGraphs, names);
 

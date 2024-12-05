@@ -84,6 +84,8 @@ public interface JoinerQuery<T, R> extends JoinRoot, SubQueryExpression<R> {
 
     Collection<JoinDescription> getJoins();
 
+    JoinDescription removeJoin(JoinDescription join);
+
     JoinerQueryBase<T, R> addHint(String hint, Object value);
 
     LinkedHashMap<String, List<Object>> getHints();
