@@ -3,11 +3,11 @@
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>joiner-core</artifactId>
-    <version>1.18-SNAPSHOT</version>
+    <version>1.18</version>
     <parent>
         <groupId>cz.encircled</groupId>
         <artifactId>joiner-parent</artifactId>
-        <version>1.18-SNAPSHOT</version>
+        <version>1.18</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
