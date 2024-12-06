@@ -82,4 +82,19 @@ interface JoinOps {
         return this
     }
 
+    infix fun <FROM_C, PROJ, FROM : EntityPath<FROM_C>> JoinerKtQuery<FROM_C, PROJ, FROM>.joinGraph(graph: String): JoinerKtQuery<FROM_C, PROJ, FROM> {
+        delegate.joinGraphs(graph)
+        return this
+    }
+
+    infix fun <FROM_C, PROJ, FROM : EntityPath<FROM_C>> JoinerKtQuery<FROM_C, PROJ, FROM>.joinGraph(graph: Enum<*>): JoinerKtQuery<FROM_C, PROJ, FROM> {
+        delegate.joinGraphs(graph)
+        return this
+    }
+
+    infix fun <FROM_C, PROJ, FROM : EntityPath<FROM_C>> JoinerKtQuery<FROM_C, PROJ, FROM>.joinGraphs(graph: Collection<*>): JoinerKtQuery<FROM_C, PROJ, FROM> {
+        delegate.joinGraphs(graph)
+        return this
+    }
+
 }
