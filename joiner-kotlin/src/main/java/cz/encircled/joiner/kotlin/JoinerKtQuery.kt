@@ -5,6 +5,7 @@ import com.querydsl.core.types.EntityPath
 import com.querydsl.core.types.Expression
 import com.querydsl.core.types.Path
 import com.querydsl.core.types.Predicate
+import com.querydsl.core.types.dsl.BooleanExpression
 import cz.encircled.joiner.query.JoinerQuery
 import cz.encircled.joiner.query.JoinerQueryBase
 import cz.encircled.joiner.query.Q
@@ -39,8 +40,28 @@ open class JoinerKtQuery<FROM_C, PROJ, FROM : EntityPath<FROM_C>>(
         return this
     }
 
+    infix fun andWhere(where: (e: FROM) -> BooleanExpression): JoinerKtQuery<FROM_C, PROJ, FROM> {
+        delegate.andWhere(where.invoke(entityPath))
+        return this
+    }
+
+    infix fun orWhere(where: (e: FROM) -> BooleanExpression): JoinerKtQuery<FROM_C, PROJ, FROM> {
+        delegate.orWhere(where.invoke(entityPath))
+        return this
+    }
+
     override infix fun where(where: Predicate): JoinerKtQuery<FROM_C, PROJ, FROM> {
         delegate.where(where)
+        return this
+    }
+
+    override infix fun andWhere(where: BooleanExpression): JoinerKtQuery<FROM_C, PROJ, FROM> {
+        delegate.andWhere(where)
+        return this
+    }
+
+    override infix fun orWhere(where: BooleanExpression): JoinerKtQuery<FROM_C, PROJ, FROM> {
+        delegate.orWhere(where)
         return this
     }
 

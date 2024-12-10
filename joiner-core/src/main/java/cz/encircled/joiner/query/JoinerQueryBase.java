@@ -3,6 +3,7 @@ package cz.encircled.joiner.query;
 import com.querydsl.core.DefaultQueryMetadata;
 import com.querydsl.core.QueryMetadata;
 import com.querydsl.core.types.*;
+import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.CollectionPathBase;
 import cz.encircled.joiner.query.join.J;
 import cz.encircled.joiner.query.join.JoinDescription;
@@ -107,6 +108,26 @@ public class JoinerQueryBase<T, R> implements JoinerQuery<T, R>, JoinRoot, SubQu
     public JoinerQueryBase<T, R> where(Predicate where) {
         this.where = where;
         return this;
+    }
+
+    @Override
+    public JoinerQueryBase<T, R> andWhere(BooleanExpression where) {
+        if (this.where != null) {
+            where(where.and(this.where));
+            return this;
+        } else {
+            return where(where);
+        }
+    }
+
+    @Override
+    public JoinerQuery<T, R> orWhere(BooleanExpression where) {
+        if (this.where != null) {
+            where(where.or(this.where));
+            return this;
+        } else {
+            return where(where);
+        }
     }
 
     @Override

@@ -21,7 +21,7 @@ interface ConditionOps {
 
     infix fun <T> SimpleExpression<T>.eq(to: Expression<in T>): BooleanExpression = eq(to)
 
-    infix fun <T> SimpleExpression<T>.isIn(to: Collection<T>): BooleanExpression = `in`(to)
+    infix fun <T> SimpleExpression<T>.isIn(to: Collection<out T>): BooleanExpression = `in`(to)
 
     infix fun <T> SimpleExpression<T>.isIn(to: SubQueryExpression<T>): BooleanExpression = `in`(to)
 
@@ -76,6 +76,30 @@ interface ConditionOps {
     infix fun BooleanExpression.and(another: BooleanExpression): BooleanExpression = and(another)
 
     infix fun BooleanExpression.or(another: BooleanExpression): BooleanExpression = or(another)
+
+    // LIKES
+
+    infix fun StringExpression.startsWith(to: String): BooleanExpression = startsWith(to)
+
+    infix fun StringExpression.startsWith(to: Expression<String>): BooleanExpression = startsWith(to)
+
+    infix fun StringExpression.startsWithIc(to: String): BooleanExpression = startsWithIgnoreCase(to)
+
+    infix fun StringExpression.startsWithIc(to: Expression<String>): BooleanExpression = startsWithIgnoreCase(to)
+
+    infix fun StringExpression.like(to: String): BooleanExpression = like(to)
+
+    infix fun StringExpression.like(to: Expression<String>): BooleanExpression = like(to)
+
+    /**
+     * Like ignore case
+     */
+    infix fun StringExpression.likeic(to: String): BooleanExpression = likeIgnoreCase(to)
+
+    /**
+     * Like ignore case
+     */
+    infix fun StringExpression.likeic(to: Expression<String>): BooleanExpression = likeIgnoreCase(to)
 
     // NUMBERS
 

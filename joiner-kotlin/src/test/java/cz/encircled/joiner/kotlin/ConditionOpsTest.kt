@@ -31,6 +31,17 @@ class ConditionOpsTest : ConditionOps {
         assertEquals(user1.name.contains("1"), user1.name contains "1")
         assertEquals(user1.name.ne("1"), user1.name ne "1")
         assertEquals(user1.name.eq("1"), user1.name eq "1")
+        assertEquals(user1.name.eq(user1.name), user1.name eq user1.name)
+
+        assertEquals(user1.name.startsWith("1"), user1.name startsWith "1")
+        assertEquals(user1.name.startsWith(user1.name), user1.name startsWith user1.name)
+        assertEquals(user1.name.startsWithIgnoreCase("1"), user1.name startsWithIc "1")
+        assertEquals(user1.name.startsWithIgnoreCase(user1.name), user1.name startsWithIc user1.name)
+
+        assertEquals(user1.name.like("1"), user1.name like "1")
+        assertEquals(user1.name.like(user1.name), user1.name like user1.name)
+        assertEquals(user1.name.likeIgnoreCase("1"), user1.name likeic "1")
+        assertEquals(user1.name.likeIgnoreCase(user1.name), user1.name likeic user1.name)
 
         assertEquals(user1.name.equalsIgnoreCase("1"), user1.name eqic "1")
     }

@@ -2,6 +2,7 @@ package cz.encircled.joiner.query;
 
 import com.querydsl.core.QueryMetadata;
 import com.querydsl.core.types.*;
+import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.CollectionPathBase;
 import cz.encircled.joiner.query.join.JoinDescription;
 
@@ -24,6 +25,10 @@ public interface JoinerQuery<T, R> extends JoinRoot, SubQueryExpression<R> {
     Expression<R> getReturnProjection();
 
     JoinerQuery<T, R> where(Predicate where);
+
+    JoinerQuery<T, R> andWhere(BooleanExpression where);
+
+    JoinerQuery<T, R> orWhere(BooleanExpression where);
 
     Predicate getWhere();
 

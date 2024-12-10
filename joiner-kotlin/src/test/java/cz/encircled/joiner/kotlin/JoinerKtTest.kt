@@ -2,6 +2,7 @@ package cz.encircled.joiner.kotlin
 
 import cz.encircled.joiner.exception.JoinerException
 import cz.encircled.joiner.kotlin.JoinerKtOps.eq
+import cz.encircled.joiner.kotlin.JoinerKtOps.gt
 import cz.encircled.joiner.kotlin.JoinerKtOps.innerJoin
 import cz.encircled.joiner.kotlin.JoinerKtOps.isIn
 import cz.encircled.joiner.kotlin.JoinerKtOps.leftJoin
@@ -15,7 +16,7 @@ import cz.encircled.joiner.kotlin.JoinerKtQueryBuilder.from
 import cz.encircled.joiner.model.QAddress
 import cz.encircled.joiner.model.QGroup
 import cz.encircled.joiner.model.QStatus
-import cz.encircled.joiner.model.QUser
+import cz.encircled.joiner.model.QUser.user1
 import org.junit.jupiter.api.TestInfo
 import org.junit.jupiter.api.assertThrows
 import kotlin.test.*
@@ -32,28 +33,28 @@ class JoinerKtTest : AbstractTest() {
 
     @Test
     fun getOne() {
-        assertThrows<JoinerException> { joinerKt.getOne(QUser.user1 from QUser.user1 where { it.id eq -1 }) }
+        assertThrows<JoinerException> { joinerKt.getOne(user1 from user1 where { it.id eq -1 }) }
     }
 
     @Test
     fun testFindOne() {
-        assertNull(joinerKt.findOne(QUser.user1 from QUser.user1 where { it.id eq -1 }))
+        assertNull(joinerKt.findOne(user1 from user1 where { it.id eq -1 }))
     }
 
     @Test
     fun ktFindAllQueryIntegrationTest() {
         val find = joinerKt.find(
-            QUser.user1 from QUser.user1
+            user1 from user1
                     leftJoin QGroup.group
                     leftJoin QStatus.status
                     innerJoin QStatus.status
 
                     where { it.name eq "user1" or it.id ne 1 or it.id isIn listOf(1) }
 
-                    asc QUser.user1.id
+                    asc user1.id
         )
 
-        QAddress.address from QAddress.address where { it.user.id eq (QUser.user1.id from QUser.user1) }
+        QAddress.address from QAddress.address where { it.user.id eq (user1.id from user1) }
 
         assertNotNull(find)
     }
@@ -61,30 +62,30 @@ class JoinerKtTest : AbstractTest() {
     @Test
     fun `left join on`() {
         val actual = (QGroup.group.all()
-                leftJoin QUser.user1 on QUser.user1.name.eq("user1")).delegate.getJoin(QUser.user1).on
-        assertEquals(QUser.user1.name.eq("user1"), actual)
+                leftJoin user1 on user1.name.eq("user1")).delegate.getJoin(user1).on
+        assertEquals(user1.name.eq("user1"), actual)
     }
 
     @Test
     fun `inner join on`() {
         val actual = (QGroup.group.all()
-                innerJoin QGroup.group.users on QUser.user1.name.eq("user1")).delegate.getJoin(QUser.user1).on
-        assertEquals(QUser.user1.name.eq("user1"), actual)
+                innerJoin QGroup.group.users on user1.name.eq("user1")).delegate.getJoin(user1).on
+        assertEquals(user1.name.eq("user1"), actual)
     }
 
     @Test
     fun `tuple with count projection`() {
         val tuples = joinerKt.find(
-            listOf(QUser.user1.count(), QUser.user1.id) from QUser.user1
-                    groupBy QUser.user1.id
+            listOf(user1.count(), user1.id) from user1
+                    groupBy user1.id
         )
-        assertEquals(tuples.size, joinerKt.getOne(QUser.user1.countOf()).toInt())
+        assertEquals(tuples.size, joinerKt.getOne(user1.countOf()).toInt())
     }
 
     @Test
     fun ktFindOneQueryIntegrationTest() {
         val find = joinerKt.findOne(
-            QUser.user1 from QUser.user1
+            user1 from user1
                     leftJoin QGroup.group
                     leftJoin QStatus.status
                     innerJoin QStatus.status
@@ -93,33 +94,39 @@ class JoinerKtTest : AbstractTest() {
                     limit 1
                     offset 0
 
-                    asc QUser.user1.id
+                    asc user1.id
         )
 
         assertNotNull(find)
     }
 
     @Test
+    fun ktAppendWhere() {
+        assertEquals(user1.id.gt(1).or(user1.id.isNull), (user1.all() orWhere { user1.id.isNull } orWhere { user1.id gt 1 }).where)
+        assertEquals(user1.id.gt(1).and(user1.id.isNull), (user1.all() andWhere { user1.id.isNull } andWhere { user1.id gt 1 }).where)
+    }
+
+    @Test
     fun ktCountQuery() {
-        assertEquals(7, joinerKt.findOne(QUser.user1.countOf()))
+        assertEquals(7, joinerKt.findOne(user1.countOf()))
     }
 
     @Test
     fun ktCountQueryWithPredicate() {
-        assertEquals(1, joinerKt.findOne(QUser.user1.countOf() where QUser.user1.name.eq("user1")))
+        assertEquals(1, joinerKt.findOne(user1.countOf() where user1.name.eq("user1")))
     }
 
     @Test
     fun ktCountQueryIntegrationTest() {
         val find = joinerKt.findOne(
-            QUser.user1.countOf()
+            user1.countOf()
                     leftJoin QGroup.group
-                    leftJoin QUser.user1.statuses
+                    leftJoin user1.statuses
                     innerJoin QStatus.status
 
                     where { it.name eq "user1" or it.id ne 1 or it.id isIn listOf(1) }
 
-                    asc QUser.user1.id
+                    asc user1.id
         )
 
         assertEquals(7, find)

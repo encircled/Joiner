@@ -56,6 +56,11 @@ object JoinerKtQueryBuilder {
         return Projections.constructor(to.java, *this.toTypedArray())
     }
 
+    infix fun <FROM_C, FROM : EntityPath<FROM_C>, PROJ: Any> FROM.mappingTo(to: KClass<PROJ>): JoinerKtQuery<FROM_C, PROJ, FROM> {
+        val constructor = Projections.constructor(to.java, this)
+        return select(SelectFrom(constructor, this))
+    }
+
     fun <FROM_C, FROM : EntityPath<FROM_C>> FROM.countOf(): JoinerKtQuery<FROM_C, Long, FROM> {
         return ExpressionJoinerKtQuery(this, this, true) as JoinerKtQuery<FROM_C, Long, FROM>
     }
