@@ -76,6 +76,8 @@ class SpringJoinerKtRepositoryBaseImpl<T, E : EntityPath<T>>(val joiner: JoinerK
             .filter { it.joinType == JoinType.LEFTJOIN }
             .forEach { countRequest.removeJoin(it) }
 
+        countRequest.joinGraphs.clear()
+
         // Fetch is not allowed for count queries
         J.unrollChildrenJoins(countRequest.joins).forEach(Consumer { j: JoinDescription -> j.fetch(false) })
 
