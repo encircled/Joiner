@@ -1,6 +1,7 @@
 package cz.encircled.joiner.query;
 
 import com.querydsl.core.QueryMetadata;
+import com.querydsl.core.Tuple;
 import com.querydsl.core.types.*;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.CollectionPathBase;
@@ -128,6 +129,8 @@ public interface JoinerQuery<T, R> extends JoinRoot, SubQueryExpression<R> {
     List<QueryOrder> getOrder();
 
     JoinerQuery<T, R> copy();
+
+    JoinerQuery<T, Tuple> copy(Expression<?>[] newReturnProjections);
 
     boolean isCount();
 

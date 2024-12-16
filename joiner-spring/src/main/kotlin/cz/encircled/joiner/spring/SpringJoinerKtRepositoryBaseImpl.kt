@@ -2,7 +2,9 @@ package cz.encircled.joiner.spring
 
 import com.querydsl.core.JoinType
 import com.querydsl.core.types.EntityPath
+import com.querydsl.core.types.dsl.SimpleExpression
 import cz.encircled.joiner.kotlin.JoinerKt
+import cz.encircled.joiner.kotlin.JoinerKtOps.isIn
 import cz.encircled.joiner.kotlin.JoinerKtQuery
 import cz.encircled.joiner.kotlin.JoinerKtQueryBuilder.all
 import cz.encircled.joiner.kotlin.JoinerKtQueryBuilder.countOf
@@ -10,6 +12,7 @@ import cz.encircled.joiner.kotlin.JoinerKtQueryBuilder.mappingTo
 import cz.encircled.joiner.query.JoinerQueryBase
 import cz.encircled.joiner.query.join.J
 import cz.encircled.joiner.query.join.JoinDescription
+import cz.encircled.joiner.util.ReflectionUtils
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.Pageable
@@ -30,7 +33,9 @@ class SpringJoinerKtRepositoryBaseImpl<T, E : EntityPath<T>>(val joiner: JoinerK
         query.invoke(q)
 
         val count = getTotalCount(q)
-        val content: List<T> = joiner.find(q.copy().addFeatures(PageableFeature(pageable)))
+
+        val (idField, ids) = findMatchingIds(q, pageable)
+        val content = joiner.find(q.copy().where(idField.isIn(ids)))
 
         return PageImpl(content, pageable, count)
     }
@@ -44,7 +49,9 @@ class SpringJoinerKtRepositoryBaseImpl<T, E : EntityPath<T>>(val joiner: JoinerK
         query.invoke(q)
 
         val count = getTotalCount(q)
-        val content: List<R> = joiner.find(q.copy().addFeatures(PageableFeature(pageable)))
+
+        val (idField, ids) = findMatchingIds(q, pageable)
+        val content = joiner.find(q.copy().where(idField.isIn(ids)))
 
         return PageImpl(content, pageable, count)
     }
@@ -65,6 +72,18 @@ class SpringJoinerKtRepositoryBaseImpl<T, E : EntityPath<T>>(val joiner: JoinerK
         val q = entityPath.all()
         query.invoke(q)
         return joiner.getOne(q)
+    }
+
+    private fun findMatchingIds(
+        query: JoinerKtQuery<*, *, *>,
+        pageable: Pageable
+    ): Pair<SimpleExpression<Any>, List<Any>> {
+        val idField = ReflectionUtils.getField("id", query.from) as SimpleExpression<Any>
+        val orderExpressions = listOf(idField) + PageableFeature.getExpressionsForSortParam(query, pageable.sort)
+
+        val idsQuery = query.copy(orderExpressions.map { it }.toTypedArray())
+        val ids = joiner.find(idsQuery.addFeatures(PageableFeature(pageable))).map { it.get(idField)!! }
+        return Pair(idField, ids)
     }
 
     private fun getTotalCount(request: JoinerKtQuery<T, *, E>): Long {

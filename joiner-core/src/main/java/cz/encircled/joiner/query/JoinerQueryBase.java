@@ -2,6 +2,7 @@ package cz.encircled.joiner.query;
 
 import com.querydsl.core.DefaultQueryMetadata;
 import com.querydsl.core.QueryMetadata;
+import com.querydsl.core.Tuple;
 import com.querydsl.core.types.*;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.CollectionPathBase;
@@ -330,6 +331,27 @@ public class JoinerQueryBase<T, R> implements JoinerQuery<T, R>, JoinRoot, SubQu
         copy.orders = new ArrayList<>(orders);
 
         // TODO deep-deep copy?
+        copy.hints = new LinkedHashMap<>(hints);
+
+        return copy;
+    }
+
+    @Override
+    public JoinerQuery<T, Tuple> copy(Expression<?>[] newReturnProjections) {
+        JoinerQueryBase<T, Tuple> copy = Q.select(newReturnProjections)
+                .from(from)
+                .joinGraphs(new LinkedHashSet<>(joinGraphs))
+                .joins(getJoins().stream().map(JoinDescription::copy).collect(Collectors.toList()))
+                .addFeatures(new ArrayList<>(getFeatures()))
+                .where(where)
+                .offset(offset)
+                .limit(limit)
+                .groupBy(groupBy)
+                .having(this.having);
+
+        copy.isCount = isCount;
+        copy.orders = new ArrayList<>(orders);
+
         copy.hints = new LinkedHashMap<>(hints);
 
         return copy;

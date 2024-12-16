@@ -1,12 +1,18 @@
 package cz.encircled.joiner.spring
 
 import cz.encircled.joiner.AbstractSpringJoinerTest
+import cz.encircled.joiner.kotlin.JoinerKtOps.contains
 import cz.encircled.joiner.kotlin.JoinerKtOps.eq
+import cz.encircled.joiner.model.QGroup
+import cz.encircled.joiner.model.QStatus
 import cz.encircled.joiner.model.User
+import cz.encircled.joiner.query.join.J
+import cz.encircled.joiner.query.join.JoinGraphRegistry
 import cz.encircled.joiner.spring.config.JoinerKtJpaRepositoryFactoryBean
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Configuration
 import org.springframework.data.domain.PageRequest
+import org.springframework.data.domain.Sort
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -16,6 +22,9 @@ open class SpringJoinerKtRepositoryTest : AbstractSpringJoinerTest() {
 
     @Autowired
     lateinit var userRepository: KtUserRepository
+
+    @Autowired
+    lateinit var joinGraphRegistry: JoinGraphRegistry
 
     @Test
     fun `find one`() {
@@ -40,8 +49,14 @@ open class SpringJoinerKtRepositoryTest : AbstractSpringJoinerTest() {
 
     @Test
     fun `find page`() {
-        val page = userRepository.findPage(PageRequest.of(0, 2)) {}
-        assertEquals(2, page.content.size)
+        val graph = this::class.simpleName + "-find page"
+        joinGraphRegistry.registerJoinGraph(graph, listOf(J.left(QStatus.status)), User::class.java)
+
+        val page = userRepository.findPage(PageRequest.of(0, 1, Sort.by(Sort.Order.desc("name")))) {
+            where { it.name contains "user" } leftJoin QGroup.group joinGraph graph
+        }
+        assertEquals(1, page.content.size)
+        assertEquals("user3", page.content[0].name)
 
         val dtoPage = userRepository.findPage(TestUserDto::class, PageRequest.of(0, 2)) {}
         assertEquals(listOf("user1", "user2"), dtoPage.content.map { it.name })

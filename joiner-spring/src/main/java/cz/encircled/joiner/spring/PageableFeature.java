@@ -13,6 +13,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.mapping.PropertyPath;
 
+import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -53,7 +55,15 @@ public class PageableFeature implements QueryFeature {
         return query;
     }
 
-    private Expression<?> buildOrderPropertyPathFrom(JoinerQuery<?, ?> joinerQuery, Sort.Order order) {
+    static List<? extends Expression<?>> getExpressionsForSortParam(JoinerQuery<?, ?> joinerQuery, Sort sort) {
+        if (sort.isSorted()) {
+            return sort.stream().map(s -> buildOrderPropertyPathFrom(joinerQuery, s)).toList();
+        } else {
+            return Collections.emptyList();
+        }
+    }
+
+    static Expression<?> buildOrderPropertyPathFrom(JoinerQuery<?, ?> joinerQuery, Sort.Order order) {
         PathBuilder<?> builder = new PathBuilder<Object>(joinerQuery.getFrom().getType(), joinerQuery.getFrom().toString());
 
         PropertyPath path = PropertyPath.from(order.getProperty(), builder.getType());
