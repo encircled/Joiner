@@ -52,11 +52,12 @@ open class SpringJoinerKtRepositoryTest : AbstractSpringJoinerTest() {
         val graph = this::class.simpleName + "-find page"
         joinGraphRegistry.registerJoinGraph(graph, listOf(J.left(QStatus.status)), User::class.java)
 
-        val page = userRepository.findPage(PageRequest.of(0, 1, Sort.by(Sort.Order.desc("name")))) {
+        val page = userRepository.findPage(PageRequest.of(0, 2, Sort.by(Sort.Order.desc("name")))) {
             where { it.name contains "user" } leftJoin QGroup.group joinGraph graph
         }
-        assertEquals(1, page.content.size)
+        assertEquals(2, page.content.size)
         assertEquals("user3", page.content[0].name)
+        assertEquals("user2", page.content[1].name)
 
         val dtoPage = userRepository.findPage(TestUserDto::class, PageRequest.of(0, 2)) {}
         assertEquals(listOf("user1", "user2"), dtoPage.content.map { it.name })

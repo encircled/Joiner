@@ -32,12 +32,14 @@ class SpringJoinerKtRepositoryBaseImpl<T, E : EntityPath<T>>(val joiner: JoinerK
         val q = entityPath.all()
         query.invoke(q)
 
-        val count = getTotalCount(q)
+        val totalCount = getTotalCount(q)
 
         val (idField, ids) = findMatchingIds(q, pageable)
-        val content = joiner.find(q.copy().where(idField.isIn(ids)))
 
-        return PageImpl(content, pageable, count)
+        val contentQuery = q.copy().where(idField.isIn(ids)).addFeatures(PageableFeature(pageable.withPage(0)))
+        val content = joiner.find(contentQuery)
+
+        return PageImpl(content, pageable, totalCount)
     }
 
     override fun <R : Any> findPage(
@@ -48,12 +50,14 @@ class SpringJoinerKtRepositoryBaseImpl<T, E : EntityPath<T>>(val joiner: JoinerK
         val q = entityPath mappingTo mappingTo
         query.invoke(q)
 
-        val count = getTotalCount(q)
+        val totalCount = getTotalCount(q)
 
         val (idField, ids) = findMatchingIds(q, pageable)
-        val content = joiner.find(q.copy().where(idField.isIn(ids)))
 
-        return PageImpl(content, pageable, count)
+        val contentQuery = q.copy().where(idField.isIn(ids)).addFeatures(PageableFeature(pageable.withPage(0)))
+        val content = joiner.find(contentQuery)
+
+        return PageImpl(content, pageable, totalCount)
     }
 
     override fun find(query: JoinerKtQuery<T, T, E>.() -> Any): List<T> {
