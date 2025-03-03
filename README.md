@@ -506,6 +506,37 @@ Include `QueryDSL` dependencies:
 </dependency>
 ```
 
+then, add querydsl annotation processors to the `maven-compiler-pluguin` configurattion:
+
+```xml
+<annotationProcessorPaths>
+    <path>
+        <groupId>com.querydsl</groupId>
+        <artifactId>querydsl-apt</artifactId>
+        <version>${querydsl.version}</version>
+        <classifier>jakarta</classifier>
+    </path>
+    <path>
+        <groupId>jakarta.persistence</groupId>
+        <artifactId>jakarta.persistence-api</artifactId>
+        <version>3.2.0</version>
+    </path>
+</annotationProcessorPaths>
+```
+
+### Kotlin
+
+For Kotlin, add kapt plugin execution to the `kotlin-maven-plugin`:
+```xml
+<execution>
+    <id>kapt</id>
+    <phase>generate-sources</phase>
+    <goals>
+        <goal>kapt</goal>
+    </goals>
+</execution>
+```
+
 ### Hibernate 5 additional setup
 
 For `Hibernate 5` and below it is also required to add a `apt-maven-plugin` plugin for generation a metamodel (so called Q-classes):  
