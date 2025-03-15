@@ -44,14 +44,14 @@
 
     <properties>
         <querydsl.version>5.1.0</querydsl.version>
-        <spring.version>6.1.14</spring.version>
+        <spring.version>6.2.4</spring.version>
         <hibernate.version>6.6.1.Final</hibernate.version>
         <hibernate-reactive.version>2.4.2.Final</hibernate-reactive.version>
         <eclipselink.version>4.0.2</eclipselink.version>
         <vendor.name>hibernate</vendor.name>
         <kotlin.version>2.0.21</kotlin.version>
-        <kotlin.coroutines.version>1.8.1</kotlin.coroutines.version>
-        <reactor.version>3.5.11</reactor.version>
+        <kotlin.coroutines.version>1.10.1</kotlin.coroutines.version>
+        <reactor.version>3.6.15</reactor.version>
         <junit-jupiter.version>5.11.2</junit-jupiter.version>
         <slf4j.version>1.7.36</slf4j.version>
         <vertx.version>4.5.10</vertx.version>
