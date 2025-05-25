@@ -8,7 +8,7 @@ import com.querydsl.core.types.Path;
 import com.querydsl.jpa.FactoryExpressionTransformer;
 import com.querydsl.jpa.HQLTemplates;
 import com.querydsl.jpa.JPQLQuery;
-import com.querydsl.jpa.JPQLSerializer;
+import cz.encircled.joiner.core.JoinerJPQLSerializer;
 import com.querydsl.jpa.hibernate.HibernateQuery;
 import com.querydsl.jpa.impl.JPAQuery;
 import cz.encircled.joiner.core.JoinerProperties;
@@ -83,7 +83,8 @@ public class HibernateRepository extends AbstractVendorRepository implements Joi
         }
 
         protected Query doCreateQuery(QueryModifiers modifiers, boolean forCount) {
-            JPQLSerializer serializer = serialize(forCount);
+            JoinerJPQLSerializer serializer = new JoinerJPQLSerializer();
+            serializer.serialize(getMetadata(), forCount, null);
             String queryString = serializer.toString();
             logQuery(queryString);
             Query query = session.createQuery(queryString);

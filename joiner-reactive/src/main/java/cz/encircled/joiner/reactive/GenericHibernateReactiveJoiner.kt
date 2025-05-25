@@ -3,8 +3,7 @@ package cz.encircled.joiner.reactive
 import com.querydsl.core.types.ParamExpression
 import com.querydsl.core.types.ParamNotSetException
 import com.querydsl.core.types.dsl.Param
-import com.querydsl.jpa.JPQLSerializer
-import com.querydsl.jpa.JPQLTemplates
+import cz.encircled.joiner.core.JoinerJPQLSerializer
 import cz.encircled.joiner.core.Joiner
 import cz.encircled.joiner.query.JoinerQuery
 import cz.encircled.joiner.reactive.composer.JoinerComposer
@@ -112,7 +111,7 @@ abstract class GenericHibernateReactiveJoiner(val emf: EntityManagerFactory) {
 
     protected fun <R> createQuery(session: Stage.Session, query: JoinerQuery<*, R>): Stage.Query<R> {
         val queryDsl = joiner.toJPAQuery(query)
-        val serializer = JPQLSerializer(JPQLTemplates.DEFAULT)
+        val serializer = JoinerJPQLSerializer()
         serializer.serialize(queryDsl.metadata, query.isCount, null)
         val jpaQuery = session.createQuery<R>(serializer.toString())
 
