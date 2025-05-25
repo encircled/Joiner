@@ -23,6 +23,6 @@ public interface JoinerVendorRepository {
 
     void addFetch(JPQLQuery<?> query, JoinDescription joinDescription, Collection<JoinDescription> joins, EntityPath<?> rootPath);
 
-    <T> List<T> getResultList(JoinerQuery<?, T> request, JPQLQuery<T> query, JoinerProperties joinerProperties);
+    <T> List<T> getResultList(JoinerQuery<?, T> request, JoinerProperties joinerProperties, EntityManager entityManager);
 
 }

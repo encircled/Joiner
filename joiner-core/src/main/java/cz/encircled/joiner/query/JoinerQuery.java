@@ -108,9 +108,9 @@ public interface JoinerQuery<T, R> extends JoinRoot, SubQueryExpression<R> {
      * @param offset value
      * @return this
      */
-    JoinerQuery<T, R> offset(Long offset);
+    JoinerQuery<T, R> offset(Integer offset);
 
-    Long getOffset();
+    Integer getOffset();
 
     /**
      * Set max results for the query results
@@ -118,9 +118,9 @@ public interface JoinerQuery<T, R> extends JoinRoot, SubQueryExpression<R> {
      * @param limit value
      * @return this
      */
-    JoinerQuery<T, R> limit(Long limit);
+    JoinerQuery<T, R> limit(Integer limit);
 
-    Long getLimit();
+    Integer getLimit();
 
     JoinerQuery<T, R> asc(Expression<?> orderBy);
 

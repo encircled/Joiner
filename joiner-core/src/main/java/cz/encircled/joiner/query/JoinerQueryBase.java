@@ -43,9 +43,9 @@ public class JoinerQueryBase<T, R> implements JoinerQuery<T, R>, JoinRoot, SubQu
 
     private List<QueryFeature> features = new ArrayList<>(2);
 
-    private Long offset;
+    private Integer offset;
 
-    private Long limit;
+    private Integer limit;
 
     private List<QueryOrder> orders = new ArrayList<>(2);
 
@@ -272,24 +272,24 @@ public class JoinerQueryBase<T, R> implements JoinerQuery<T, R>, JoinRoot, SubQu
     }
 
     @Override
-    public JoinerQueryBase<T, R> offset(Long offset) {
+    public JoinerQueryBase<T, R> offset(Integer offset) {
         this.offset = offset;
         return this;
     }
 
     @Override
-    public Long getOffset() {
+    public Integer getOffset() {
         return offset;
     }
 
     @Override
-    public JoinerQueryBase<T, R> limit(Long limit) {
+    public JoinerQueryBase<T, R> limit(Integer limit) {
         this.limit = limit;
         return this;
     }
 
     @Override
-    public Long getLimit() {
+    public Integer getLimit() {
         return limit;
     }
 

@@ -105,7 +105,7 @@ public class Joiner {
         if (request.isCount()) {
             result = (List<R>) Collections.singletonList(query.fetchCount());
         } else {
-            result = joinerVendorRepository.getResultList(request, query, getJoinerProperties());
+            result = joinerVendorRepository.getResultList(request, getJoinerProperties(), entityManager);
         }
 
         for (QueryFeature queryFeature : getQueryFeatures(request)) {

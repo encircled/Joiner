@@ -1,13 +1,13 @@
 package cz.encircled.joiner.eclipse;
 
 import com.querydsl.core.types.FactoryExpression;
-import com.querydsl.jpa.JPQLQuery;
-import com.querydsl.jpa.impl.JPAQuery;
+import cz.encircled.joiner.core.JoinerJPQLSerializer;
 import cz.encircled.joiner.core.JoinerProperties;
 import cz.encircled.joiner.core.vendor.EclipselinkRepository;
 import cz.encircled.joiner.core.vendor.JoinerVendorRepository;
 import cz.encircled.joiner.query.JoinerQuery;
 import cz.encircled.joiner.util.ReflectionUtils;
+import jakarta.persistence.EntityManager;
 import jakarta.persistence.Query;
 import org.eclipse.persistence.internal.jpa.QueryImpl;
 import org.eclipse.persistence.internal.queries.JoinedAttributeManager;
@@ -25,8 +25,10 @@ public class EnchancedEclipselinkRepository extends EclipselinkRepository implem
     // TODO test for fixed joinedAttributeManager is missing
     @Override
     @SuppressWarnings("unchecked")
-    public <T> List<T> getResultList(JoinerQuery<?, T> request, JPQLQuery<T> query, JoinerProperties joinerProperties) {
-        Query jpaQuery = ((JPAQuery) query).createQuery();
+    public <T> List<T> getResultList(JoinerQuery<?, T> request, JoinerProperties joinerProperties, EntityManager entityManager) {
+        JoinerJPQLSerializer serializer = new JoinerJPQLSerializer();
+        String queryString = serializer.serialize(request, request.isCount());
+        Query jpaQuery = entityManager.createQuery(queryString);
 
         if (jpaQuery instanceof QueryImpl) {
             QueryImpl casted = (QueryImpl) jpaQuery;

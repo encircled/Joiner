@@ -6,6 +6,7 @@ import com.querydsl.jpa.EclipseLinkTemplates;
 import com.querydsl.jpa.JPQLQuery;
 import com.querydsl.jpa.impl.AbstractJPAQuery;
 import com.querydsl.jpa.impl.JPAQuery;
+import cz.encircled.joiner.core.JoinerJPQLSerializer;
 import cz.encircled.joiner.core.JoinerProperties;
 import cz.encircled.joiner.exception.JoinerException;
 import cz.encircled.joiner.query.JoinerQuery;
@@ -13,9 +14,11 @@ import cz.encircled.joiner.query.join.JoinDescription;
 import cz.encircled.joiner.util.MultiValueMap;
 import cz.encircled.joiner.util.ReflectionUtils;
 import jakarta.persistence.EntityManager;
+import jakarta.persistence.Query;
 
 import java.lang.reflect.Field;
 import java.util.Collection;
+import java.util.List;
 
 /**
  * @author Vlad on 13-Sep-16.
@@ -56,6 +59,13 @@ public class EclipselinkRepository extends AbstractVendorRepository implements J
         }
 
         super.addJoin(query, joinDescription);
+    }
+
+    public <T> List<T> getResultList(JoinerQuery<?, T> request, JoinerProperties joinerProperties, EntityManager entityManager) {
+        JoinerJPQLSerializer serializer = new JoinerJPQLSerializer();
+        String queryString = serializer.serialize(request, request.isCount());
+        Query jpaQuery = entityManager.createQuery(queryString);
+        return jpaQuery.getResultList();
     }
 
     private String resolvePathToFieldFromRoot(String rootAlias, JoinDescription targetJoinDescription, Collection<JoinDescription> joins) {

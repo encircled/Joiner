@@ -2,21 +2,18 @@ package cz.encircled.joiner.core;
 
 import com.querydsl.core.DefaultQueryMetadata;
 import com.querydsl.core.QueryMetadata;
-import com.querydsl.core.types.Expression;
-import com.querydsl.core.types.Predicate;
-import com.querydsl.core.types.dsl.BooleanExpression;
-import com.querydsl.core.types.dsl.Expressions;
 import cz.encircled.joiner.model.QAddress;
 import cz.encircled.joiner.model.QGroup;
 import cz.encircled.joiner.model.QUser;
 import cz.encircled.joiner.query.JoinerQuery;
 import cz.encircled.joiner.query.Q;
 import cz.encircled.joiner.query.join.J;
-import cz.encircled.joiner.query.join.JoinDescription;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.*;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
@@ -63,7 +60,9 @@ public class JoinerJPQLSerializerTest {
     public void testWhereClause() {
         JoinerQuery<?, ?> query = Q.from(user).where(user.name.eq("John"));
         String jpql = serializer.serialize(query, false);
-        assertEquals("select distinct user1 from User user1  where user1.name = John", jpql);
+        assertEquals("select distinct user1 from User user1  where user1.name = ?1", jpql);
+        assertEquals(1, serializer.getConstants().size());
+        assertEquals("John", serializer.getConstants().get(0));
     }
 
     @Test
@@ -106,7 +105,8 @@ public class JoinerJPQLSerializerTest {
         JoinerQuery<?, ?> query = Q.from(user).groupBy(user.name).having(user.id.gt(0L));
         String jpql = serializer.serialize(query, false);
         System.out.println(jpql);
-        assertEquals("select distinct user1 from User user1  group by user1.name having user1.id > 0", jpql);
+        assertEquals("select distinct user1 from User user1  group by user1.name having user1.id > ?1", jpql);
+        assertEquals(0L, serializer.getConstants().get(0));
     }
 
     @Test
@@ -145,5 +145,25 @@ public class JoinerJPQLSerializerTest {
 
         assertTrue(jpql.contains("select count("));
         assertTrue(jpql.contains("from"));
+    }
+
+    @Test
+    public void testPredicateWithConstants() {
+        // Create a query with a predicate that contains constants
+        JoinerQuery<?, ?> query = Q.from(user).where(user.name.eq("John").and(user.id.gt(10L)));
+
+        // Serialize the query
+        String jpql = serializer.serialize(query, false);
+        System.out.println("testPredicateWithConstants JPQL: " + jpql);
+
+        // Verify that the constants are replaced with parameter placeholders
+        assertTrue(jpql.contains("user1.name = ?"));
+        assertTrue(jpql.contains("user1.id > ?"));
+
+        // Verify that the constants are added to the constants list
+        List<Object> constants = serializer.getConstants();
+        assertEquals(2, constants.size());
+        assertEquals("John", constants.get(0));
+        assertEquals(10L, constants.get(1));
     }
 }

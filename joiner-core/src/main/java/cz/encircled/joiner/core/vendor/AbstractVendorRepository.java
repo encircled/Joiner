@@ -4,12 +4,8 @@ import com.querydsl.core.types.CollectionExpression;
 import com.querydsl.core.types.EntityPath;
 import com.querydsl.core.types.Path;
 import com.querydsl.jpa.JPQLQuery;
-import cz.encircled.joiner.core.JoinerProperties;
 import cz.encircled.joiner.exception.JoinerException;
-import cz.encircled.joiner.query.JoinerQuery;
 import cz.encircled.joiner.query.join.JoinDescription;
-
-import java.util.List;
 
 /**
  * Common parent for implementations of vendor-specific repositories
@@ -60,8 +56,4 @@ public abstract class AbstractVendorRepository implements JoinerVendorRepository
         }
     }
 
-    @Override
-    public <T> List<T> getResultList(JoinerQuery<?, T> request, JPQLQuery<T> query, JoinerProperties joinerProperties) {
-        return query.fetch();
-    }
 }

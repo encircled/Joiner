@@ -37,8 +37,31 @@ public class HibernateRepository extends AbstractVendorRepository implements Joi
     }
 
     @Override
-    public <T> List<T> getResultList(JoinerQuery<?, T> request, JPQLQuery<T> query, JoinerProperties joinerProperties) {
-        if (query instanceof HibernateQueryWithSession<T> hq) {
+    public <T> List<T> getResultList(JoinerQuery<?, T> request, JoinerProperties joinerProperties, EntityManager entityManager) {
+        JoinerJPQLSerializer serializer = new JoinerJPQLSerializer();
+        String queryString = serializer.serialize(request, request.isCount());
+        jakarta.persistence.Query query = entityManager.createQuery(queryString);
+
+        // Set parameters from the serializer's constants list
+        List<Object> constants = serializer.getConstants();
+        for (int i = 0; i < constants.size(); i++) {
+            Object val = constants.get(i);
+            if (val instanceof Collection<?>) {
+                query.setParameter(i + 1, val);
+            } else {
+                query.setParameter(i + 1, val);
+            }
+        }
+
+        if (request.getLimit() != null) {
+            query.setMaxResults(request.getLimit());
+        }
+        if (request.getOffset() != null) {
+            query.setFirstResult(request.getOffset());
+        }
+
+        return (List<T>) query.getResultList();
+        /*if (query instanceof HibernateQueryWithSession<T> hq) {
             try (hq.session) {
                 Query<T> jpaQuery = hq.createQuery();
                 for (Map.Entry<String, List<Object>> entry : request.getHints().entrySet()) {
@@ -54,7 +77,7 @@ public class HibernateRepository extends AbstractVendorRepository implements Joi
                 return jpaQuery.getResultList();
             }
         }
-        return super.getResultList(request, query, joinerProperties);
+        return super.getResultList(request, query, joinerProperties);*/
     }
 
     @Override

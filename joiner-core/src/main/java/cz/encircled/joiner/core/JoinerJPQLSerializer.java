@@ -3,6 +3,7 @@ package cz.encircled.joiner.core;
 import com.querydsl.core.JoinType;
 import com.querydsl.core.QueryMetadata;
 import com.querydsl.core.types.Expression;
+import com.querydsl.core.types.Operation;
 import com.querydsl.core.types.Path;
 import com.querydsl.core.types.Predicate;
 import cz.encircled.joiner.query.JoinerQuery;
@@ -296,17 +297,12 @@ public class JoinerJPQLSerializer {
 
     /**
      * Serialize an expression to a JPQL string.
-     * This is a simplified implementation that handles basic expressions.
-     * For more complex expressions, additional handling would be needed.
+     * This implementation handles basic expressions and operations.
      *
      * @param expression the expression to serialize
      * @return the serialized expression
      */
     private String serializeExpression(Expression<?> expression) {
-        // This is a simplified implementation
-        // In a real implementation, you would need to handle different types of expressions
-        // such as operations, constants, paths, etc.
-
         // For constants, we add them to the constants list and return a parameter placeholder
         if (expression instanceof com.querydsl.core.types.Constant) {
             Object constant = ((com.querydsl.core.types.Constant<?>) expression).getConstant();
@@ -325,8 +321,74 @@ public class JoinerJPQLSerializer {
             return path.getMetadata().getName();
         }
 
-        // For operations, we would need to handle the operator and operands
-        // This is a simplified version that just returns the string representation
+        // For operations, we handle the operator and operands
+        if (expression instanceof Operation) {
+            Operation<?> operation = (Operation<?>) expression;
+            List<Expression<?>> args = operation.getArgs();
+            String operator = operation.getOperator().toString();
+
+            // Handle different types of operations
+            if (args.size() == 2) {
+                // Binary operation (e.g., a = b, a > b)
+                String left = serializeExpression(args.get(0));
+                String right = serializeExpression(args.get(1));
+
+                // Special handling for common operators
+                switch (operator) {
+                    case "EQ":
+                        return left + " = " + right;
+                    case "NE":
+                        return left + " <> " + right;
+                    case "GT":
+                        return left + " > " + right;
+                    case "GE":
+                        return left + " >= " + right;
+                    case "LT":
+                        return left + " < " + right;
+                    case "LE":
+                        return left + " <= " + right;
+                    case "AND":
+                        return left + " and " + right;
+                    case "OR":
+                        return left + " or " + right;
+                    case "LIKE":
+                        return left + " like " + right;
+                    case "IN":
+                        return left + " in " + right;
+                    default:
+                        return left + " " + operator.toLowerCase() + " " + right;
+                }
+            } else if (args.size() == 1) {
+                // Unary operation (e.g., not a)
+                String arg = serializeExpression(args.get(0));
+
+                // Special handling for common operators
+                switch (operator) {
+                    case "NOT":
+                        return "not " + arg;
+                    case "IS_NULL":
+                        return arg + " is null";
+                    case "IS_NOT_NULL":
+                        return arg + " is not null";
+                    default:
+                        return operator.toLowerCase() + "(" + arg + ")";
+                }
+            } else {
+                // Function call or other operation
+                StringBuilder sb = new StringBuilder();
+                sb.append(operator.toLowerCase()).append("(");
+                for (int i = 0; i < args.size(); i++) {
+                    if (i > 0) {
+                        sb.append(", ");
+                    }
+                    sb.append(serializeExpression(args.get(i)));
+                }
+                sb.append(")");
+                return sb.toString();
+            }
+        }
+
+        // For other types of expressions, return the string representation
         return expression.toString();
     }
 }

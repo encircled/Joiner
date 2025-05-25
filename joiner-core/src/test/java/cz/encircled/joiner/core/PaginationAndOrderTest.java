@@ -28,21 +28,21 @@ public abstract class PaginationAndOrderTest extends AbstractTest {
 
     @Test
     public void testLimit() {
-        assertEquals(1, joiner.find(Q.from(QAddress.address).limit(1L)).size());
-        assertEquals(2, joiner.find(Q.from(QAddress.address).limit(2L)).size());
+        assertEquals(1, joiner.find(Q.from(QAddress.address).limit(1)).size());
+        assertEquals(2, joiner.find(Q.from(QAddress.address).limit(2)).size());
     }
 
     @Test
     public void testLimitWithJoin() {
-        List<Address> res = joiner.find(Q.from(QAddress.address).limit(5L).joins(J.left(QStatus.status)));
+        List<Address> res = joiner.find(Q.from(QAddress.address).limit(5).joins(J.left(QStatus.status)));
         assertEquals(5, res.size());
         assertTrue(isLoaded(res.get(0), "statuses"));
     }
 
     @Test
     public void testLimitWithOffset() {
-        Long firstPage = joiner.find(Q.from(QAddress.address).offset(0L).limit(1L)).get(0).getId();
-        Long secondPage = joiner.find(Q.from(QAddress.address).offset(1L).limit(1L)).get(0).getId();
+        Long firstPage = joiner.find(Q.from(QAddress.address).offset(0).limit(1)).get(0).getId();
+        Long secondPage = joiner.find(Q.from(QAddress.address).offset(1).limit(1)).get(0).getId();
         assertNotEquals(secondPage, firstPage);
     }
 
