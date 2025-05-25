@@ -102,7 +102,7 @@ class QuerydslProcessor(
 
         // Process properties
         entityClass.getAllProperties().forEach { property ->
-            processProperty(ctx, property)
+            processProperty(ctx, property, entityClass)
         }
 
         // Default static accessor
@@ -130,7 +130,7 @@ class QuerydslProcessor(
         return candidate
     }
 
-    private fun processProperty(ctx: ClassCtx, property: KSPropertyDeclaration) {
+    private fun processProperty(ctx: ClassCtx, property: KSPropertyDeclaration, entityClass: KSClassDeclaration) {
         val propertyName = property.simpleName.asString()
         val propertyType = property.type.resolve()
         val propertyTypeDeclaration = propertyType.declaration
@@ -138,11 +138,17 @@ class QuerydslProcessor(
         logger?.info("Processing property $propertyName of type ${propertyType.declaration.qualifiedName?.asString()}")
 
         // Skip transient properties
-        if (property.annotations.any { it.shortName.asString() == "Transient" }) {
+        if (propertyName.startsWith("_") ||
+            property.modifiers.contains(Modifier.JAVA_TRANSIENT) ||
+            property.annotations.any { it.shortName.asString() == "Transient" } ||
+            property.isInCompanionObject()
+        ) {
             return
         }
 
         ctx.fieldNames.add(propertyName)
+        val isInherited =
+            property.parentDeclaration?.qualifiedName?.asString() != entityClass.qualifiedName!!.asString()
 
         // Handle different property types
         when {
@@ -158,21 +164,31 @@ class QuerydslProcessor(
                         propertyType.isSetType() -> "Set"
                         else -> "Collection"
                     }
-                    ctx.append("    public final ${collectionType}Path<$elementTypeName, $qElementTypeName> $propertyName = this.<$elementTypeName, $qElementTypeName>create$collectionType(\"$propertyName\", $elementTypeName.class, $qElementTypeName.class, PathInits.DIRECT2);\n")
+                    val value = if (isInherited) " = _super.$propertyName;"
+                    else "this.<$elementTypeName, $qElementTypeName>create$collectionType(\"$propertyName\", $elementTypeName.class, $qElementTypeName.class, PathInits.DIRECT2)"
+
+                    ctx.append("    public final ${collectionType}Path<$elementTypeName, $qElementTypeName> $propertyName = $value;\n")
                 }
             }
             // Basic types
             propertyType.isBasicType() -> {
                 logger?.info("Property $propertyName is a basic type: ${propertyType.declaration.simpleName.asString()} (${propertyType.declaration.qualifiedName?.asString()}) - adding as a simple path")
                 val pathType = getPathTypeForBasicType(propertyType)
-                ctx.append("    public final $pathType $propertyName = createSimple(\"$propertyName\", ${propertyType.declaration.qualifiedName?.asString()}.class);\n")
+                val value = if (isInherited) "= _super.$propertyName;"
+                else "createSimple(\"$propertyName\", ${propertyType.declaration.qualifiedName?.asString()}.class);"
+                ctx.append("    public final $pathType $propertyName $value\n")
             }
             // Entity references
             propertyTypeDeclaration is KSClassDeclaration && propertyTypeDeclaration.annotations.any { it.shortName.asString() == "Entity" } -> {
                 val referencedEntityName = propertyTypeDeclaration.simpleName.asString()
                 val qReferencedEntityName = "Q$referencedEntityName"
-                ctx.append("    public final $qReferencedEntityName $propertyName;\n")
-                ctx.singularReferences.add(propertyName to propertyType)
+                val value = if (isInherited) " = _super.$propertyName;" else ""
+
+                ctx.append("    public final $qReferencedEntityName ${propertyName}${value};\n")
+
+                if (!isInherited) {
+                    ctx.singularReferences.add(propertyName to propertyType)
+                }
             }
             // Other types
             else -> {
@@ -180,6 +196,10 @@ class QuerydslProcessor(
                 ctx.append("    public final SimplePath<${propertyTypeDeclaration.simpleName.asString()}> $propertyName = createSimple(\"$propertyName\", ${propertyTypeDeclaration.simpleName.asString()}.class);\n")
             }
         }
+    }
+
+    fun KSPropertyDeclaration.isInCompanionObject(): Boolean {
+        return (parentDeclaration as? KSClassDeclaration)?.isCompanionObject == true
     }
 
     private fun generateConstructors(ctx: ClassCtx, className: String, qClassName: String) {
@@ -281,6 +301,7 @@ class QuerydslProcessor(
         fun append(lines: String) {
             sb.append(lines + "\n")
         }
+
         override fun toString(): String = sb.toString()
     }
 
