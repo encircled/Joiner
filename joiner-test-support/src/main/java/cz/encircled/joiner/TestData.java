@@ -123,10 +123,12 @@ public class TestData {
         if (withAddresses) {
             Address address = new Address();
             address.setName("user" + index + "street1");
+            address.setCity("user" + index + "city");
             address.setUser(user);
 
             Address address2 = new Address();
             address2.setName("user" + index + "street2");
+            address2.setCity("user" + index + "city");
             address2.setUser(user);
             entityManager.persist(address);
             entityManager.persist(address2);

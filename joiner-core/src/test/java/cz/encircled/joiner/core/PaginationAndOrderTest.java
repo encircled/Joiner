@@ -110,10 +110,11 @@ public abstract class PaginationAndOrderTest extends AbstractTest {
 
     @Test
     public void testNestedPropertyOrdering() {
-        List<Group> groups = joiner.find(Q.from(QGroup.group)
+        List<Address> addresses = joiner.find(Q.from(QAddress.address)
                 .joins(QUser.user1)
-                .asc(QGroup.group.users.any().name)
+                .asc(QUser.user1.name)
         );
+        assertTrue(isSorted(addresses.stream().map(Address::getUser).toList(), false));
     }
 
     @Test

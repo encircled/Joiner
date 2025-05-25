@@ -11,11 +11,7 @@ import cz.encircled.joiner.query.QueryOrder;
 import cz.encircled.joiner.query.join.JoinDescription;
 import jakarta.persistence.Entity;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Custom serializer for creating a JPQL string from a JoinerQuery.
@@ -26,9 +22,17 @@ import java.util.Map;
 public class JoinerJPQLSerializer {
 
     private final StringBuilder query = new StringBuilder();
-    private final List<Object> constants = new ArrayList<>();
+    private final List<Object> constants;
     private final Map<Object, String> constantToLabel = new HashMap<>();
     private final String constantPrefix = "a";
+
+    public JoinerJPQLSerializer() {
+        this(new ArrayList<>());
+    }
+
+    public JoinerJPQLSerializer(List<Object> constants) {
+        this.constants = constants;
+    }
 
     /**
      * Serialize the given query to a JPQL string.
@@ -42,6 +46,19 @@ public class JoinerJPQLSerializer {
         constants.clear();
         constantToLabel.clear();
 
+        serializeJoinerQuery(joinerQuery, isCount);
+
+        return query.toString();
+    }
+
+    /**
+     * Helper method to serialize a JoinerQuery to a StringBuilder.
+     * This is used by both the main serialize method and when serializing subqueries.
+     *
+     * @param joinerQuery the query to serialize
+     * @param isCount     whether this is a count query
+     */
+    private void serializeJoinerQuery(JoinerQuery<?, ?> joinerQuery, boolean isCount) {
         if (isCount) {
             query.append("select count(");
             query.append(joinerQuery.getFrom().getMetadata().getName());
@@ -64,8 +81,6 @@ public class JoinerJPQLSerializer {
         appendGroupBy(joinerQuery);
         appendHaving(joinerQuery);
         appendOrderBy(joinerQuery);
-
-        return query.toString();
     }
 
     /**
@@ -159,6 +174,30 @@ public class JoinerJPQLSerializer {
     }
 
     /**
+     * Serialize a subquery to a JPQL string.
+     * This method reuses the serializeJoinerQuery method to avoid code duplication.
+     * It also ensures that "fetch" is not used in subqueries, as it's not allowed.
+     *
+     * @param subQuery the subquery to serialize
+     * @return the serialized subquery string
+     */
+    private String serializeSubQuery(JoinerQuery<?, ?> subQuery) {
+        // Create a copy of the subquery with fetch set to false for all joins
+        JoinerQuery<?, ?> subQueryCopy = subQuery.copy();
+        for (JoinDescription join : subQueryCopy.getJoins()) {
+            join.fetch(false);
+            if (join.getChildren() != null) {
+                for (JoinDescription nestedJoin : join.getChildren()) {
+                    nestedJoin.fetch(false);
+                }
+            }
+        }
+
+        serializeJoinerQuery(subQueryCopy, subQueryCopy.isCount());
+        return query.toString();
+    }
+
+    /**
      * Get the list of constants used in the query.
      *
      * @return the list of constants
@@ -241,7 +280,7 @@ public class JoinerJPQLSerializer {
         if (path != null) {
             query.append(serializeExpression(path));
         } else {
-            // If path is null, use the join's alias or a default value
+            // If the path is null, use the join's alias or a default value
             query.append(join.getAlias() != null ? join.getAlias().toString() : "unknown");
         }
 
@@ -321,6 +360,12 @@ public class JoinerJPQLSerializer {
             return path.getMetadata().getName();
         }
 
+        // For subqueries, we serialize the subquery
+        if (expression instanceof cz.encircled.joiner.query.JoinerQuery) {
+            cz.encircled.joiner.query.JoinerQuery<?, ?> subQuery = (cz.encircled.joiner.query.JoinerQuery<?, ?>) expression;
+            return "(" + new JoinerJPQLSerializer(constants).serializeSubQuery(subQuery) + ")";
+        }
+
         // For operations, we handle the operator and operands
         if (expression instanceof Operation) {
             Operation<?> operation = (Operation<?>) expression;
@@ -334,45 +379,35 @@ public class JoinerJPQLSerializer {
                 String right = serializeExpression(args.get(1));
 
                 // Special handling for common operators
-                switch (operator) {
-                    case "EQ":
-                        return left + " = " + right;
-                    case "NE":
-                        return left + " <> " + right;
-                    case "GT":
-                        return left + " > " + right;
-                    case "GE":
-                        return left + " >= " + right;
-                    case "LT":
-                        return left + " < " + right;
-                    case "LE":
-                        return left + " <= " + right;
-                    case "AND":
-                        return left + " and " + right;
-                    case "OR":
-                        return left + " or " + right;
-                    case "LIKE":
-                        return left + " like " + right;
-                    case "IN":
-                        return left + " in " + right;
-                    default:
-                        return left + " " + operator.toLowerCase() + " " + right;
-                }
+                return switch (operator) {
+                    case "EQ" -> left + " = " + right;
+                    case "NE" -> left + " <> " + right;
+                    case "GT" -> left + " > " + right;
+                    case "GE" -> left + " >= " + right;
+                    case "LT" -> left + " < " + right;
+                    case "LE" -> left + " <= " + right;
+                    case "AND" -> left + " and " + right;
+                    case "OR" -> left + " or " + right;
+                    case "LIKE" -> left + " like " + right;
+                    case "IN" -> left + " in " + right;
+                    default -> left + " " + operator.toLowerCase() + " " + right;
+                };
             } else if (args.size() == 1) {
                 // Unary operation (e.g., not a)
                 String arg = serializeExpression(args.get(0));
 
                 // Special handling for common operators
-                switch (operator) {
-                    case "NOT":
-                        return "not " + arg;
-                    case "IS_NULL":
-                        return arg + " is null";
-                    case "IS_NOT_NULL":
-                        return arg + " is not null";
-                    default:
-                        return operator.toLowerCase() + "(" + arg + ")";
-                }
+                return switch (operator) {
+                    case "NOT" -> "not " + arg;
+                    case "IS_NULL" -> arg + " is null";
+                    case "IS_NOT_NULL" -> arg + " is not null";
+                    case "AVG_AGG" -> "avg(" + arg + ")";
+                    case "COUNT_AGG" -> "count(" + arg + ")";
+                    case "MAX_AGG" -> "max(" + arg + ")";
+                    case "MIN_AGG" -> "min(" + arg + ")";
+                    case "SUM_AGG" -> "sum(" + arg + ")";
+                    default -> operator.toLowerCase() + "(" + arg + ")";
+                };
             } else {
                 // Function call or other operation
                 StringBuilder sb = new StringBuilder();

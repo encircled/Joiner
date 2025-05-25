@@ -9,6 +9,7 @@ import cz.encircled.joiner.query.JoinerQuery;
 import cz.encircled.joiner.query.Q;
 import cz.encircled.joiner.query.join.J;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
@@ -166,4 +167,122 @@ public class JoinerJPQLSerializerTest {
         assertEquals("John", constants.get(0));
         assertEquals(10L, constants.get(1));
     }
+
+    @Test
+    public void testAvgFunction() {
+        // Create a query with avg function in projection
+        JoinerQuery<?, ?> query = Q.select(address.id.avg()).from(address).groupBy(address.user);
+
+        // Serialize the query
+        String jpql = serializer.serialize(query, false);
+        System.out.println("testAvgFunction JPQL: " + jpql);
+
+        // Verify that the avg function is correctly serialized
+        assertTrue(jpql.contains("select distinct avg(address.id)"));
+        assertTrue(jpql.contains("group by address.user"));
+    }
+
+    @Nested
+    class FunctionProjection {
+        @Test
+        public void testCountFunction() {
+            // Create a query with count function in projection
+            JoinerQuery<?, ?> query = Q.select(address.id.count()).from(address).groupBy(address.user);
+
+            // Serialize the query
+            String jpql = serializer.serialize(query, false);
+            System.out.println("testCountFunction JPQL: " + jpql);
+
+            // Verify that the count function is correctly serialized
+            assertTrue(jpql.contains("select distinct count(address.id)"));
+            assertTrue(jpql.contains("group by address.user"));
+        }
+
+        @Test
+        public void testMaxFunction() {
+            // Create a query with max function in a projection
+            JoinerQuery<?, ?> query = Q.select(address.id.max()).from(address).groupBy(address.user);
+
+            // Serialize the query
+            String jpql = serializer.serialize(query, false);
+            System.out.println("testMaxFunction JPQL: " + jpql);
+
+            // Verify that the max function is correctly serialized
+            assertTrue(jpql.contains("select distinct max(address.id)"));
+            assertTrue(jpql.contains("group by address.user"));
+        }
+
+        @Test
+        public void testMinFunction() {
+            // Create a query with min function in a projection
+            JoinerQuery<?, ?> query = Q.select(address.id.min()).from(address).groupBy(address.user);
+
+            // Serialize the query
+            String jpql = serializer.serialize(query, false);
+            System.out.println("testMinFunction JPQL: " + jpql);
+
+            // Verify that the min function is correctly serialized
+            assertTrue(jpql.contains("select distinct min(address.id)"));
+            assertTrue(jpql.contains("group by address.user"));
+        }
+
+        @Test
+        public void testSumFunction() {
+            // Create a query with sum function in a projection
+            JoinerQuery<?, ?> query = Q.select(address.id.sum()).from(address).groupBy(address.user);
+
+            // Serialize the query
+            String jpql = serializer.serialize(query, false);
+            System.out.println("testSumFunction JPQL: " + jpql);
+
+            // Verify that the sum function is correctly serialized
+            assertTrue(jpql.contains("select distinct sum(address.id)"));
+            assertTrue(jpql.contains("group by address.user"));
+        }
+
+        @Test
+        public void testFunctionInHaving() {
+            // Create a query with a function in having clause
+            JoinerQuery<?, ?> query = Q.select(address.id.avg())
+                    .from(address)
+                    .groupBy(address.user)
+                    .having(address.id.count().gt(2));
+
+            // Serialize the query
+            String jpql = serializer.serialize(query, false);
+            System.out.println("testFunctionInHaving JPQL: " + jpql);
+
+            // Verify that the function in having clause is correctly serialized
+            assertTrue(jpql.contains("select distinct avg(address.id)"));
+            assertTrue(jpql.contains("group by address.user"));
+            assertTrue(jpql.contains("having count(address.id) > ?"));
+        }
+    }
+
+    @Nested
+    class Subquery {
+        @Test
+        public void testSubQueryInPredicate() {
+            JoinerQuery<?, ?> query = Q.from(user)
+                    .where(user.id.eq(2L).or(user.id.in(Q.select(address.user.id).from(address).where(address.id.eq(1L)))));
+
+            String jpql = serializer.serialize(query, false);
+            assertEquals("select distinct user1 from User user1  where user1.id = ?1 or user1.id in (select distinct address.user.id from Address address  where address.id = ?2)", jpql);
+            assertEquals(2, serializer.getConstants().size());
+        }
+
+        @Test
+        public void testNestedSubQueryInPredicate() {
+            JoinerQuery<?, ?> query = Q.from(user)
+                    .where(user.id.ne(Q.select(user.id.max()).from(user)));
+
+            String jpql = serializer.serialize(query, false);
+            System.out.println("testNestedSubQueryInPredicate JPQL: " + jpql);
+
+            assertTrue(jpql.contains("select distinct user1 from"));
+            assertTrue(jpql.contains("where user1.id <> ("));
+            assertTrue(jpql.contains("select distinct max(user1.id) from"));
+        }
+    }
+
 }

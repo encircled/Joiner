@@ -1,6 +1,7 @@
 package cz.encircled.joiner.core;
 
 import com.querydsl.core.types.*;
+import com.querydsl.jpa.JPAQueryBase;
 import com.querydsl.jpa.JPQLQuery;
 import com.querydsl.jpa.impl.AbstractJPAQuery;
 import cz.encircled.joiner.core.vendor.EclipselinkRepository;
@@ -24,6 +25,7 @@ import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -105,7 +107,19 @@ public class Joiner {
         if (request.isCount()) {
             result = (List<R>) Collections.singletonList(query.fetchCount());
         } else {
-            result = joinerVendorRepository.getResultList(request, getJoinerProperties(), entityManager);
+            try {
+                Method m = JPAQueryBase.class.getDeclaredMethod("serialize", boolean.class);
+                m.setAccessible(true);
+                System.out.println("\nQDSL:\n" + m.invoke(query, false) + "\n\n");
+            } catch (Exception e) {
+
+            }
+            boolean skip = false;
+            if (skip) {
+                result = query.fetch();
+            } else {
+                result = joinerVendorRepository.getResultList(request, getJoinerProperties(), entityManager);
+            }
         }
 
         for (QueryFeature queryFeature : getQueryFeatures(request)) {
@@ -115,14 +129,14 @@ public class Joiner {
         return result;
     }
 
-    public <I, T extends Collection<I>> T save(T entities)  {
+    public <I, T extends Collection<I>> T save(T entities) {
         for (Object entity : entities) {
             save(entity);
         }
         return entities;
     }
 
-    public <T> T save(T entity)  {
+    public <T> T save(T entity) {
         entityManager.persist(entity);
         return entity;
     }

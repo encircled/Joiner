@@ -40,7 +40,27 @@ public class HibernateRepository extends AbstractVendorRepository implements Joi
     public <T> List<T> getResultList(JoinerQuery<?, T> request, JoinerProperties joinerProperties, EntityManager entityManager) {
         JoinerJPQLSerializer serializer = new JoinerJPQLSerializer();
         String queryString = serializer.serialize(request, request.isCount());
-        jakarta.persistence.Query query = entityManager.createQuery(queryString);
+        System.out.println("\nJoiner:\n" + queryString + "\n");
+
+        boolean isStateless = request.isStatelessSession() != null ? request.isStatelessSession() : joinerProperties.useStatelessSessions;
+        jakarta.persistence.Query query;
+        if (isStateless) {
+            request.setStatelessSession(true);
+            StatelessSession session = entityManager.unwrap(Session.class).getSessionFactory().openStatelessSession();
+            query = session.createQuery(queryString);
+            for (Map.Entry<String, List<Object>> entry : request.getHints().entrySet()) {
+                for (Object value : entry.getValue()) {
+                    query.setHint(entry.getKey(), value);
+                }
+            }
+            for (Map.Entry<String, List<Object>> entry : joinerProperties.defaultHints.entrySet()) {
+                for (Object value : entry.getValue()) {
+                    query.setHint(entry.getKey(), value);
+                }
+            }
+        } else {
+            query = entityManager.createQuery(queryString);
+        }
 
         // Set parameters from the serializer's constants list
         List<Object> constants = serializer.getConstants();
