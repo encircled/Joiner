@@ -211,33 +211,44 @@ public class JoinerJPQLSerializer {
         Collection<JoinDescription> joins = joinerQuery.getJoins();
         if (joins != null && !joins.isEmpty()) {
             for (JoinDescription join : joins) {
-                query.append(join.getJoinType() == JoinType.LEFTJOIN ? " left join " : " join ");
-                if (join.isFetch()) {
-                    query.append("fetch ");
-                }
+                appendJoin(join);
 
-                // Handle different path types
-                Expression<?> path = null;
-                if (join.isCollectionPath()) {
-                    path = join.getCollectionPath();
-                } else {
-                    path = join.getSingularPath();
-                }
-
-                if (path != null) {
-                    query.append(serializeExpression(path));
-                } else {
-                    // If path is null, use the join's alias or a default value
-                    query.append(join.getAlias() != null ? join.getAlias().toString() : "unknown");
-                }
-
-                if (join.getAlias() != null) {
-                    query.append(" as ").append(join.getAlias());
-                }
-                if (join.getOn() != null) {
-                    query.append(" on ").append(serializeExpression(join.getOn()));
+                // Process nested joins recursively
+                if (join.getChildren() != null) {
+                    for (JoinDescription nestedJoin : join.getChildren()) {
+                        appendJoin(nestedJoin);
+                    }
                 }
             }
+        }
+    }
+
+    private void appendJoin(JoinDescription join) {
+        query.append(join.getJoinType() == JoinType.LEFTJOIN ? " left join " : " join ");
+        if (join.isFetch()) {
+            query.append("fetch ");
+        }
+
+        // Handle different path types
+        Expression<?> path = null;
+        if (join.isCollectionPath()) {
+            path = join.getCollectionPath();
+        } else {
+            path = join.getSingularPath();
+        }
+
+        if (path != null) {
+            query.append(serializeExpression(path));
+        } else {
+            // If path is null, use the join's alias or a default value
+            query.append(join.getAlias() != null ? join.getAlias().toString() : "unknown");
+        }
+
+        if (join.getAlias() != null) {
+            query.append(" as ").append(join.getAlias());
+        }
+        if (join.getOn() != null) {
+            query.append(" on ").append(serializeExpression(join.getOn()));
         }
     }
 
