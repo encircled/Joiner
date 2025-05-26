@@ -1,10 +1,7 @@
 package cz.encircled.joiner.core.vendor;
 
 import com.querydsl.core.QueryModifiers;
-import com.querydsl.core.types.EntityPath;
-import com.querydsl.core.types.Expression;
-import com.querydsl.core.types.FactoryExpression;
-import com.querydsl.core.types.Path;
+import com.querydsl.core.types.*;
 import com.querydsl.jpa.FactoryExpressionTransformer;
 import com.querydsl.jpa.HQLTemplates;
 import com.querydsl.jpa.JPQLQuery;
@@ -80,24 +77,11 @@ public class HibernateRepository extends AbstractVendorRepository implements Joi
             query.setFirstResult(request.getOffset());
         }
 
-        return (List<T>) query.getResultList();
-        /*if (query instanceof HibernateQueryWithSession<T> hq) {
-            try (hq.session) {
-                Query<T> jpaQuery = hq.createQuery();
-                for (Map.Entry<String, List<Object>> entry : request.getHints().entrySet()) {
-                    for (Object value : entry.getValue()) {
-                        jpaQuery.setHint(entry.getKey(), value);
-                    }
-                }
-                for (Map.Entry<String, List<Object>> entry : joinerProperties.defaultHints.entrySet()) {
-                    for (Object value : entry.getValue()) {
-                        jpaQuery.setHint(entry.getKey(), value);
-                    }
-                }
-                return jpaQuery.getResultList();
-            }
+        if (request.getReturnProjection() instanceof FactoryExpression) {
+            ((Query) query).setResultTransformer(new FactoryExpressionTransformer((FactoryExpression) request.getReturnProjection()));
         }
-        return super.getResultList(request, query, joinerProperties);*/
+
+        return query.getResultList();
     }
 
     @Override

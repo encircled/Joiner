@@ -1,11 +1,7 @@
 package cz.encircled.joiner.core;
 
-import com.querydsl.core.JoinType;
 import com.querydsl.core.QueryMetadata;
-import com.querydsl.core.types.Expression;
-import com.querydsl.core.types.Operation;
-import com.querydsl.core.types.Path;
-import com.querydsl.core.types.Predicate;
+import com.querydsl.core.types.*;
 import cz.encircled.joiner.query.JoinerQuery;
 import cz.encircled.joiner.query.QueryOrder;
 import cz.encircled.joiner.query.join.JoinDescription;
@@ -223,7 +219,18 @@ public class JoinerJPQLSerializer {
     private void appendProjection(JoinerQuery<?, ?> joinerQuery) {
         Expression<?> projection = joinerQuery.getReturnProjection();
         if (projection != null) {
-            query.append(serializeExpression(projection));
+            if (projection instanceof FactoryExpressionBase) {
+                List<Expression<?>> args = ((FactoryExpressionBase) projection).getArgs();
+                for (int i = 0; i < args.size(); i++) {
+                    if (i > 0) {
+                        query.append(", ");
+                    }
+                    query.append(serializeExpression(args.get(i)));
+                }
+
+            } else {
+                query.append(serializeExpression(projection));
+            }
         } else {
             query.append(joinerQuery.getFrom().getMetadata().getName());
         }
@@ -248,24 +255,30 @@ public class JoinerJPQLSerializer {
     }
 
     private void appendJoins(JoinerQuery<?, ?> joinerQuery) {
+        boolean disableFetchJoins = joinerQuery.getReturnProjection() instanceof QTuple;
         Collection<JoinDescription> joins = joinerQuery.getJoins();
         if (joins != null && !joins.isEmpty()) {
             for (JoinDescription join : joins) {
-                appendJoin(join);
+                appendJoin(join, disableFetchJoins);
 
                 // Process nested joins recursively
                 if (join.getChildren() != null) {
                     for (JoinDescription nestedJoin : join.getChildren()) {
-                        appendJoin(nestedJoin);
+                        appendJoin(nestedJoin, disableFetchJoins);
                     }
                 }
             }
         }
     }
 
-    private void appendJoin(JoinDescription join) {
-        query.append(join.getJoinType() == JoinType.LEFTJOIN ? " left join " : " join ");
-        if (join.isFetch()) {
+    private void appendJoin(JoinDescription join, boolean disableFetchJoins) {
+        switch (join.getJoinType()) {
+            case LEFTJOIN -> query.append(" left join ");
+            case RIGHTJOIN -> query.append(" right join ");
+            default -> query.append(" join ");
+        }
+
+        if (join.isFetch() && !disableFetchJoins) {
             query.append("fetch ");
         }
 

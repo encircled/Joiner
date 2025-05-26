@@ -43,6 +43,13 @@ public class JoinerJPQLSerializerTest {
     }
 
     @Test
+    public void testDtoProjection() {
+        JoinerQuery<?, ?> query = Q.select(ProjectionTest.class, user.name, user.id).from(user);
+        String jpql = serializer.serialize(query, false);
+        assertEquals("select distinct user1.name, user1.id from User user1 ", jpql);
+    }
+
+    @Test
     public void testBasicQueryWithCustomAlias() {
         QUser myUser = new QUser("my_user");
         JoinerQuery<?, ?> query = Q.select(myUser.name).from(myUser);
@@ -168,22 +175,23 @@ public class JoinerJPQLSerializerTest {
         assertEquals(10L, constants.get(1));
     }
 
-    @Test
-    public void testAvgFunction() {
-        // Create a query with avg function in projection
-        JoinerQuery<?, ?> query = Q.select(address.id.avg()).from(address).groupBy(address.user);
-
-        // Serialize the query
-        String jpql = serializer.serialize(query, false);
-        System.out.println("testAvgFunction JPQL: " + jpql);
-
-        // Verify that the avg function is correctly serialized
-        assertTrue(jpql.contains("select distinct avg(address.id)"));
-        assertTrue(jpql.contains("group by address.user"));
-    }
-
     @Nested
     class FunctionProjection {
+
+        @Test
+        public void testAvgFunction() {
+            // Create a query with avg function in projection
+            JoinerQuery<?, ?> query = Q.select(address.id.avg()).from(address).groupBy(address.user);
+
+            // Serialize the query
+            String jpql = serializer.serialize(query, false);
+            System.out.println("testAvgFunction JPQL: " + jpql);
+
+            // Verify that the avg function is correctly serialized
+            assertTrue(jpql.contains("select distinct avg(address.id)"));
+            assertTrue(jpql.contains("group by address.user"));
+        }
+
         @Test
         public void testCountFunction() {
             // Create a query with count function in projection
@@ -282,6 +290,12 @@ public class JoinerJPQLSerializerTest {
             assertTrue(jpql.contains("select distinct user1 from"));
             assertTrue(jpql.contains("where user1.id <> ("));
             assertTrue(jpql.contains("select distinct max(user1.id) from"));
+        }
+    }
+
+    public static class ProjectionTest {
+        public ProjectionTest(String name, Long id) {
+
         }
     }
 
