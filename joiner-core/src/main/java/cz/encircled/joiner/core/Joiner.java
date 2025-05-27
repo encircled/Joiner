@@ -9,7 +9,6 @@ import cz.encircled.joiner.exception.AliasMissingException;
 import cz.encircled.joiner.exception.JoinerException;
 import cz.encircled.joiner.exception.JoinerExceptions;
 import cz.encircled.joiner.query.JoinerQuery;
-import cz.encircled.joiner.query.JoinerQueryBase;
 import cz.encircled.joiner.query.QueryFeature;
 import cz.encircled.joiner.query.QueryOrder;
 import cz.encircled.joiner.query.join.J;
@@ -24,7 +23,6 @@ import org.slf4j.LoggerFactory;
 import java.lang.reflect.AnnotatedElement;
 import java.util.*;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import static cz.encircled.joiner.util.Assert.notNull;
 
@@ -34,7 +32,7 @@ import static cz.encircled.joiner.util.Assert.notNull;
  * In spring-based environment can be instantiated using spring JoinerConfiguration.
  * </p>
  * <p>
- * For repository-per-entity approach this class should not be accessed directly. Instead repositories can implement {@link JoinerRepository}.
+ * For repository-per-entity approach this class should not be accessed directly. Instead, repositories may implement {@link JoinerRepository}.
  * </p>
  *
  * @author Kisel on 26.01.2016.
@@ -130,7 +128,7 @@ public class Joiner {
 
         List<QueryFeature> queryFeatures = getQueryFeatures(request);
         for (QueryFeature feature : queryFeatures) {
-            request = doPreProcess(request, feature);
+            request = feature.before(request);
         }
 
         Set<Path<?>> usedAliases = new HashSet<>();
@@ -233,14 +231,6 @@ public class Joiner {
                 request.joins(joins);
             }
         }
-    }
-
-    private <T, R> Query doPostProcess(JoinerQuery<T, R> request, Query query, QueryFeature feature) {
-        return feature.after(request, query);
-    }
-
-    private <T, R> JoinerQuery<T, R> doPreProcess(JoinerQuery<T, R> request, QueryFeature feature) {
-        return feature.before(request);
     }
 
     private void addJoins(List<JoinDescription> joins, JoinerQuery<?, ?> request) {

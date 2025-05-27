@@ -25,8 +25,6 @@ public abstract class VendorRepository {
 
     public abstract <T> List<T> fetchResult(JoinerQuery<?, T> request, Query jpaQuery);
 
-    public abstract <T> List<T> getResultList(JoinerQuery<?, T> request, JoinerProperties joinerProperties, EntityManager entityManager);
-
     protected void setQueryParams(JoinerJPQLSerializer serializer, Query query, JoinerQuery<?, ?> request, JoinerProperties joinerProperties) {
         List<Object> constants = serializer.getConstants();
         for (int i = 0; i < constants.size(); i++) {
@@ -43,6 +41,10 @@ public abstract class VendorRepository {
         }
         if (request.getOffset() != null) {
             query.setFirstResult(request.getOffset());
+        }
+
+        if (request.getFlushMode() != null) {
+            query.setFlushMode(request.getFlushMode());
         }
 
         for (Map.Entry<String, List<Object>> hintValues : request.getHints().entrySet()) {

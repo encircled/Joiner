@@ -10,6 +10,7 @@ import cz.encircled.joiner.query.join.J;
 import cz.encircled.joiner.query.join.JoinDescription;
 import cz.encircled.joiner.util.Assert;
 import cz.encircled.joiner.util.JoinerUtils;
+import jakarta.persistence.FlushModeType;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -48,6 +49,13 @@ public class JoinerQueryBase<T, R> implements JoinerQuery<T, R>, JoinRoot, SubQu
     private Integer limit;
 
     private List<QueryOrder> orders = new ArrayList<>(2);
+
+    private FlushModeType flushMode;
+
+    private Boolean cacheable;
+    private String cacheRegion;
+
+    private Integer timeout;
 
     private boolean isCount;
 
@@ -367,6 +375,50 @@ public class JoinerQueryBase<T, R> implements JoinerQuery<T, R>, JoinRoot, SubQu
     }
 
     @Override
+    public FlushModeType getFlushMode() {
+        return flushMode;
+    }
+
+    @Override
+    public JoinerQuery<T, R> flushMode(FlushModeType flushMode) {
+        this.flushMode = flushMode;
+        return this;
+    }
+
+    @Override
+    public Boolean getCacheable() {
+        return cacheable;
+    }
+
+    @Override
+    public JoinerQuery<T, R> cacheable(Boolean cacheable) {
+        this.cacheable = cacheable;
+        return this;
+    }
+
+    @Override
+    public String getCacheRegion() {
+        return cacheRegion;
+    }
+
+    @Override
+    public JoinerQuery<T, R> cacheRegion(String cacheRegion) {
+        this.cacheRegion = cacheRegion;
+        return this;
+    }
+
+    @Override
+    public Integer getTimeout() {
+        return timeout;
+    }
+
+    @Override
+    public JoinerQuery<T, R> timeout(Integer timeout) {
+        this.timeout = timeout;
+        return this;
+    }
+
+    @Override
     public Boolean isStatelessSession() {
         return isStatelessSession;
     }
@@ -431,12 +483,6 @@ public class JoinerQueryBase<T, R> implements JoinerQuery<T, R>, JoinRoot, SubQu
     /*
      * SUB QUERY
      */
-
-    @Override
-    public void setSubQueryMetadata(QueryMetadata metadata) {
-        subQueryMetadata = metadata;
-    }
-
     @Override
     public QueryMetadata getMetadata() {
         // Might happen if a query is being compiled before execution (for instance, called toString)

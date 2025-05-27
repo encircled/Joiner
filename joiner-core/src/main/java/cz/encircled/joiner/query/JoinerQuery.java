@@ -6,6 +6,7 @@ import com.querydsl.core.types.*;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.CollectionPathBase;
 import cz.encircled.joiner.query.join.JoinDescription;
+import jakarta.persistence.FlushModeType;
 
 import java.util.Collection;
 import java.util.LinkedHashMap;
@@ -134,9 +135,23 @@ public interface JoinerQuery<T, R> extends JoinRoot, SubQueryExpression<R> {
 
     boolean isCount();
 
-    void setSubQueryMetadata(QueryMetadata metadata);
-
     Boolean isStatelessSession();
+
+    FlushModeType getFlushMode();
+
+    JoinerQuery<T, R> flushMode(FlushModeType flushMode);
+
+    Boolean getCacheable();
+
+    JoinerQuery<T, R> cacheable(Boolean cacheable);
+
+    String getCacheRegion();
+
+    Integer getTimeout();
+
+    JoinerQuery<T, R> timeout(Integer timeout);
+
+    JoinerQuery<T, R> cacheRegion(String cacheRegion);
 
     JoinerQuery<T, R> setStatelessSession(Boolean isStatelessSession);
 
