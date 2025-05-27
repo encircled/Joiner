@@ -173,7 +173,7 @@ public class Joiner {
 
         List<JoinDescription> joins = preprocessJoins(request, usedAliases);
 
-        addJoins(joins, query, request.getFrom(), request.getFrom().equals(request.getReturnProjection()));
+        addJoins(joins, query, request);
 
         addHints(request, query);
 
@@ -308,11 +308,13 @@ public class Joiner {
         }
     }
 
-    private void addJoins(List<JoinDescription> joins, JPQLQuery<?> query, EntityPath<?> rootPath, boolean doFetch) {
+    private void addJoins(List<JoinDescription> joins, JPQLQuery<?> query, JoinerQuery<?, ?> request) {
+        EntityPath<?> rootPath = request.getFrom();
+        boolean doFetch = request.getFrom().equals(request.getReturnProjection());
         for (JoinDescription join : joins) {
             joinerVendorRepository.addJoin(query, join);
             if (doFetch && join.isFetch()) {
-                joinerVendorRepository.addFetch(query, join, joins, rootPath);
+                joinerVendorRepository.addFetch(query, join, joins, rootPath, request);
             }
         }
     }

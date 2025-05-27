@@ -29,7 +29,7 @@ import java.util.Map;
 public class HibernateRepository extends AbstractVendorRepository implements JoinerVendorRepository {
 
     @Override
-    public void addFetch(JPQLQuery<?> query, JoinDescription joinDescription, Collection<JoinDescription> joins, EntityPath<?> rootPath) {
+    public void addFetch(JPQLQuery<?> query, JoinDescription joinDescription, Collection<JoinDescription> joins, EntityPath<?> rootPath, JoinerQuery<?, ?> request) {
         query.fetchJoin();
     }
 
