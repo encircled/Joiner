@@ -115,20 +115,11 @@ abstract class GenericHibernateReactiveJoiner(val emf: EntityManagerFactory) {
         query.limit?.apply { jpaQuery.maxResults = toInt() }
         query.offset?.apply { jpaQuery.firstResult = toInt() }
 
-        setConstants(jpaQuery, serializer.constantToLabel)
+        serializer.constants.forEachIndexed { i, v ->
+            jpaQuery.setParameter(i + 1, v)
+        }
 
         return jpaQuery
-    }
-
-    protected fun setConstants(
-        query: Stage.Query<*>,
-        constants: Map<Any?, String>,
-    ) {
-        for (entry in constants.entries) {
-            val key = entry.value
-            val value = entry.key
-            query.setParameter(Integer.valueOf(key.replace(constantPrefix, "")), value)
-        }
     }
 
     /**

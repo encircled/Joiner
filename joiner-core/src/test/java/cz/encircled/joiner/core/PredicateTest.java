@@ -26,13 +26,15 @@ public abstract class PredicateTest extends AbstractTest {
         List<User> result = joiner.find(Q.from(user1).where(user1.name.eq(name)));
         assertHasName(result, name);
 
-//        Address address = joiner.findOne(Q.from(QAddress.address).where(QAddress.address.name.eq(name + "city")));
-//        assertNotNull(address);
-//        assertEquals(name + "city", address.getCity());
+        Address address = joiner.findOne(Q.from(QAddress.address).where(QAddress.address.city.eq(name + "city")).limit(1));
+        assertNotNull(address);
+        assertEquals(name + "city", address.getCity());
     }
 
     @Test
     public void whereAppendTest() {
+        assertEquals(user1.name.eq("1"), Q.from(user1).orWhere(user1.name.eq("1")).getWhere());
+
         JoinerQuery<User, User> query = Q.from(user1);
         query.andWhere(user1.name.eq("1"));
 

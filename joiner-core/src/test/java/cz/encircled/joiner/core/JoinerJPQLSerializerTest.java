@@ -35,6 +35,12 @@ public class JoinerJPQLSerializerTest {
     }
 
     @Test
+    public void testToString() {
+        JoinerQuery<?, ?> query = Q.from(user).where(user.name.eq("John"));
+        assertEquals("select distinct user1 from User user1 where user1.name = ?1", query.toString());
+    }
+
+    @Test
     public void testBasicQuery() {
         JoinerQuery<?, ?> query = Q.from(user);
         String jpql = serializer.serialize(query);

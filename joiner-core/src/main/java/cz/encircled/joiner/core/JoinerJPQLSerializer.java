@@ -19,8 +19,6 @@ public class JoinerJPQLSerializer {
 
     private final StringBuilder query = new StringBuilder();
     private final List<Object> constants;
-    private final Map<Object, String> constantToLabel = new HashMap<>();
-    private static final String constantPrefix = "a";
 
     public JoinerJPQLSerializer() {
         this(new ArrayList<>());
@@ -39,7 +37,6 @@ public class JoinerJPQLSerializer {
     public String serialize(JoinerQuery<?, ?> joinerQuery) {
         query.setLength(0);
         constants.clear();
-        constantToLabel.clear();
 
         serializeJoinerQuery(joinerQuery);
 
@@ -102,15 +99,6 @@ public class JoinerJPQLSerializer {
      */
     public List<Object> getConstants() {
         return constants;
-    }
-
-    /**
-     * Get the map of constants to their labels.
-     *
-     * @return the map of constants to labels
-     */
-    public Map<Object, String> getConstantToLabel() {
-        return constantToLabel;
     }
 
     private void appendProjection(JoinerQuery<?, ?> joinerQuery) {
@@ -275,8 +263,6 @@ public class JoinerJPQLSerializer {
             } else {
                 constants.add(constant);
             }
-            String label = constantPrefix + constants.size();
-            constantToLabel.put(constants.get(constants.size() - 1), label);
             return "?" + constants.size();
         }
 
