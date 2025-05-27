@@ -70,7 +70,6 @@ public class JoinerJPQLSerializer {
 
         query.append("from ");
         appendFrom(joinerQuery);
-        query.append(" ");
 
         appendJoins(joinerQuery);
         appendWhere(joinerQuery);
@@ -275,11 +274,12 @@ public class JoinerJPQLSerializer {
     private void appendJoin(JoinDescription join, boolean disableFetchJoins) {
         switch (join.getJoinType()) {
             case LEFTJOIN -> query.append(" left join ");
+            case INNERJOIN -> query.append(" inner join ");
             case RIGHTJOIN -> query.append(" right join ");
             default -> query.append(" join ");
         }
 
-        if (join.isFetch() && !disableFetchJoins) {
+        if (join.isFetch() && !disableFetchJoins && join.getOn() == null) {
             query.append("fetch ");
         }
 
@@ -299,7 +299,7 @@ public class JoinerJPQLSerializer {
         }
 
         if (join.getAlias() != null) {
-            query.append(" as ").append(join.getAlias());
+            query.append(" ").append(join.getAlias());
         }
         if (join.getOn() != null) {
             query.append(" on ").append(serializeExpression(join.getOn()));

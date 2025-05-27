@@ -13,7 +13,7 @@ public class QueryOrder<T> {
 
     private final boolean isAsc;
 
-    private final Expression<T> target;
+    private Expression<T> target;
 
     public QueryOrder(boolean isAsc, Expression<T> target) {
         this.isAsc = isAsc;
@@ -26,6 +26,10 @@ public class QueryOrder<T> {
 
     public Expression<T> getTarget() {
         return target;
+    }
+
+    public void setTarget(Expression<T> target) {
+        this.target = target;
     }
 
     @Override

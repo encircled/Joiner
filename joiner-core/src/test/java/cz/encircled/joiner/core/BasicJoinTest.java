@@ -354,6 +354,7 @@ public abstract class BasicJoinTest extends AbstractTest {
         assertQueryContains("userStatus_on_user1.id is not null", query);
     }
 
+    // select distinct group1 from Group group1 left join fetch group1.statuses as groupStatus left join fetch group1.users as user1 left join fetch user1.statuses as userStatus_on_user1 on userStatus_on_user1.id is not null
     @Test
     public void testPredicateAliasInJoinOn() {
         JoinerQuery<Group, Group> query = Q.from(QGroup.group)

@@ -6,10 +6,13 @@ import com.querydsl.core.types.Expression;
 import com.querydsl.core.types.FactoryExpression;
 import cz.encircled.joiner.core.JoinerJPQLSerializer;
 import cz.encircled.joiner.core.JoinerProperties;
+import cz.encircled.joiner.exception.JoinerException;
 import cz.encircled.joiner.query.JoinerQuery;
 import cz.encircled.joiner.query.join.JoinDescription;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.Query;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -18,7 +21,9 @@ import java.util.List;
 /**
  * @author Vlad on 13-Sep-16.
  */
-public class EclipselinkRepository extends AbstractVendorRepository implements JoinerVendorRepository {
+public class EclipselinkRepository extends VendorRepository {
+
+    private static final Logger log = LoggerFactory.getLogger(EclipselinkRepository.class);
 
     private static final int MAX_NESTED_JOIN_DEPTH = 7;
     private static final String DOT_ESCAPED = "\\.";
@@ -33,14 +38,59 @@ public class EclipselinkRepository extends AbstractVendorRepository implements J
 
     }
 
+    @Override
+    public JoinerJpaQuery createQuery(JoinerQuery<?, ?> request, JoinerProperties joinerProperties, EntityManager entityManager) {
+        if (joinerProperties.useStatelessSessions) {
+            throw new IllegalStateException("Stateless session is not supported by Ecliselink!");
+        }
+
+        JoinerJPQLSerializer serializer = new JoinerJPQLSerializer();
+        String queryString = serializer.serialize(request, request.isCount());
+
+        if (queryString.contains("right join")) {
+            throw new JoinerException("Right join is not supported in EclipseLink!");
+        }
+
+        Query jpaQuery = entityManager.createQuery(queryString);
+        setQueryParams(serializer, jpaQuery, request, joinerProperties);
+
+        return new JoinerJpaQuery(jpaQuery, queryString,null);
+    }
+
+    @Override
+    public <T> List<T> fetchResult(JoinerQuery<?, T> request, Query jpaQuery) {
+        Expression<T> projection = request.getReturnProjection();
+        if (projection instanceof FactoryExpression) {
+            FactoryExpression fe = (FactoryExpression) projection;
+            List<?> results = jpaQuery.getResultList();
+            List<Object> rv = new ArrayList(results.size());
+
+            for (Object o : results) {
+                if (o != null) {
+                    if (!o.getClass().isArray()) {
+                        o = new Object[]{o};
+                    }
+
+                    rv.add(fe.newInstance((Object[]) o));
+                } else {
+                    rv.add(fe.newInstance(new Object[]{null}));
+                }
+            }
+
+            return (List<T>) rv;
+        } else {
+            return jpaQuery.getResultList();
+        }
+    }
+
     public <T> List<T> getResultList(JoinerQuery<?, T> request, JoinerProperties joinerProperties, EntityManager entityManager) {
         JoinerJPQLSerializer serializer = new JoinerJPQLSerializer();
         String queryString = serializer.serialize(request, request.isCount());
-        System.out.println("\nJoiner:\n" + queryString + "\n");
+        log.debug("Joiner query: {}", queryString);
 
         Query jpaQuery = entityManager.createQuery(queryString);
 
-        setQueryParams(serializer, jpaQuery, request);
+        setQueryParams(serializer, jpaQuery, request, joinerProperties);
 
         Expression<T> projection = request.getReturnProjection();
         if (projection instanceof FactoryExpression<?> fe) {

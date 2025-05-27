@@ -62,11 +62,7 @@ public abstract class PaginationAndOrderTest extends AbstractTest {
                 .joins(J.inner(QGroup.group).nested(J.inner(new QUser("test"))))
                 .asc(new QUser("test").name);
 
-        assertQueryContains("select distinct status\n" +
-                "from Status status\n" +
-                "  inner join status.group as group1\n" +
-                "  inner join group1.users as test_on_group1\n" +
-                "order by test_on_group1.name asc", query);
+        assertQueryContains("select distinct status from Status status inner join status.group group1 inner join group1.users test_on_group1 order by test_on_group1.name asc", query);
     }
 
     @Test

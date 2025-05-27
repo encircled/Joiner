@@ -439,7 +439,7 @@ public class JoinerQueryBase<T, R> implements JoinerQuery<T, R>, JoinRoot, SubQu
 
     @Override
     public QueryMetadata getMetadata() {
-        // Might happen if a query is being compiled before execution (for instance called toString)
+        // Might happen if a query is being compiled before execution (for instance, called toString)
         if (subQueryMetadata == null) {
             DefaultQueryMetadata metadata = new DefaultQueryMetadata();
             metadata.addWhere(where);

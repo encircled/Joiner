@@ -3,11 +3,13 @@ package cz.encircled.joiner.core;
 import com.querydsl.core.types.*;
 import cz.encircled.joiner.core.vendor.EclipselinkRepository;
 import cz.encircled.joiner.core.vendor.HibernateRepository;
-import cz.encircled.joiner.core.vendor.JoinerVendorRepository;
+import cz.encircled.joiner.core.vendor.JoinerJpaQuery;
+import cz.encircled.joiner.core.vendor.VendorRepository;
 import cz.encircled.joiner.exception.AliasMissingException;
 import cz.encircled.joiner.exception.JoinerException;
 import cz.encircled.joiner.exception.JoinerExceptions;
 import cz.encircled.joiner.query.JoinerQuery;
+import cz.encircled.joiner.query.JoinerQueryBase;
 import cz.encircled.joiner.query.QueryFeature;
 import cz.encircled.joiner.query.QueryOrder;
 import cz.encircled.joiner.query.join.J;
@@ -22,6 +24,7 @@ import org.slf4j.LoggerFactory;
 import java.lang.reflect.AnnotatedElement;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static cz.encircled.joiner.util.Assert.notNull;
 
@@ -43,7 +46,7 @@ public class Joiner {
 
     private final EntityManager entityManager;
 
-    private final JoinerVendorRepository joinerVendorRepository;
+    private final VendorRepository vendorRepository;
 
     private JoinGraphRegistry joinGraphRegistry;
 
@@ -65,7 +68,7 @@ public class Joiner {
         this.aliasResolver = new DefaultAliasResolver(entityManager);
 
         String implName = entityManager.getDelegate().getClass().getName();
-        this.joinerVendorRepository = implName.startsWith("org.hibernate") ? new HibernateRepository() : new EclipselinkRepository();
+        this.vendorRepository = implName.startsWith("org.hibernate") ? new HibernateRepository() : new EclipselinkRepository();
     }
 
     public Joiner withProperties(JoinerProperties props) {
@@ -86,7 +89,14 @@ public class Joiner {
     public <T, R> List<R> find(JoinerQuery<T, R> request) {
         toJPAQuery(request);
 
-        List<R> result = joinerVendorRepository.getResultList(request, getJoinerProperties(), entityManager);
+        List<R> result;
+        try (JoinerJpaQuery jpaQuery = vendorRepository.createQuery(request, joinerProperties, entityManager)) {
+            Query finalQuery = jpaQuery.jpaQuery;
+            for (QueryFeature feature : getQueryFeatures(request)) {
+                finalQuery = feature.after(request, finalQuery);
+            }
+            result = vendorRepository.fetchResult(request, finalQuery);
+        }
 
         for (QueryFeature queryFeature : getQueryFeatures(request)) {
             queryFeature.postLoad(request, result);
@@ -105,6 +115,11 @@ public class Joiner {
     public <T> T save(T entity) {
         entityManager.persist(entity);
         return entity;
+    }
+
+    public <T, R> JoinerJpaQuery toJPAQuery2(JoinerQuery<T, R> request) {
+        toJPAQuery(request);
+        return vendorRepository.createQuery(request, joinerProperties, entityManager);
     }
 
     public <T, R> void toJPAQuery(JoinerQuery<T, R> request) {
@@ -128,10 +143,6 @@ public class Joiner {
         applyPredicates(request, usedAliases, joins);
 
         applyPaging(request, usedAliases, joins);
-
-        for (QueryFeature feature : queryFeatures) {
-            doPostProcess(request, null, feature);
-        }
     }
 
     private <T, R> List<QueryFeature> getQueryFeatures(JoinerQuery<T, R> request) {
@@ -193,19 +204,14 @@ public class Joiner {
     private <T, R> void applyPaging(JoinerQuery<T, R> request, Set<Path<?>> usedAliases, List<JoinDescription> joins) {
         Map<AnnotatedElement, List<JoinDescription>> grouped = joins.stream()
                 .collect(Collectors.groupingBy(j -> j.getOriginalAlias().getAnnotatedElement()));
-        for (QueryOrder queryOrder : request.getOrder()) {
+
+        for (QueryOrder<?> queryOrder : request.getOrder()) {
             if (queryOrder.getTarget() instanceof Path<?>) {
-                Path<?> path = predicateAliasResolver.resolvePath((Path<?>) queryOrder.getTarget(), grouped, usedAliases);
-                queryOrder = new QueryOrder(queryOrder.isAsc(), path);
+                Path path = predicateAliasResolver.resolvePath((Path<?>) queryOrder.getTarget(), grouped, usedAliases);
+                queryOrder.setTarget(path);
             }
-
             checkAliasesArePresent(queryOrder.getTarget(), usedAliases);
-//            request.orderBy(transformOrder(queryOrder)); TODO
         }
-    }
-
-    private <T extends Comparable<?>> OrderSpecifier<T> transformOrder(QueryOrder<T> queryOrder) {
-        return new OrderSpecifier<>(queryOrder.isAsc() ? Order.ASC : Order.DESC, queryOrder.getTarget());
     }
 
     private <T, R> void setJoinsFromJoinsGraphs(JoinerQuery<T, R> request) {
@@ -242,7 +248,7 @@ public class Joiner {
         boolean doFetch = request.getFrom().equals(request.getReturnProjection());
         for (JoinDescription join : joins) {
             if (doFetch && join.isFetch()) {
-                joinerVendorRepository.addFetch(join, joins, rootPath, request);
+                vendorRepository.addFetch(join, joins, rootPath, request);
             }
         }
     }
