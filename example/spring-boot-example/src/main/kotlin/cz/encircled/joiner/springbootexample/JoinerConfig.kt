@@ -2,6 +2,7 @@ package cz.encircled.joiner.springbootexample
 
 import cz.encircled.joiner.core.Joiner
 import cz.encircled.joiner.kotlin.JoinerKt
+import jakarta.annotation.PostConstruct
 import jakarta.persistence.EntityManager
 import jakarta.persistence.PersistenceContext
 import org.springframework.context.annotation.Bean

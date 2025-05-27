@@ -5,6 +5,7 @@ import cz.encircled.joiner.kotlin.JoinerKtOps.eq
 import cz.encircled.joiner.kotlin.JoinerKtQueryBuilder.all
 import cz.encircled.joiner.kotlin.JoinerKtQueryBuilder.from
 import cz.encircled.joiner.springbootexample.Employment
+import cz.encircled.joiner.springbootexample.EmploymentDto
 import cz.encircled.joiner.springbootexample.QEmployment.*
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.web.bind.annotation.GetMapping
@@ -34,9 +35,5 @@ class EmploymentController {
     fun getNames(): List<String> {
         return joiner.find(employment.name from employment)
     }
-
-    data class EmploymentDto(val id: Long, val name: String, val customer: String?)
-
-    fun Employment.toDto() = EmploymentDto(id!!, name!!, customer?.name)
 
 }
