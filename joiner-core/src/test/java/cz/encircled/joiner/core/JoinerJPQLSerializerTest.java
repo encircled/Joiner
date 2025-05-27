@@ -127,6 +127,62 @@ public class JoinerJPQLSerializerTest {
             assertConstants(serializer, "J%");
         }
 
+        @Test
+        public void startsWithIgnoreCase() {
+            JoinerQuery<?, ?> query = Q.from(user).where(user.name.startsWithIgnoreCase("J"));
+            String jpql = serializer.serialize(query, false);
+            assertEquals("select distinct user1 from User user1  where user1.name like ?1", jpql);
+            assertConstants(serializer, "J%");
+        }
+
+        @Test
+        public void endsWith() {
+            JoinerQuery<?, ?> query = Q.from(user).where(user.name.endsWith("hn"));
+            String jpql = serializer.serialize(query, false);
+            assertEquals("select distinct user1 from User user1  where user1.name like ?1", jpql);
+            assertConstants(serializer, "%hn");
+        }
+
+        @Test
+        public void endsWithIgnoreCase() {
+            JoinerQuery<?, ?> query = Q.from(user).where(user.name.endsWithIgnoreCase("hn"));
+            String jpql = serializer.serialize(query, false);
+            assertEquals("select distinct user1 from User user1  where user1.name like ?1", jpql);
+            assertConstants(serializer, "%hn");
+        }
+
+        @Test
+        public void contains() {
+            JoinerQuery<?, ?> query = Q.from(user).where(user.name.contains("oh"));
+            String jpql = serializer.serialize(query, false);
+            assertEquals("select distinct user1 from User user1  where user1.name like ?1", jpql);
+            assertConstants(serializer, "%oh%");
+        }
+
+        @Test
+        public void containsIgnoreCase() {
+            JoinerQuery<?, ?> query = Q.from(user).where(user.name.containsIgnoreCase("oh"));
+            String jpql = serializer.serialize(query, false);
+            assertEquals("select distinct user1 from User user1  where user1.name like ?1", jpql);
+            assertConstants(serializer, "%oh%");
+        }
+
+        @Test
+        public void like() {
+            JoinerQuery<?, ?> query = Q.from(user).where(user.name.like("J%n"));
+            String jpql = serializer.serialize(query, false);
+            assertEquals("select distinct user1 from User user1  where user1.name like ?1", jpql);
+            assertConstants(serializer, "J%n");
+        }
+
+        @Test
+        public void likeIgnoreCase() {
+            JoinerQuery<?, ?> query = Q.from(user).where(user.name.likeIgnoreCase("J%n"));
+            String jpql = serializer.serialize(query, false);
+            assertEquals("select distinct user1 from User user1  where user1.name like ?1", jpql);
+            assertConstants(serializer, "J%n");
+        }
+
     }
 
     @Test
@@ -301,6 +357,165 @@ public class JoinerJPQLSerializerTest {
 
             assertEquals("select distinct avg(address.id) from Address address  group by address.user having count(address.id) > ?1", jpql);
             assertConstants(serializer, 2L);
+        }
+    }
+
+    @Nested
+    class SqlFunctions {
+
+        @Test
+        public void testUpperFunction() {
+            JoinerQuery<?, ?> query = Q.from(user).where(user.name.upper().eq("JOHN"));
+            String jpql = serializer.serialize(query, false);
+            assertEquals("select distinct user1 from User user1  where upper(user1.name) = ?1", jpql);
+            assertConstants(serializer, "JOHN");
+        }
+
+        @Test
+        public void testLowerFunction() {
+            JoinerQuery<?, ?> query = Q.from(user).where(user.name.lower().eq("john"));
+            String jpql = serializer.serialize(query, false);
+            assertEquals("select distinct user1 from User user1  where lower(user1.name) = ?1", jpql);
+            assertConstants(serializer, "john");
+        }
+
+        @Test
+        public void testLengthFunction() {
+            JoinerQuery<?, ?> query = Q.from(user).where(user.name.length().gt(5));
+            String jpql = serializer.serialize(query, false);
+            assertTrue(jpql.contains("where string_length(user1.name) > ?1") || 
+                       jpql.contains("where length(user1.name) > ?1"));
+            assertConstants(serializer, 5);
+        }
+
+        @Test
+        public void testConcatFunction() {
+            // Using StringExpression.concat
+            JoinerQuery<?, ?> query = Q.from(user).where(user.name.concat(" Smith").eq("John Smith"));
+            String jpql = serializer.serialize(query, false);
+            assertEquals("select distinct user1 from User user1  where concat(user1.name, ?1) = ?2", jpql);
+            assertConstants(serializer, " Smith", "John Smith");
+        }
+
+        @Test
+        public void testSubstringFunction() {
+            // Using StringExpression.substring
+            JoinerQuery<?, ?> query = Q.from(user).where(user.name.substring(1, 3).eq("oh"));
+            String jpql = serializer.serialize(query, false);
+            System.out.println("testSubstringFunction JPQL: " + jpql);
+            assertTrue(jpql.contains("where") && 
+                       ((jpql.contains("substring(user1.name") || jpql.contains("substr_2args(user1.name"))) && 
+                       jpql.contains("= ?3"));
+            assertConstants(serializer, 1, 3, "oh");
+        }
+
+        @Test
+        public void testTrimFunction() {
+            JoinerQuery<?, ?> query = Q.from(user).where(user.name.trim().eq("John"));
+            String jpql = serializer.serialize(query, false);
+            assertEquals("select distinct user1 from User user1  where trim(user1.name) = ?1", jpql);
+            assertConstants(serializer, "John");
+        }
+
+        @Test
+        public void testAbsFunction() {
+            JoinerQuery<?, ?> query = Q.from(user).where(user.id.abs().eq(10L));
+            String jpql = serializer.serialize(query, false);
+            assertEquals("select distinct user1 from User user1  where abs(user1.id) = ?1", jpql);
+            assertConstants(serializer, 10L);
+        }
+
+        @Test
+        public void testSqrtFunction() {
+            JoinerQuery<?, ?> query = Q.from(user).where(user.id.sqrt().gt(3.0));
+            String jpql = serializer.serialize(query, false);
+            assertEquals("select distinct user1 from User user1  where sqrt(user1.id) > ?1", jpql);
+            assertConstants(serializer, 3.0);
+        }
+
+        @Test
+        public void testModFunction() {
+            JoinerQuery<?, ?> query = Q.from(user).where(user.id.mod(2L).eq(0L));
+            String jpql = serializer.serialize(query, false);
+            assertEquals("select distinct user1 from User user1  where mod(user1.id, ?1) = ?2", jpql);
+            assertConstants(serializer, 2L, 0L);
+        }
+    }
+
+    @Nested
+    class JpaOperators {
+
+        @Test
+        public void testBetween() {
+            JoinerQuery<?, ?> query = Q.from(user).where(user.id.between(1L, 10L));
+            String jpql = serializer.serialize(query, false);
+            assertTrue(jpql.contains("where between(user1.id, ?1, ?2)") || 
+                       jpql.contains("where user1.id between ?1 and ?2"));
+            assertConstants(serializer, 1L, 10L);
+        }
+
+        @Test
+        public void testIsEmpty() {
+            JoinerQuery<?, ?> query = Q.from(user).where(user.groups.isEmpty());
+            String jpql = serializer.serialize(query, false);
+            assertTrue(jpql.contains("where col_is_empty(user1.groups)") || 
+                       jpql.contains("where user1.groups is empty"));
+            assertConstants(serializer);
+        }
+
+        @Test
+        public void testIsNotEmpty() {
+            JoinerQuery<?, ?> query = Q.from(user).where(user.groups.isNotEmpty());
+            String jpql = serializer.serialize(query, false);
+            assertTrue(jpql.contains("where not col_is_empty(user1.groups)") || 
+                       jpql.contains("where user1.groups is not empty"));
+            assertConstants(serializer);
+        }
+
+        @Test
+        public void testSize() {
+            JoinerQuery<?, ?> query = Q.from(user).where(user.groups.size().eq(2));
+            String jpql = serializer.serialize(query, false);
+            System.out.println("testSize JPQL: " + jpql);
+            assertTrue(jpql.contains("where") && jpql.contains("user1.groups") && jpql.contains("= ?1"));
+            assertConstants(serializer, 2);
+        }
+
+        @Test
+        public void testCoalesce() {
+            JoinerQuery<?, ?> query = Q.from(user).where(user.name.coalesce("Unknown").eq("John"));
+            String jpql = serializer.serialize(query, false);
+            assertTrue(jpql.contains("where coalesce(user1.name") && 
+                       jpql.contains("= ?2"));
+            assertConstants(serializer, "Unknown", "John");
+        }
+    }
+
+    @Nested
+    class LogicalOperators {
+
+        @Test
+        public void testAnd() {
+            JoinerQuery<?, ?> query = Q.from(user).where(user.name.eq("John").and(user.id.gt(10L)));
+            String jpql = serializer.serialize(query, false);
+            assertEquals("select distinct user1 from User user1  where user1.name = ?1 and user1.id > ?2", jpql);
+            assertConstants(serializer, "John", 10L);
+        }
+
+        @Test
+        public void testOr() {
+            JoinerQuery<?, ?> query = Q.from(user).where(user.name.eq("John").or(user.id.gt(10L)));
+            String jpql = serializer.serialize(query, false);
+            assertEquals("select distinct user1 from User user1  where user1.name = ?1 or user1.id > ?2", jpql);
+            assertConstants(serializer, "John", 10L);
+        }
+
+        @Test
+        public void testNot() {
+            JoinerQuery<?, ?> query = Q.from(user).where(user.name.eq("John").not());
+            String jpql = serializer.serialize(query, false);
+            assertEquals("select distinct user1 from User user1  where not user1.name = ?1", jpql);
+            assertConstants(serializer, "John");
         }
     }
 

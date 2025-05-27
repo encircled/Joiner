@@ -20,7 +20,7 @@ public class JoinerJPQLSerializer {
     private final StringBuilder query = new StringBuilder();
     private final List<Object> constants;
     private final Map<Object, String> constantToLabel = new HashMap<>();
-    private final String constantPrefix = "a";
+    private static final String constantPrefix = "a";
 
     public JoinerJPQLSerializer() {
         this(new ArrayList<>());
@@ -372,21 +372,22 @@ public class JoinerJPQLSerializer {
         // For constants, we add them to the constants list and return a parameter placeholder
         if (expression instanceof com.querydsl.core.types.Constant) {
             Object constant = ((com.querydsl.core.types.Constant<?>) expression).getConstant();
-            if (Objects.equals(constantOperator, "STRING_CONTAINS")) {
+            if (Objects.equals(constantOperator, "STRING_CONTAINS") || Objects.equals(constantOperator, "STRING_CONTAINS_IC")) {
                 constants.add("%" + constant + "%");
-            } else if (Objects.equals(constantOperator, "STARTS_WITH")) {
+            } else if (Objects.equals(constantOperator, "STARTS_WITH") || Objects.equals(constantOperator, "STARTS_WITH_IC")) {
                 constants.add(constant + "%");
+            } else if (Objects.equals(constantOperator, "ENDS_WITH") || Objects.equals(constantOperator, "ENDS_WITH_IC")) {
+                constants.add("%" + constant);
             } else {
                 constants.add(constant);
             }
             String label = constantPrefix + constants.size();
-            constantToLabel.put(constant, label);
+            constantToLabel.put(constants.get(constants.size() - 1), label);
             return "?" + constants.size();
         }
 
         // For paths, we return the path name
-        if (expression instanceof Path) {
-            Path<?> path = (Path<?>) expression;
+        if (expression instanceof Path<?> path) {
             if (path.getMetadata().getParent() != null) {
                 return serializeExpression(path.getMetadata().getParent()) + "." + path.getMetadata().getName();
             }
@@ -394,14 +395,12 @@ public class JoinerJPQLSerializer {
         }
 
         // For subqueries, we serialize the subquery
-        if (expression instanceof cz.encircled.joiner.query.JoinerQuery) {
-            cz.encircled.joiner.query.JoinerQuery<?, ?> subQuery = (cz.encircled.joiner.query.JoinerQuery<?, ?>) expression;
+        if (expression instanceof JoinerQuery<?, ?> subQuery) {
             return "(" + new JoinerJPQLSerializer(constants).serializeSubQuery(subQuery) + ")";
         }
 
         // For operations, we handle the operator and operands
-        if (expression instanceof Operation) {
-            Operation<?> operation = (Operation<?>) expression;
+        if (expression instanceof Operation<?> operation) {
             List<Expression<?>> args = operation.getArgs();
             String operator = operation.getOperator().toString();
 
@@ -419,7 +418,57 @@ public class JoinerJPQLSerializer {
                     case "GE" -> left + " >= " + right;
                     case "LT" -> left + " < " + right;
                     case "LE" -> left + " <= " + right;
-                    case "STARTS_WITH", "STRING_CONTAINS" -> left + " like " + right;
+                    case "STARTS_WITH", "STRING_CONTAINS", "STRING_CONTAINS_IC", "LIKE_IC", "LIKE", "ENDS_WITH_IC",
+                         "ENDS_WITH", "STARTS_WITH_IC" -> left + " like " + right;
+                    case "LIKE_ESCAPE", "LIKE_ESCAPE_IC" -> left + " like " + right + " escape '!'";
+                    case "IN" -> {
+                        // For IN operator, we need to check if the right operand is a subquery or if the constant is a collection
+                        if (right.startsWith("(") && right.endsWith(")")) {
+                            yield left + " in " + right;
+                        } else if (right.startsWith("?")) {
+                            int paramIndex = Integer.parseInt(right.substring(1));
+                            Object constant = constants.get(paramIndex - 1);
+                            if (constant instanceof Collection) {
+                                yield left + " in " + right;
+                            } else {
+                                yield left + " = " + right;
+                            }
+                        } else {
+                            yield left + " = " + right;
+                        }
+                    }
+                    case "NOT_IN" -> {
+                        // For NOT_IN operator, we need to check if the right operand is a subquery or if the constant is a collection
+                        if (right.startsWith("(") && right.endsWith(")")) {
+                            yield left + " not in " + right;
+                        } else if (right.startsWith("?")) {
+                            int paramIndex = Integer.parseInt(right.substring(1));
+                            Object constant = constants.get(paramIndex - 1);
+                            if (constant instanceof Collection) {
+                                yield left + " not in " + right;
+                            } else {
+                                yield left + " <> " + right;
+                            }
+                        } else {
+                            yield left + " <> " + right;
+                        }
+                    }
+                    case "CONCAT" -> "concat(" + left + ", " + right + ")";
+                    case "SUBSTR" -> "substring(" + left + ", " + right + ")";
+                    case "UPPER" -> "upper(" + left + ")";
+                    case "LOWER" -> "lower(" + left + ")";
+                    case "TRIM" -> "trim(" + left + ")";
+                    case "LENGTH" -> "length(" + left + ")";
+                    case "LOCATE" -> "locate(" + left + ", " + right + ")";
+                    case "ABS" -> "abs(" + left + ")";
+                    case "SQRT" -> "sqrt(" + left + ")";
+                    case "MOD" -> "mod(" + left + ", " + right + ")";
+                    case "INDEX" -> "index(" + left + ")";
+                    case "SIZE" -> "size(" + left + ")";
+                    case "COALESCE" -> "coalesce(" + left + ", " + right + ")";
+                    case "NULLIF" -> "nullif(" + left + ", " + right + ")";
+                    case "CAST" -> "cast(" + left + " as " + right + ")";
+                    case "TREAT" -> "treat(" + left + " as " + right + ")";
                     default -> left + " " + operator.toLowerCase().replaceAll("_", " ") + " " + right;
                 };
             } else if (args.size() == 1) {
@@ -436,10 +485,16 @@ public class JoinerJPQLSerializer {
                     case "MAX_AGG" -> "max(" + arg + ")";
                     case "MIN_AGG" -> "min(" + arg + ")";
                     case "SUM_AGG" -> "sum(" + arg + ")";
+                    case "DISTINCT" -> "distinct " + arg;
+                    case "ALL" -> "all " + arg;
+                    case "ANY" -> "any " + arg;
+                    case "SOME" -> "some " + arg;
+                    case "EXISTS" -> "exists " + arg;
+                    case "NOT_EXISTS" -> "not exists " + arg;
                     default -> operator.toLowerCase() + "(" + arg + ")";
                 };
             } else {
-                // Function call or other operation
+                // Function call or other operations
                 StringBuilder sb = new StringBuilder();
                 sb.append(operator.toLowerCase()).append("(");
                 for (int i = 0; i < args.size(); i++) {
