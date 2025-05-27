@@ -40,48 +40,41 @@ public class HibernateRepository extends AbstractVendorRepository implements Joi
         System.out.println("\nJoiner:\n" + queryString + "\n");
 
         boolean isStateless = request.isStatelessSession() != null ? request.isStatelessSession() : joinerProperties.useStatelessSessions;
-        jakarta.persistence.Query query;
+        jakarta.persistence.Query jpaQuery;
         if (isStateless) {
             request.setStatelessSession(true);
-            StatelessSession session = entityManager.unwrap(Session.class).getSessionFactory().openStatelessSession();
-            query = session.createQuery(queryString);
-            for (Map.Entry<String, List<Object>> entry : request.getHints().entrySet()) {
-                for (Object value : entry.getValue()) {
-                    query.setHint(entry.getKey(), value);
+            try (StatelessSession session = entityManager.unwrap(Session.class).getSessionFactory().openStatelessSession()) {
+                jpaQuery = session.createQuery(queryString, Object.class);
+                for (Map.Entry<String, List<Object>> entry : request.getHints().entrySet()) {
+                    for (Object value : entry.getValue()) {
+                        jpaQuery.setHint(entry.getKey(), value);
+                    }
                 }
-            }
-            for (Map.Entry<String, List<Object>> entry : joinerProperties.defaultHints.entrySet()) {
-                for (Object value : entry.getValue()) {
-                    query.setHint(entry.getKey(), value);
+                for (Map.Entry<String, List<Object>> entry : joinerProperties.defaultHints.entrySet()) {
+                    for (Object value : entry.getValue()) {
+                        jpaQuery.setHint(entry.getKey(), value);
+                    }
                 }
+
+                setQueryParams(serializer, jpaQuery, request);
+
+                if (request.getReturnProjection() instanceof FactoryExpression) {
+                    ((Query) jpaQuery).setResultTransformer(new FactoryExpressionTransformer((FactoryExpression) request.getReturnProjection()));
+                }
+
+                return jpaQuery.getResultList();
             }
         } else {
-            query = entityManager.createQuery(queryString);
+            jpaQuery = entityManager.createQuery(queryString);
         }
 
-        // Set parameters from the serializer's constants list
-        List<Object> constants = serializer.getConstants();
-        for (int i = 0; i < constants.size(); i++) {
-            Object val = constants.get(i);
-            if (val instanceof Collection<?>) {
-                query.setParameter(i + 1, val);
-            } else {
-                query.setParameter(i + 1, val);
-            }
-        }
-
-        if (request.getLimit() != null) {
-            query.setMaxResults(request.getLimit());
-        }
-        if (request.getOffset() != null) {
-            query.setFirstResult(request.getOffset());
-        }
+        setQueryParams(serializer, jpaQuery, request);
 
         if (request.getReturnProjection() instanceof FactoryExpression) {
-            ((Query) query).setResultTransformer(new FactoryExpressionTransformer((FactoryExpression) request.getReturnProjection()));
+            ((Query) jpaQuery).setResultTransformer(new FactoryExpressionTransformer((FactoryExpression) request.getReturnProjection()));
         }
 
-        return query.getResultList();
+        return jpaQuery.getResultList();
     }
 
     @Override

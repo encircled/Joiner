@@ -2,6 +2,8 @@ package cz.encircled.joiner.core.vendor;
 
 import com.querydsl.core.JoinType;
 import com.querydsl.core.types.EntityPath;
+import com.querydsl.core.types.Expression;
+import com.querydsl.core.types.FactoryExpression;
 import com.querydsl.jpa.EclipseLinkTemplates;
 import com.querydsl.jpa.JPQLQuery;
 import com.querydsl.jpa.impl.AbstractJPAQuery;
@@ -17,6 +19,7 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.Query;
 
 import java.lang.reflect.Field;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
@@ -64,7 +67,33 @@ public class EclipselinkRepository extends AbstractVendorRepository implements J
     public <T> List<T> getResultList(JoinerQuery<?, T> request, JoinerProperties joinerProperties, EntityManager entityManager) {
         JoinerJPQLSerializer serializer = new JoinerJPQLSerializer();
         String queryString = serializer.serialize(request, request.isCount());
+        System.out.println("\nJoiner:\n" + queryString + "\n");
+
         Query jpaQuery = entityManager.createQuery(queryString);
+
+        setQueryParams(serializer, jpaQuery, request);
+
+        Expression<T> projection = request.getReturnProjection();
+        if (projection instanceof FactoryExpression) {
+            FactoryExpression fe = (FactoryExpression) projection;
+            List<?> results = jpaQuery.getResultList();
+            List<Object> rv = new ArrayList(results.size());
+
+            for (Object o : results) {
+                if (o != null) {
+                    if (!o.getClass().isArray()) {
+                        o = new Object[]{o};
+                    }
+
+                    rv.add(fe.newInstance((Object[]) o));
+                } else {
+                    rv.add(fe.newInstance(new Object[]{null}));
+                }
+            }
+
+            return (List<T>) rv;
+        }
+
         return jpaQuery.getResultList();
     }
 

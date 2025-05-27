@@ -101,11 +101,16 @@ public class Joiner {
     }
 
     public <T, R> List<R> find(JoinerQuery<T, R> request) {
+        boolean skip = false;
         JPQLQuery<R> query = toJPAQuery(request);
 
         List<R> result;
         if (request.isCount()) {
-            result = (List<R>) Collections.singletonList(query.fetchCount());
+            if (skip) {
+                result = (List<R>) Collections.singletonList(query.fetchCount());
+            } else {
+                result = joinerVendorRepository.getResultList(request, getJoinerProperties(), entityManager);
+            }
         } else {
             try {
                 Method m = JPAQueryBase.class.getDeclaredMethod("serialize", boolean.class);
@@ -114,7 +119,7 @@ public class Joiner {
             } catch (Exception e) {
 
             }
-            boolean skip = false;
+
             if (skip) {
                 result = query.fetch();
             } else {
@@ -222,6 +227,7 @@ public class Joiner {
             Predicate where = predicateAliasResolver.resolvePredicate(request.getWhere(), joins, usedAliases);
             checkAliasesArePresent(where, usedAliases);
             query.where(where);
+            request.where(where);
         }
         if (request.getGroupBy() != null) {
             Map<AnnotatedElement, List<JoinDescription>> grouped = joins.stream()
@@ -230,12 +236,14 @@ public class Joiner {
                 Path<?> grouping = predicateAliasResolver.resolvePath(path, grouped, usedAliases);
                 checkAliasesArePresent(grouping, usedAliases);
                 query.groupBy(grouping);
+                request.groupBy(grouping);
             }
         }
         if (request.getHaving() != null) {
             Predicate having = predicateAliasResolver.resolvePredicate(request.getHaving(), joins, usedAliases);
             checkAliasesArePresent(having, usedAliases);
             query.having(having);
+            request.having(having);
         }
     }
 

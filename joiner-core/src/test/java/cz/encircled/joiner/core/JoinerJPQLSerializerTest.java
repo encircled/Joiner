@@ -85,7 +85,6 @@ public class JoinerJPQLSerializerTest {
     public void testNestedJoins() {
         JoinerQuery<?, ?> query = Q.from(user).joins(J.left(user.groups).collectionPath(user.groups).nested(J.left(group.users).collectionPath(group.users)));
         String jpql = serializer.serialize(query, false);
-        System.out.println("testNestedJoins JPQL: " + jpql);
         assertEquals("select distinct user1 from User user1  left join fetch user1.groups as group1 left join fetch group1.users as user1_on_group1", jpql);
         assertTrue(jpql.contains("left join fetch user1.groups"));
         assertTrue(jpql.contains("left join fetch group1.users"));

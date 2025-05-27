@@ -255,7 +255,8 @@ public class JoinerJPQLSerializer {
     }
 
     private void appendJoins(JoinerQuery<?, ?> joinerQuery) {
-        boolean disableFetchJoins = joinerQuery.getReturnProjection() instanceof QTuple;
+        boolean disableFetchJoins = joinerQuery.getReturnProjection() instanceof FactoryExpression<?> || joinerQuery.isCount();
+
         Collection<JoinDescription> joins = joinerQuery.getJoins();
         if (joins != null && !joins.isEmpty()) {
             for (JoinDescription join : joins) {

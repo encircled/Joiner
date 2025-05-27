@@ -4,8 +4,14 @@ import com.querydsl.core.types.CollectionExpression;
 import com.querydsl.core.types.EntityPath;
 import com.querydsl.core.types.Path;
 import com.querydsl.jpa.JPQLQuery;
+import cz.encircled.joiner.core.JoinerJPQLSerializer;
 import cz.encircled.joiner.exception.JoinerException;
+import cz.encircled.joiner.query.JoinerQuery;
 import cz.encircled.joiner.query.join.JoinDescription;
+import jakarta.persistence.Query;
+
+import java.util.Collection;
+import java.util.List;
 
 /**
  * Common parent for implementations of vendor-specific repositories
@@ -53,6 +59,25 @@ public abstract class AbstractVendorRepository implements JoinerVendorRepository
 
         if (joinDescription.getOn() != null) {
             query.on(joinDescription.getOn());
+        }
+    }
+
+    protected void setQueryParams(JoinerJPQLSerializer serializer, Query query, JoinerQuery<?, ?> request) {
+        List<Object> constants = serializer.getConstants();
+        for (int i = 0; i < constants.size(); i++) {
+            Object val = constants.get(i);
+            if (val instanceof Collection<?>) {
+                query.setParameter(i + 1, val);
+            } else {
+                query.setParameter(i + 1, val);
+            }
+        }
+
+        if (request.getLimit() != null) {
+            query.setMaxResults(request.getLimit());
+        }
+        if (request.getOffset() != null) {
+            query.setFirstResult(request.getOffset());
         }
     }
 
