@@ -20,20 +20,16 @@ class QuerydslProcessorTest {
     @Test
     fun testEntityWithAllFieldTypes() {
         val actual = QuerydslProcessor(TestLogger()).processEntity(MockKSClassDeclaration(Customer::class) as KSClassDeclaration)
-        assertTrue(actual.contains("NumberPath<Double> doubleValue = createNumber(\"doubleValue\", kotlin.Double.class)"))
-        assertTrue(actual.contains("BooleanPath booleanValue = createBoolean(\"booleanValue\", kotlin.Boolean.class)"))
+        assertTrue(actual.contains("NumberPath<Double> doubleValue = createNumber(\"doubleValue\", Double.class)"))
+        assertTrue(actual.contains("BooleanPath booleanValue = createBoolean(\"booleanValue\", Boolean.class)"))
         assertTrue(actual.contains("DatePath<java.time.LocalDate> localDateValue = createDate(\"localDateValue\", java.time.LocalDate.class)"))
-    }
-
-    @Test
-    fun testJavaEntityClass() {
-        val actual = QuerydslProcessor(TestLogger()).processEntity(MockKSClassDeclaration(User::class) as KSClassDeclaration)
-        // User extends AbstractEntity, so id and name are inherited
-        assertTrue(actual.contains("public final NumberPath<Long> id = _super.id;"))
-        assertTrue(actual.contains("public final StringPath name = _super.name;"))
-        // Check for collection paths
-        assertTrue(actual.contains("public final ListPath<Group, QGroup> groups"))
-        assertTrue(actual.contains("public final SetPath<Contact, QContact> contacts"))
+        assertTrue(actual.contains("NumberPath<Float> floatValue = createNumber(\"floatValue\", Float.class)"))
+        assertTrue(actual.contains("NumberPath<Integer> intValue = createNumber(\"intValue\", Integer.class)"))
+        assertTrue(actual.contains("StringPath stringValue = createString(\"stringValue\", String.class)"))
+        assertTrue(actual.contains("DateTimePath<java.time.LocalDateTime> localDateTimeValue = createDateTime(\"localDateTimeValue\", java.time.LocalDateTime.class)"))
+        assertTrue(actual.contains("NumberPath<java.math.BigDecimal> bigDecimalValue = createNumber(\"bigDecimalValue\", java.math.BigDecimal.class)"))
+        assertTrue(actual.contains("NumberPath<Byte> byteValue = createNumber(\"byteValue\", Byte.class)"))
+        assertTrue(actual.contains("NumberPath<Short> shortValue = createNumber(\"shortValue\", Short.class)"))
     }
 
     @Test

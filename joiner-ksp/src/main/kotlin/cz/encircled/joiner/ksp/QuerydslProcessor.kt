@@ -303,7 +303,10 @@ class QuerydslProcessor(
 
     private fun getJavaClassName(type: KSType): String {
         val typeName = type.declaration.qualifiedName?.asString() ?: return "Object"
-        return typeName
+        if (typeName == "kotlin.Int") {
+            return "Integer"
+        }
+        return typeName.replace("kotlin.", "")
     }
 
     private fun String.decapitalize(): String {

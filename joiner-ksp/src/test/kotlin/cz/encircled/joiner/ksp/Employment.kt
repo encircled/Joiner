@@ -8,7 +8,9 @@ import jakarta.persistence.ManyToOne
 import jakarta.persistence.MappedSuperclass
 import jakarta.persistence.OneToMany
 import jakarta.persistence.Table
+import java.math.BigDecimal
 import java.time.LocalDate
+import java.time.LocalDateTime
 
 @MappedSuperclass
 abstract class AbstractEntity {
@@ -42,5 +44,12 @@ class Customer() : AbstractEntity() {
     var doubleValue: Double? = null
     var booleanValue: Boolean? = null
     var localDateValue: LocalDate? = null
+    var floatValue: Float? = null
+    var intValue: Int? = null
+    var stringValue: String? = null
+    var localDateTimeValue: LocalDateTime? = null
+    var bigDecimalValue: BigDecimal? = null
+    var byteValue: Byte? = null
+    var shortValue: Short? = null
 
 }
