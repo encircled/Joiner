@@ -494,7 +494,7 @@ Include `QueryDSL` dependencies:
 ```xml
 <dependency>
     <groupId>com.querydsl</groupId>
-    <artifactId>querydsl-jpa</artifactId>
+    <artifactId>querydsl-core</artifactId>
     <classifier>jakarta</classifier>
     <version>${querydsl.version}</version>
 </dependency>

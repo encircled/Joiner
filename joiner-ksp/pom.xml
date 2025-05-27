@@ -19,18 +19,9 @@
 
     <dependencies>
         <!-- Querydsl -->
-        <!--<dependency>
+        <dependency>
             <groupId>com.querydsl</groupId>
             <artifactId>querydsl-core</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.querydsl</groupId>
-            <artifactId>querydsl-codegen</artifactId>
-        </dependency>-->
-        <dependency>
-            <groupId>com.querydsl</groupId>
-            <artifactId>querydsl-jpa</artifactId>
-            <version>${querydsl.version}</version>
         </dependency>
 
         <!-- Jakarta Persistence API -->

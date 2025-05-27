@@ -1,6 +1,5 @@
 package cz.encircled.joiner.query;
 
-import com.querydsl.jpa.JPQLQuery;
 import jakarta.persistence.Query;
 
 import java.util.List;

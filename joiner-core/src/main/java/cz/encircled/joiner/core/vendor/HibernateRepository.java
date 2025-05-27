@@ -1,23 +1,16 @@
 package cz.encircled.joiner.core.vendor;
 
-import com.querydsl.core.QueryModifiers;
 import com.querydsl.core.types.*;
-import com.querydsl.jpa.FactoryExpressionTransformer;
 import cz.encircled.joiner.core.JoinerJPQLSerializer;
-import com.querydsl.jpa.hibernate.HibernateQuery;
 import cz.encircled.joiner.core.JoinerProperties;
 import cz.encircled.joiner.query.JoinerQuery;
 import jakarta.persistence.EntityManager;
-import jakarta.persistence.FlushModeType;
-import org.hibernate.FlushMode;
-import org.hibernate.LockMode;
 import org.hibernate.Session;
 import org.hibernate.StatelessSession;
 import org.hibernate.query.Query;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 

@@ -44,11 +44,7 @@ dependencies {
 
     // Hibernate
     implementation("org.hibernate.orm:hibernate-core:$hibernateVersion")
-    implementation("com.querydsl:querydsl-jpa:$querydslVersion") {
-        artifact {
-            classifier = "jakarta"
-        }
-    }
+    implementation("com.querydsl:querydsl-core:$querydslVersion")
 
     testImplementation("org.springframework.boot:spring-boot-starter-test")
 }
