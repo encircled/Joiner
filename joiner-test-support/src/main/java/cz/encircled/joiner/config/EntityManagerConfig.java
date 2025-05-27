@@ -78,7 +78,7 @@ public class EntityManagerConfig {
         Properties properties = new Properties();
         properties.put(PersistenceUnitProperties.CACHE_SHARED_DEFAULT, "false");
         properties.put(PersistenceUnitProperties.WEAVING, "static");
-        properties.put("eclipselink.logging.level.sql", "FINE");
+//        properties.put("eclipselink.logging.level.sql", "FINE");
         try {
             Class.forName("cz.encircled.joiner.eclipse.InheritanceJoiningSessionCustomizer");
             properties.put("eclipselink.session.customizer", "cz.encircled.joiner.eclipse.InheritanceJoiningSessionCustomizer");
@@ -92,7 +92,7 @@ public class EntityManagerConfig {
     private Properties hibernateProperties() {
         Properties properties = new Properties();
         properties.setProperty("hibernate.hbm2ddl.auto", "create");
-        properties.setProperty("hibernate.show_sql", "true");
+        properties.setProperty("hibernate.show_sql", "false");
         properties.setProperty("hibernate.format_sql", "true");
         properties.setProperty("hibernate.dialect", "org.hibernate.dialect.H2Dialect");
         return properties;
