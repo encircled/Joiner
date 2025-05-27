@@ -4,21 +4,13 @@ import com.querydsl.core.JoinType;
 import com.querydsl.core.types.EntityPath;
 import com.querydsl.core.types.Expression;
 import com.querydsl.core.types.FactoryExpression;
-import com.querydsl.jpa.EclipseLinkTemplates;
-import com.querydsl.jpa.JPQLQuery;
-import com.querydsl.jpa.impl.AbstractJPAQuery;
-import com.querydsl.jpa.impl.JPAQuery;
 import cz.encircled.joiner.core.JoinerJPQLSerializer;
 import cz.encircled.joiner.core.JoinerProperties;
-import cz.encircled.joiner.exception.JoinerException;
 import cz.encircled.joiner.query.JoinerQuery;
 import cz.encircled.joiner.query.join.JoinDescription;
-import cz.encircled.joiner.util.MultiValueMap;
-import cz.encircled.joiner.util.ReflectionUtils;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.Query;
 
-import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -32,38 +24,13 @@ public class EclipselinkRepository extends AbstractVendorRepository implements J
     private static final String DOT_ESCAPED = "\\.";
 
     @Override
-    public <R> JPQLQuery<R> createQuery(JoinerQuery<?, R> request, EntityManager entityManager, JoinerProperties joinerProperties) {
-        if (request.isStatelessSession() == Boolean.TRUE || joinerProperties.useStatelessSessions) {
-            throw new IllegalStateException("StatelessSession is not supported by Eclipselink!");
-        }
-        JPAQuery<R> query = new JPAQuery<>(entityManager, EclipseLinkTemplates.DEFAULT);
-        makeInsertionOrderHints(query);
-        return query;
-    }
-
-    private void makeInsertionOrderHints(AbstractJPAQuery<?, ?> sourceQuery) {
-        Field f = ReflectionUtils.findField(AbstractJPAQuery.class, "hints");
-        ReflectionUtils.setField(f, sourceQuery, new MultiValueMap<>());
-    }
-
-    @Override
-    public void addFetch(JPQLQuery<?> query, JoinDescription joinDescription, Collection<JoinDescription> joins, EntityPath<?> rootPath, JoinerQuery<?, ?> request) {
+    public void addFetch(JoinDescription joinDescription, Collection<JoinDescription> joins, EntityPath<?> rootPath, JoinerQuery<?, ?> request) {
         String rootEntityAlias = rootPath.getMetadata().getName();
         String path = resolvePathToFieldFromRoot(rootEntityAlias, joinDescription, joins);
 
         String fetchHint = joinDescription.getJoinType().equals(JoinType.LEFTJOIN) ? "eclipselink.left-join-fetch" : "eclipselink.join-fetch";
-        ((AbstractJPAQuery<?, ?>) query).setHint(fetchHint, path);
         request.addHint(fetchHint, path);
 
-    }
-
-    @Override
-    public void addJoin(JPQLQuery<?> query, JoinDescription joinDescription) {
-        if (joinDescription.getJoinType().equals(JoinType.RIGHTJOIN)) {
-            throw new JoinerException("Right join is not supported in EclipseLink!");
-        }
-
-        super.addJoin(query, joinDescription);
     }
 
     public <T> List<T> getResultList(JoinerQuery<?, T> request, JoinerProperties joinerProperties, EntityManager entityManager) {
@@ -76,10 +43,9 @@ public class EclipselinkRepository extends AbstractVendorRepository implements J
         setQueryParams(serializer, jpaQuery, request);
 
         Expression<T> projection = request.getReturnProjection();
-        if (projection instanceof FactoryExpression) {
-            FactoryExpression fe = (FactoryExpression) projection;
+        if (projection instanceof FactoryExpression<?> fe) {
             List<?> results = jpaQuery.getResultList();
-            List<Object> rv = new ArrayList(results.size());
+            List<Object> rv = new ArrayList<>(results.size());
 
             for (Object o : results) {
                 if (o != null) {

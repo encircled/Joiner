@@ -100,7 +100,7 @@ public class DefaultPredicateAliasResolver implements PredicateAliasResolver {
                 newArg = resolvePath((Path<?>) arg, classToJoin, usedAliases);
             } else if (arg instanceof JoinerQuery<?, ?>) {
                 JoinerQuery<?, ?> subQuery = (JoinerQuery<?, ?>) arg;
-                subQuery.setSubQueryMetadata(joiner.toJPAQuery(subQuery).getMetadata());
+//                subQuery.setSubQueryMetadata(joiner.toJPAQuery(subQuery).getMetadata()); TODO?
             }
 
             result.args.add(newArg);

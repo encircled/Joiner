@@ -3,14 +3,11 @@ package cz.encircled.joiner.core.vendor;
 import com.querydsl.core.QueryModifiers;
 import com.querydsl.core.types.*;
 import com.querydsl.jpa.FactoryExpressionTransformer;
-import com.querydsl.jpa.HQLTemplates;
-import com.querydsl.jpa.JPQLQuery;
+import cz.encircled.joiner.core.Joiner;
 import cz.encircled.joiner.core.JoinerJPQLSerializer;
 import com.querydsl.jpa.hibernate.HibernateQuery;
-import com.querydsl.jpa.impl.JPAQuery;
 import cz.encircled.joiner.core.JoinerProperties;
 import cz.encircled.joiner.query.JoinerQuery;
-import cz.encircled.joiner.query.join.JoinDescription;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.FlushModeType;
 import org.hibernate.FlushMode;
@@ -18,6 +15,8 @@ import org.hibernate.LockMode;
 import org.hibernate.Session;
 import org.hibernate.StatelessSession;
 import org.hibernate.query.Query;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Collection;
 import java.util.List;
@@ -28,16 +27,13 @@ import java.util.Map;
  */
 public class HibernateRepository extends AbstractVendorRepository implements JoinerVendorRepository {
 
-    @Override
-    public void addFetch(JPQLQuery<?> query, JoinDescription joinDescription, Collection<JoinDescription> joins, EntityPath<?> rootPath, JoinerQuery<?, ?> request) {
-        query.fetchJoin();
-    }
+    private static final Logger log = LoggerFactory.getLogger(HibernateRepository.class);
 
     @Override
     public <T> List<T> getResultList(JoinerQuery<?, T> request, JoinerProperties joinerProperties, EntityManager entityManager) {
         JoinerJPQLSerializer serializer = new JoinerJPQLSerializer();
         String queryString = serializer.serialize(request, request.isCount());
-        System.out.println("\nJoiner:\n" + queryString + "\n");
+        log.debug("Joiner query: {}", queryString);
 
         boolean isStateless = request.isStatelessSession() != null ? request.isStatelessSession() : joinerProperties.useStatelessSessions;
         jakarta.persistence.Query jpaQuery;
@@ -58,8 +54,8 @@ public class HibernateRepository extends AbstractVendorRepository implements Joi
 
                 setQueryParams(serializer, jpaQuery, request);
 
-                if (request.getReturnProjection() instanceof FactoryExpression) {
-                    ((Query) jpaQuery).setResultTransformer(new FactoryExpressionTransformer((FactoryExpression) request.getReturnProjection()));
+                if (request.getReturnProjection() instanceof FactoryExpression<?> p) {
+                    ((Query) jpaQuery).setResultTransformer(new FactoryExpressionTransformer(p));
                 }
 
                 return jpaQuery.getResultList();
@@ -70,23 +66,11 @@ public class HibernateRepository extends AbstractVendorRepository implements Joi
 
         setQueryParams(serializer, jpaQuery, request);
 
-        if (request.getReturnProjection() instanceof FactoryExpression) {
-            ((Query) jpaQuery).setResultTransformer(new FactoryExpressionTransformer((FactoryExpression) request.getReturnProjection()));
+        if (request.getReturnProjection() instanceof FactoryExpression<?> p) {
+            ((Query) jpaQuery).setResultTransformer(new FactoryExpressionTransformer(p));
         }
 
         return jpaQuery.getResultList();
-    }
-
-    @Override
-    public <R> JPQLQuery<R> createQuery(JoinerQuery<?, R> request, EntityManager entityManager, JoinerProperties joinerProperties) {
-        boolean isStateless = request.isStatelessSession() != null ? request.isStatelessSession() : joinerProperties.useStatelessSessions;
-        if (isStateless) {
-            request.setStatelessSession(true);
-            StatelessSession session = entityManager.unwrap(Session.class).getSessionFactory().openStatelessSession();
-            return new HibernateQueryWithSession<>(session);
-        }
-
-        return new JPAQuery<>(entityManager, HQLTemplates.DEFAULT);
     }
 
     static class HibernateQueryWithSession<T> extends HibernateQuery<T> {

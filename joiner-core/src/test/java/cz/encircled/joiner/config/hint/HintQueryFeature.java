@@ -1,11 +1,11 @@
 package cz.encircled.joiner.config.hint;
 
-import com.querydsl.jpa.JPQLQuery;
 import com.querydsl.jpa.impl.AbstractJPAQuery;
 import cz.encircled.joiner.core.TestException;
 import cz.encircled.joiner.query.JoinerQuery;
 import cz.encircled.joiner.query.QueryFeature;
 import cz.encircled.joiner.util.MultiValueMap;
+import jakarta.persistence.Query;
 import org.springframework.util.ReflectionUtils;
 
 import java.lang.reflect.Field;
@@ -22,7 +22,7 @@ public class HintQueryFeature implements QueryFeature {
     }
 
     @Override
-    public <T, R> JPQLQuery<R> after(JoinerQuery<T, R> request, JPQLQuery<R> query) {
+    public <T, R> Query after(JoinerQuery<T, R> request, Query query) {
         Field f = ReflectionUtils.findField(AbstractJPAQuery.class, "hints");
         ReflectionUtils.makeAccessible(f);
         MultiValueMap<String, Object> field = (MultiValueMap<String, Object>) ReflectionUtils.getField(f, query);

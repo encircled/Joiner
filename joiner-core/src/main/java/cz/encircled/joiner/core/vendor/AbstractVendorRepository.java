@@ -21,48 +21,6 @@ import java.util.Map;
  */
 public abstract class AbstractVendorRepository implements JoinerVendorRepository {
 
-    @Override
-    @SuppressWarnings("unchecked")
-    public void addJoin(JPQLQuery<?> query, JoinDescription joinDescription) {
-        Path<Object> alias = (Path<Object>) joinDescription.getAlias();
-
-        switch (joinDescription.getJoinType()) {
-            case LEFTJOIN:
-                if (joinDescription.isCollectionPath()) {
-                    CollectionExpression<?, Object> collectionPath = (CollectionExpression<?, Object>) joinDescription.getCollectionPath();
-                    query.leftJoin(collectionPath, alias);
-                } else {
-                    EntityPath<Object> singlePath = (EntityPath<Object>) joinDescription.getSingularPath();
-                    query.leftJoin(singlePath, alias);
-                }
-                break;
-            case INNERJOIN:
-                if (joinDescription.isCollectionPath()) {
-                    CollectionExpression<?, Object> collectionPath = (CollectionExpression<?, Object>) joinDescription.getCollectionPath();
-                    query.innerJoin(collectionPath, alias);
-                } else {
-                    EntityPath<Object> singlePath = (EntityPath<Object>) joinDescription.getSingularPath();
-                    query.innerJoin(singlePath, alias);
-                }
-                break;
-            case RIGHTJOIN:
-                if (joinDescription.isCollectionPath()) {
-                    CollectionExpression<?, Object> collectionPath = (CollectionExpression<?, Object>) joinDescription.getCollectionPath();
-                    query.rightJoin(collectionPath, alias);
-                } else {
-                    EntityPath<Object> singlePath = (EntityPath<Object>) joinDescription.getSingularPath();
-                    query.rightJoin(singlePath, alias);
-                }
-                break;
-            default:
-                throw new JoinerException("Join type " + joinDescription.getJoinType() + " is not supported!");
-        }
-
-        if (joinDescription.getOn() != null) {
-            query.on(joinDescription.getOn());
-        }
-    }
-
     protected void setQueryParams(JoinerJPQLSerializer serializer, Query query, JoinerQuery<?, ?> request) {
         List<Object> constants = serializer.getConstants();
         for (int i = 0; i < constants.size(); i++) {

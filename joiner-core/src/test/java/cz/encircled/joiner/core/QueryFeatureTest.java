@@ -1,11 +1,11 @@
 package cz.encircled.joiner.core;
 
-import com.querydsl.jpa.JPQLQuery;
 import cz.encircled.joiner.model.QUser;
 import cz.encircled.joiner.model.User;
 import cz.encircled.joiner.query.JoinerQuery;
 import cz.encircled.joiner.query.Q;
 import cz.encircled.joiner.query.QueryFeature;
+import jakarta.persistence.Query;
 import org.junit.jupiter.api.Test;
 
 import java.util.Collections;
@@ -48,7 +48,7 @@ public abstract class QueryFeatureTest extends AbstractTest {
         JoinerQuery<User, User> request = Q.from(QUser.user1);
         request.addFeatures(new QueryFeature() {
             @Override
-            public <T, R> JPQLQuery<R> after(JoinerQuery<T, R> request, JPQLQuery<R> query) {
+            public <T, R> Query after(JoinerQuery<T, R> request, Query query) {
                 throw new TestException();
             }
         });

@@ -6,6 +6,7 @@ import cz.encircled.joiner.core.JoinerProperties;
 import cz.encircled.joiner.query.JoinerQuery;
 import cz.encircled.joiner.query.join.JoinDescription;
 import jakarta.persistence.EntityManager;
+import jakarta.persistence.Query;
 
 import java.util.Collection;
 import java.util.List;
@@ -17,11 +18,7 @@ import java.util.List;
  */
 public interface JoinerVendorRepository {
 
-    <R> JPQLQuery<R> createQuery(JoinerQuery<?, R> request, EntityManager entityManager, JoinerProperties joinerProperties);
-
-    void addJoin(JPQLQuery<?> query, JoinDescription joinDescription);
-
-    void addFetch(JPQLQuery<?> query, JoinDescription joinDescription, Collection<JoinDescription> joins, EntityPath<?> rootPath, JoinerQuery<?, ?> request);
+    default void addFetch(JoinDescription joinDescription, Collection<JoinDescription> joins, EntityPath<?> rootPath, JoinerQuery<?, ?> request) {}
 
     <T> List<T> getResultList(JoinerQuery<?, T> request, JoinerProperties joinerProperties, EntityManager entityManager);
 
