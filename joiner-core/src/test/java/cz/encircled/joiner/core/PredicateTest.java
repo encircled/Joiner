@@ -13,8 +13,7 @@ import org.junit.jupiter.api.Test;
 import java.util.List;
 
 import static cz.encircled.joiner.model.QUser.user1;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * @author Kisel on 26.01.2016.
@@ -26,6 +25,10 @@ public abstract class PredicateTest extends AbstractTest {
         String name = "user1";
         List<User> result = joiner.find(Q.from(user1).where(user1.name.eq(name)));
         assertHasName(result, name);
+
+//        Address address = joiner.findOne(Q.from(QAddress.address).where(QAddress.address.name.eq(name + "city")));
+//        assertNotNull(address);
+//        assertEquals(name + "city", address.getCity());
     }
 
     @Test
