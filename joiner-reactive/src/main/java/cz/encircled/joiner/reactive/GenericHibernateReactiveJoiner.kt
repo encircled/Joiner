@@ -1,6 +1,5 @@
 package cz.encircled.joiner.reactive
 
-import com.querydsl.core.types.ParamExpression
 import com.querydsl.core.types.ParamNotSetException
 import com.querydsl.core.types.dsl.Param
 import cz.encircled.joiner.core.JoinerJPQLSerializer
@@ -110,15 +109,15 @@ abstract class GenericHibernateReactiveJoiner(val emf: EntityManagerFactory) {
     }
 
     protected fun <R> createQuery(session: Stage.Session, query: JoinerQuery<*, R>): Stage.Query<R> {
-        val queryDsl = joiner.toJPAQuery(query)
+        joiner.toJPAQuery(query)
         val serializer = JoinerJPQLSerializer()
-        serializer.serialize(queryDsl.metadata, query.isCount, null)
-        val jpaQuery = session.createQuery<R>(serializer.toString())
+        val queryString = serializer.serialize(query, query.isCount)
+        val jpaQuery = session.createQuery<R>(queryString)
 
-        query.limit?.apply { jpaQuery.setMaxResults(toInt()) }
-        query.offset?.apply { jpaQuery.setFirstResult(toInt()) }
+        query.limit?.apply { jpaQuery.maxResults = toInt() }
+        query.offset?.apply { jpaQuery.firstResult = toInt() }
 
-        setConstants(jpaQuery, serializer.constantToLabel, queryDsl.metadata.params)
+        setConstants(jpaQuery, serializer.constantToLabel)
 
         return jpaQuery
     }
@@ -126,18 +125,10 @@ abstract class GenericHibernateReactiveJoiner(val emf: EntityManagerFactory) {
     protected fun setConstants(
         query: Stage.Query<*>,
         constants: Map<Any?, String>,
-        params: Map<ParamExpression<*>?, Any?>
     ) {
         for (entry in constants.entries) {
             val key = entry.value
-            var value = entry.key
-            if (Param::class.java.isInstance(value)) {
-                value = params[value]
-                if (value == null) {
-                    throw ParamNotSetException(entry.key as Param<*>?)
-                }
-            }
-
+            val value = entry.key
             query.setParameter(Integer.valueOf(key.replace(constantPrefix, "")), value)
         }
     }
