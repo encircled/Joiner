@@ -78,7 +78,7 @@ public class EntityManagerConfig {
         Properties properties = new Properties();
         properties.put(PersistenceUnitProperties.CACHE_SHARED_DEFAULT, "false");
         properties.put(PersistenceUnitProperties.WEAVING, "static");
-        properties.put("eclipselink.logging.level.sql", "FINE");
+//        properties.put("eclipselink.logging.level.sql", "FINE");
         try {
             Class.forName("cz.encircled.joiner.eclipse.InheritanceJoiningSessionCustomizer");
             properties.put("eclipselink.session.customizer", "cz.encircled.joiner.eclipse.InheritanceJoiningSessionCustomizer");

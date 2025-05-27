@@ -28,21 +28,21 @@ public abstract class PaginationAndOrderTest extends AbstractTest {
 
     @Test
     public void testLimit() {
-        assertEquals(1, joiner.find(Q.from(QAddress.address).limit(1L)).size());
-        assertEquals(2, joiner.find(Q.from(QAddress.address).limit(2L)).size());
+        assertEquals(1, joiner.find(Q.from(QAddress.address).limit(1)).size());
+        assertEquals(2, joiner.find(Q.from(QAddress.address).limit(2)).size());
     }
 
     @Test
     public void testLimitWithJoin() {
-        List<Address> res = joiner.find(Q.from(QAddress.address).limit(5L).joins(J.left(QStatus.status)));
+        List<Address> res = joiner.find(Q.from(QAddress.address).limit(5).joins(J.left(QStatus.status)));
         assertEquals(5, res.size());
         assertTrue(isLoaded(res.get(0), "statuses"));
     }
 
     @Test
     public void testLimitWithOffset() {
-        Long firstPage = joiner.find(Q.from(QAddress.address).offset(0L).limit(1L)).get(0).getId();
-        Long secondPage = joiner.find(Q.from(QAddress.address).offset(1L).limit(1L)).get(0).getId();
+        Long firstPage = joiner.find(Q.from(QAddress.address).offset(0).limit(1)).get(0).getId();
+        Long secondPage = joiner.find(Q.from(QAddress.address).offset(1).limit(1)).get(0).getId();
         assertNotEquals(secondPage, firstPage);
     }
 
@@ -62,11 +62,7 @@ public abstract class PaginationAndOrderTest extends AbstractTest {
                 .joins(J.inner(QGroup.group).nested(J.inner(new QUser("test"))))
                 .asc(new QUser("test").name);
 
-        assertQueryContains("select distinct status\n" +
-                "from Status status\n" +
-                "  inner join status.group as group1\n" +
-                "  inner join group1.users as test_on_group1\n" +
-                "order by test_on_group1.name asc", query);
+        assertQueryContains("select distinct status from Status status inner join status.group group1 inner join group1.users test_on_group1 order by test_on_group1.name asc", query);
     }
 
     @Test
@@ -110,10 +106,11 @@ public abstract class PaginationAndOrderTest extends AbstractTest {
 
     @Test
     public void testNestedPropertyOrdering() {
-        List<Group> groups = joiner.find(Q.from(QGroup.group)
+        List<Address> addresses = joiner.find(Q.from(QAddress.address)
                 .joins(QUser.user1)
-                .asc(QGroup.group.users.any().name)
+                .asc(QUser.user1.name)
         );
+        assertTrue(isSorted(addresses.stream().map(Address::getUser).toList(), false));
     }
 
     @Test

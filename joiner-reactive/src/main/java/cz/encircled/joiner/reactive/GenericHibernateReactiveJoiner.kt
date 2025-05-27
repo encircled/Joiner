@@ -1,10 +1,6 @@
 package cz.encircled.joiner.reactive
 
-import com.querydsl.core.types.ParamExpression
-import com.querydsl.core.types.ParamNotSetException
-import com.querydsl.core.types.dsl.Param
-import com.querydsl.jpa.JPQLSerializer
-import com.querydsl.jpa.JPQLTemplates
+import cz.encircled.joiner.core.JoinerJPQLSerializer
 import cz.encircled.joiner.core.Joiner
 import cz.encircled.joiner.query.JoinerQuery
 import cz.encircled.joiner.reactive.composer.JoinerComposer
@@ -111,36 +107,19 @@ abstract class GenericHibernateReactiveJoiner(val emf: EntityManagerFactory) {
     }
 
     protected fun <R> createQuery(session: Stage.Session, query: JoinerQuery<*, R>): Stage.Query<R> {
-        val queryDsl = joiner.toJPAQuery(query)
-        val serializer = JPQLSerializer(JPQLTemplates.DEFAULT)
-        serializer.serialize(queryDsl.metadata, query.isCount, null)
-        val jpaQuery = session.createQuery<R>(serializer.toString())
+        joiner.preprocessRequestQuery(query)
+        val serializer = JoinerJPQLSerializer()
+        val queryString = serializer.serialize(query)
+        val jpaQuery = session.createQuery<R>(queryString)
 
-        query.limit?.apply { jpaQuery.setMaxResults(toInt()) }
-        query.offset?.apply { jpaQuery.setFirstResult(toInt()) }
+        query.limit?.apply { jpaQuery.maxResults = toInt() }
+        query.offset?.apply { jpaQuery.firstResult = toInt() }
 
-        setConstants(jpaQuery, serializer.constantToLabel, queryDsl.metadata.params)
+        serializer.constants.forEachIndexed { i, v ->
+            jpaQuery.setParameter(i + 1, v)
+        }
 
         return jpaQuery
-    }
-
-    protected fun setConstants(
-        query: Stage.Query<*>,
-        constants: Map<Any?, String>,
-        params: Map<ParamExpression<*>?, Any?>
-    ) {
-        for (entry in constants.entries) {
-            val key = entry.value
-            var value = entry.key
-            if (Param::class.java.isInstance(value)) {
-                value = params[value]
-                if (value == null) {
-                    throw ParamNotSetException(entry.key as Param<*>?)
-                }
-            }
-
-            query.setParameter(Integer.valueOf(key.replace(constantPrefix, "")), value)
-        }
     }
 
     /**

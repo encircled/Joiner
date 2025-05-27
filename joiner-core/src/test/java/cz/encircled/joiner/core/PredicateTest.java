@@ -13,8 +13,7 @@ import org.junit.jupiter.api.Test;
 import java.util.List;
 
 import static cz.encircled.joiner.model.QUser.user1;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * @author Kisel on 26.01.2016.
@@ -26,10 +25,16 @@ public abstract class PredicateTest extends AbstractTest {
         String name = "user1";
         List<User> result = joiner.find(Q.from(user1).where(user1.name.eq(name)));
         assertHasName(result, name);
+
+        Address address = joiner.findOne(Q.from(QAddress.address).where(QAddress.address.city.eq(name + "city")).limit(1));
+        assertNotNull(address);
+        assertEquals(name + "city", address.getCity());
     }
 
     @Test
     public void whereAppendTest() {
+        assertEquals(user1.name.eq("1"), Q.from(user1).orWhere(user1.name.eq("1")).getWhere());
+
         JoinerQuery<User, User> query = Q.from(user1);
         query.andWhere(user1.name.eq("1"));
 
@@ -63,10 +68,7 @@ public abstract class PredicateTest extends AbstractTest {
                 .where(QAddress.address.user.name.eq(name));
         List<Address> result = joiner.find(q);
 
-        assertQueryContains("select distinct address\n" +
-                "from Address address\n" +
-                "  left join address.user as user1\n" +
-                "where address.user.name = ?1", q);
+        assertQueryContains("select distinct address from Address address left join address.user user1 where address.user.name = ?1", q);
 
         for (Address address : result) {
             assertHasName(address.getUser(), name);
@@ -81,10 +83,7 @@ public abstract class PredicateTest extends AbstractTest {
         JoinerQuery<Address, Address> q2 = Q.from(QAddress.address)
                 .where(QAddress.address.user.id.in(Q.select(user1.id.max()).from(user1)));
 
-        assertQueryContains("select distinct address\n" +
-                        "from Address address\n" +
-                        "where address.user.id <> (select distinct max(user1.id)\n" +
-                        "from User user1)", q);
+        assertQueryContains("select distinct address from Address address where address.user.id <> (select distinct max(user1.id) from User user1)", q);
         List<Address> addresses = joiner.find(q);
         assertFalse(addresses.isEmpty());
     }
@@ -94,11 +93,7 @@ public abstract class PredicateTest extends AbstractTest {
         JoinerQuery<Address, Address> q = Q.from(QAddress.address)
                 .where(QAddress.address.user.id.ne(Q.select(user1.id.max()).from(QGroup.group).joins(J.inner(user1))));
 
-        assertQueryContains("select distinct address\n" +
-                "from Address address\n" +
-                "where address.user.id <> (select distinct max(user1.id)\n" +
-                "from Group group1\n" +
-                "  inner join group1.users as user1)", q);
+        assertQueryContains("select distinct address from Address address where address.user.id <> (select distinct max(user1.id) from Group group1 inner join group1.users user1)", q);
         List<Address> addresses = joiner.find(q);
         assertFalse(addresses.isEmpty());
     }

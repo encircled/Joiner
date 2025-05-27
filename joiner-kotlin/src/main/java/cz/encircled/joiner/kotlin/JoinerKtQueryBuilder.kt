@@ -11,13 +11,15 @@ import cz.encircled.joiner.query.join.JoinDescription
 import kotlin.reflect.KClass
 
 /**
- * List of missing stuff in Kt:
- * - missing operators
- * - join (non)fetch
+ * Kotlin DSL for building Joiner queries.
+ * Provides a more idiomatic Kotlin API for query building with features like:
+ * - Infix functions for fluent API
+ * - Extension functions for common operations
+ * - Type-safe builders
  */
 
-data class PredicateContinuation<T>(
-    inline val t: ((SimpleExpression<T>) -> BooleanExpression) -> BooleanExpression
+class PredicateContinuation<T>(
+    val chain: ((SimpleExpression<T>) -> BooleanExpression) -> BooleanExpression
 )
 
 object JoinerKtOps : ConditionOps, JoinOps {

@@ -1,6 +1,6 @@
 package cz.encircled.joiner.query;
 
-import com.querydsl.jpa.JPQLQuery;
+import jakarta.persistence.Query;
 
 import java.util.List;
 
@@ -30,7 +30,7 @@ public interface QueryFeature {
      * @param query   JPA query
      * @return modified JPA query to be executed
      */
-    default <T, R> JPQLQuery<R> after(JoinerQuery<T, R> request, JPQLQuery<R> query) {
+    default <T, R> Query after(JoinerQuery<T, R> request, Query query) {
         return query;
     }
 

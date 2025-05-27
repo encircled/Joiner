@@ -38,6 +38,7 @@
         <module>joiner-kotlin</module>
         <module>joiner-reactive</module>
         <module>joiner-kotlin-reactive</module>
+        <module>joiner-ksp</module>
     </modules>
 
     <packaging>pom</packaging>
@@ -47,9 +48,9 @@
         <spring.version>6.2.4</spring.version>
         <hibernate.version>6.6.10.Final</hibernate.version>
         <hibernate-reactive.version>2.4.2.Final</hibernate-reactive.version>
-        <eclipselink.version>4.0.2</eclipselink.version>
+        <eclipselink.version>4.0.6</eclipselink.version>
         <vendor.name>hibernate</vendor.name>
-        <kotlin.version>2.0.21</kotlin.version>
+        <kotlin.version>2.1.20</kotlin.version>
         <kotlin.coroutines.version>1.10.1</kotlin.coroutines.version>
         <reactor.version>3.6.15</reactor.version>
         <junit-jupiter.version>5.11.2</junit-jupiter.version>
@@ -105,13 +106,6 @@
             <groupId>com.querydsl</groupId>
             <artifactId>querydsl-core</artifactId>
             <version>${querydsl.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>com.querydsl</groupId>
-            <artifactId>querydsl-jpa</artifactId>
-            <version>${querydsl.version}</version>
-            <classifier>jakarta</classifier>
         </dependency>
     </dependencies>
 

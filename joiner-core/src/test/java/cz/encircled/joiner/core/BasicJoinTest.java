@@ -255,9 +255,7 @@ public abstract class BasicJoinTest extends AbstractTest {
         List<User> groups = joiner.find(
                 Q.select(QUser.user1)
                         .from(QGroup.group)
-                        .joins(J.inner(QUser.user1)
-                                .on(QUser.user1.name.eq(name))
-                                .fetch(false))
+                        .joins(J.inner(QUser.user1).on(QUser.user1.name.eq(name)))
         );
         assertHasName(groups, name);
     }
@@ -361,6 +359,22 @@ public abstract class BasicJoinTest extends AbstractTest {
                         J.left(new QStatus("userStatus")).on(new QStatus("userStatus").id.isNotNull())
                 ));
         assertQueryContains("userStatus_on_user1.id is not null", query);
+    }
+
+    @Test
+    public void testRepeatedExecution() {
+        JoinerQuery<Group, Group> request = Q.from(QGroup.group).joins(J.left(QUser.user1).nested(J.left(QAddress.address))).where(QAddress.address.name.eq("user1street1"));
+
+        List<Group> groups = joiner.find(request);
+        assertEquals(1, groups.size());
+        assertTrue(isLoaded(groups.get(0), "users"));
+
+        entityManager.flush();
+        entityManager.clear();
+
+        groups = joiner.find(request);
+        assertEquals(1, groups.size());
+        assertTrue(isLoaded(groups.get(0), "users"));
     }
 
 }

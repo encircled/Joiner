@@ -2,12 +2,6 @@ package cz.encircled.joiner.model;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.MappedSuperclass;
-import jakarta.persistence.SequenceGenerator;
-import jakarta.persistence.Column;
-import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.MappedSuperclass;
 import org.hibernate.annotations.GenericGenerator;
@@ -20,7 +14,6 @@ public class AbstractEntity {
 
     @Column
     @Id
-//    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @GeneratedValue(generator = "prod-generator")
     @GenericGenerator(name = "prod-generator",
             strategy = "cz.encircled.joiner.model.MyGenerator")

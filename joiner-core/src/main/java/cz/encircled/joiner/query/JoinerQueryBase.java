@@ -6,10 +6,12 @@ import com.querydsl.core.Tuple;
 import com.querydsl.core.types.*;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.CollectionPathBase;
+import cz.encircled.joiner.core.JoinerJPQLSerializer;
 import cz.encircled.joiner.query.join.J;
 import cz.encircled.joiner.query.join.JoinDescription;
 import cz.encircled.joiner.util.Assert;
 import cz.encircled.joiner.util.JoinerUtils;
+import jakarta.persistence.FlushModeType;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -43,11 +45,18 @@ public class JoinerQueryBase<T, R> implements JoinerQuery<T, R>, JoinRoot, SubQu
 
     private List<QueryFeature> features = new ArrayList<>(2);
 
-    private Long offset;
+    private Integer offset;
 
-    private Long limit;
+    private Integer limit;
 
     private List<QueryOrder> orders = new ArrayList<>(2);
+
+    private FlushModeType flushMode;
+
+    private Boolean cacheable;
+    private String cacheRegion;
+
+    private Integer timeout;
 
     private boolean isCount;
 
@@ -272,24 +281,24 @@ public class JoinerQueryBase<T, R> implements JoinerQuery<T, R>, JoinRoot, SubQu
     }
 
     @Override
-    public JoinerQueryBase<T, R> offset(Long offset) {
+    public JoinerQueryBase<T, R> offset(Integer offset) {
         this.offset = offset;
         return this;
     }
 
     @Override
-    public Long getOffset() {
+    public Integer getOffset() {
         return offset;
     }
 
     @Override
-    public JoinerQueryBase<T, R> limit(Long limit) {
+    public JoinerQueryBase<T, R> limit(Integer limit) {
         this.limit = limit;
         return this;
     }
 
     @Override
-    public Long getLimit() {
+    public Integer getLimit() {
         return limit;
     }
 
@@ -367,6 +376,50 @@ public class JoinerQueryBase<T, R> implements JoinerQuery<T, R>, JoinRoot, SubQu
     }
 
     @Override
+    public FlushModeType getFlushMode() {
+        return flushMode;
+    }
+
+    @Override
+    public JoinerQuery<T, R> flushMode(FlushModeType flushMode) {
+        this.flushMode = flushMode;
+        return this;
+    }
+
+    @Override
+    public Boolean getCacheable() {
+        return cacheable;
+    }
+
+    @Override
+    public JoinerQuery<T, R> cacheable(Boolean cacheable) {
+        this.cacheable = cacheable;
+        return this;
+    }
+
+    @Override
+    public String getCacheRegion() {
+        return cacheRegion;
+    }
+
+    @Override
+    public JoinerQuery<T, R> cacheRegion(String cacheRegion) {
+        this.cacheRegion = cacheRegion;
+        return this;
+    }
+
+    @Override
+    public Integer getTimeout() {
+        return timeout;
+    }
+
+    @Override
+    public JoinerQuery<T, R> timeout(Integer timeout) {
+        this.timeout = timeout;
+        return this;
+    }
+
+    @Override
     public Boolean isStatelessSession() {
         return isStatelessSession;
     }
@@ -384,22 +437,8 @@ public class JoinerQueryBase<T, R> implements JoinerQuery<T, R>, JoinRoot, SubQu
 
     @Override
     public String toString() {
-        return "JoinerQueryBase{" +
-                "from=" + from +
-                ", returnProjection=" + returnProjection +
-                ", where=" + where +
-                ", joins=" + joins +
-                ", joinGraphs=" + joinGraphs +
-                ", distinct=" + distinct +
-                ", groupBy=" + groupBy +
-                ", having=" + having +
-                ", hints=" + hints +
-                ", features=" + features +
-                ", offset=" + offset +
-                ", limit=" + limit +
-                ", orders=" + orders +
-                ", isCount=" + isCount +
-                '}';
+        JoinerJPQLSerializer serializer = new JoinerJPQLSerializer();
+        return serializer.serialize(this);
     }
 
     @Override
@@ -431,15 +470,9 @@ public class JoinerQueryBase<T, R> implements JoinerQuery<T, R>, JoinRoot, SubQu
     /*
      * SUB QUERY
      */
-
-    @Override
-    public void setSubQueryMetadata(QueryMetadata metadata) {
-        subQueryMetadata = metadata;
-    }
-
     @Override
     public QueryMetadata getMetadata() {
-        // Might happen if a query is being compiled before execution (for instance called toString)
+        // Might happen if a query is being compiled before execution (for instance, called toString)
         if (subQueryMetadata == null) {
             DefaultQueryMetadata metadata = new DefaultQueryMetadata();
             metadata.addWhere(where);

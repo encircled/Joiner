@@ -12,7 +12,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 /**
  * @author Kisel on 28.01.2016.
  */
-public abstract class TestGroupBy extends AbstractTest {
+public abstract class GroupByTest extends AbstractTest {
 
     @Test
     public void testGroupBy() {
@@ -28,7 +28,7 @@ public abstract class TestGroupBy extends AbstractTest {
     public void testGroupByMultiple() {
         List<Double> avg = joiner.find(
                 Q.select(address.id.avg())
-                        .from(address).groupBy(address.user, address.name)
+                        .from(address).groupBy(address.user.id, address.city)
         );
         assertFalse(avg.isEmpty());
         assertTrue(avg.size() < joiner.find(Q.from(address)).size());

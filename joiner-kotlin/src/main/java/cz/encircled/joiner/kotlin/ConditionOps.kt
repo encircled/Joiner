@@ -35,34 +35,34 @@ interface ConditionOps {
     infix fun <T> SimpleExpression<T>.ne(to: T): BooleanExpression = ne(to)
 
     infix fun <T> PredicateContinuation<T>.eq(to: T): BooleanExpression {
-        return t.invoke { it.eq(to) }
+        return chain.invoke { it.eq(to) }
     }
 
     infix fun <T> PredicateContinuation<T>.eq(to: Expression<in T>): BooleanExpression {
-        return t.invoke { it.eq(to) }
+        return chain.invoke { it.eq(to) }
     }
 
     /**
      * Not equals
      */
     infix fun <T> PredicateContinuation<T>.ne(to: T): BooleanExpression {
-        return t.invoke { it.ne(to) }
+        return chain.invoke { it.ne(to) }
     }
 
     infix fun <T> PredicateContinuation<T>.isIn(to: Collection<T>): BooleanExpression {
-        return t.invoke { it.`in`(to) }
+        return chain.invoke { it.`in`(to) }
     }
 
     infix fun <T> PredicateContinuation<T>.isIn(to: SubQueryExpression<T>): BooleanExpression {
-        return t.invoke { it.`in`(to) }
+        return chain.invoke { it.`in`(to) }
     }
 
     infix fun <T> PredicateContinuation<T>.notIn(to: Collection<T>): BooleanExpression {
-        return t.invoke { it.notIn(to) }
+        return chain.invoke { it.notIn(to) }
     }
 
     infix fun <T> PredicateContinuation<T>.notIn(to: SubQueryExpression<T>): BooleanExpression {
-        return t.invoke { it.notIn(to) }
+        return chain.invoke { it.notIn(to) }
     }
 
     infix fun <T> BooleanExpression.and(exp: SimpleExpression<T>): PredicateContinuation<T> {

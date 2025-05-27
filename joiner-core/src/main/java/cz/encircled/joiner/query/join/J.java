@@ -129,7 +129,7 @@ public class J {
      * @return join description
      */
     public static JoinDescription inner(CollectionPathBase<?, ?, ?> path) {
-        return getBasicJoin(JoinerUtils.getDefaultPath(path)).inner();
+        return getBasicJoin(JoinerUtils.getDefaultPath(path)).inner().collectionPath(path);
     }
 
     /**

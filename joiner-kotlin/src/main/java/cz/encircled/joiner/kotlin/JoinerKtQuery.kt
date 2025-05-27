@@ -75,12 +75,12 @@ open class JoinerKtQuery<FROM_C, PROJ, FROM : EntityPath<FROM_C>>(
         return this
     }
 
-    override infix fun limit(limit: Long?): JoinerKtQuery<FROM_C, PROJ, FROM> {
+    override infix fun limit(limit: Int?): JoinerKtQuery<FROM_C, PROJ, FROM> {
         delegate.limit(limit)
         return this
     }
 
-    override infix fun offset(offset: Long?): JoinerKtQuery<FROM_C, PROJ, FROM> {
+    override infix fun offset(offset: Int?): JoinerKtQuery<FROM_C, PROJ, FROM> {
         delegate.offset(offset)
         return this
     }

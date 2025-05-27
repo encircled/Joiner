@@ -73,7 +73,7 @@ public class HibernateStatelessSessionTest extends AbstractTest {
     }
 
     @Test
-    @Disabled("To be fixed in querydsl, count+groupBy+having generates a jpa query w/o 'group by' clause")
+//    @Disabled("To be fixed in querydsl, count+groupBy+having generates a jpa query w/o 'group by' clause")
     public void testCountInStatelessSession() {
         try {
             joiner.setJoinerProperties(new JoinerProperties().setUseStatelessSessions(true));
@@ -105,7 +105,7 @@ public class HibernateStatelessSessionTest extends AbstractTest {
         try {
             joiner.getJoinerProperties().setUseStatelessSessions(true);
 
-            assertEquals(1, joiner.find(Q.from(QAddress.address).limit(1L)).size());
+            assertEquals(1, joiner.find(Q.from(QAddress.address).limit(1)).size());
         } finally {
             joiner.getJoinerProperties().setUseStatelessSessions(false);
         }
