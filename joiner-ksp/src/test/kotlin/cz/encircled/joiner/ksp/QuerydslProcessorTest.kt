@@ -25,7 +25,7 @@ class QuerydslProcessorTest {
         assertTrue(actual.contains("DatePath<java.time.LocalDate> localDateValue = createDate(\"localDateValue\", java.time.LocalDate.class)"))
         assertTrue(actual.contains("NumberPath<Float> floatValue = createNumber(\"floatValue\", Float.class)"))
         assertTrue(actual.contains("NumberPath<Integer> intValue = createNumber(\"intValue\", Integer.class)"))
-        assertTrue(actual.contains("StringPath stringValue = createString(\"stringValue\", String.class)"))
+        assertTrue(actual.contains("StringPath stringValue = createString(\"stringValue\")"))
         assertTrue(actual.contains("DateTimePath<java.time.LocalDateTime> localDateTimeValue = createDateTime(\"localDateTimeValue\", java.time.LocalDateTime.class)"))
         assertTrue(actual.contains("NumberPath<java.math.BigDecimal> bigDecimalValue = createNumber(\"bigDecimalValue\", java.math.BigDecimal.class)"))
         assertTrue(actual.contains("NumberPath<Byte> byteValue = createNumber(\"byteValue\", Byte.class)"))

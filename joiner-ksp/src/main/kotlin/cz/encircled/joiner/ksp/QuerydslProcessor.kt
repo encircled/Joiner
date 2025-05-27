@@ -173,8 +173,11 @@ class QuerydslProcessor(
             propertyType.isBasicType() -> {
                 logger.info("Property $propertyName is a basic type: ${propertyType.declaration.simpleName.asString()} (${propertyType.declaration.qualifiedName?.asString()}) - adding as a simple path")
                 val pathType = getPathTypeForBasicType(propertyType)
-                val value = if (isInherited) "= _super.$propertyName;"
-                else "= ${getCreateMethodForPathType(pathType)}(\"$propertyName\", ${getJavaClassName(propertyType)}.class);"
+                val value = when {
+                    isInherited -> "= _super.$propertyName;"
+                    pathType == "StringPath" -> "= createString(\"$propertyName\");"
+                    else -> "= ${getCreateMethodForPathType(pathType)}(\"$propertyName\", ${getJavaClassName(propertyType)}.class);"
+                }
                 val line = "    public final $pathType $propertyName $value\n"
                 logger.info("Generated line: $line")
                 ctx.append(line)
