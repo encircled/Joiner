@@ -21,6 +21,19 @@ class QuerydslProcessorTest {
     fun testEntityWithAllFieldTypes() {
         val actual = QuerydslProcessor(TestLogger()).processEntity(MockKSClassDeclaration(Customer::class) as KSClassDeclaration)
         assertTrue(actual.contains("NumberPath<Double> doubleValue = createNumber(\"doubleValue\", kotlin.Double.class)"))
+        assertTrue(actual.contains("BooleanPath booleanValue = createBoolean(\"booleanValue\", kotlin.Boolean.class)"))
+        assertTrue(actual.contains("DatePath<java.time.LocalDate> localDateValue = createDate(\"localDateValue\", java.time.LocalDate.class)"))
+    }
+
+    @Test
+    fun testJavaEntityClass() {
+        val actual = QuerydslProcessor(TestLogger()).processEntity(MockKSClassDeclaration(User::class) as KSClassDeclaration)
+        // User extends AbstractEntity, so id and name are inherited
+        assertTrue(actual.contains("public final NumberPath<Long> id = _super.id;"))
+        assertTrue(actual.contains("public final StringPath name = _super.name;"))
+        // Check for collection paths
+        assertTrue(actual.contains("public final ListPath<Group, QGroup> groups"))
+        assertTrue(actual.contains("public final SetPath<Contact, QContact> contacts"))
     }
 
     @Test
