@@ -1,9 +1,9 @@
 package cz.encircled.joiner.core;
 
-import com.querydsl.core.QueryMetadata;
 import com.querydsl.core.types.*;
 import cz.encircled.joiner.query.JoinerQuery;
 import cz.encircled.joiner.query.QueryOrder;
+import cz.encircled.joiner.query.join.J;
 import cz.encircled.joiner.query.join.JoinDescription;
 import jakarta.persistence.Entity;
 
@@ -34,15 +34,14 @@ public class JoinerJPQLSerializer {
      * Serialize the given query to a JPQL string.
      *
      * @param joinerQuery the query to serialize
-     * @param isCount     whether this is a count query
      * @return the serialized JPQL string
      */
-    public String serialize(JoinerQuery<?, ?> joinerQuery, boolean isCount) {
+    public String serialize(JoinerQuery<?, ?> joinerQuery) {
         query.setLength(0);
         constants.clear();
         constantToLabel.clear();
 
-        serializeJoinerQuery(joinerQuery, isCount);
+        serializeJoinerQuery(joinerQuery);
 
         return query.toString();
     }
@@ -52,10 +51,9 @@ public class JoinerJPQLSerializer {
      * This is used by both the main serialize method and when serializing subqueries.
      *
      * @param joinerQuery the query to serialize
-     * @param isCount     whether this is a count query
      */
-    private void serializeJoinerQuery(JoinerQuery<?, ?> joinerQuery, boolean isCount) {
-        if (isCount) {
+    private void serializeJoinerQuery(JoinerQuery<?, ?> joinerQuery) {
+        if (joinerQuery.isCount()) {
             query.append("select count(");
             query.append(joinerQuery.getFrom().getMetadata().getName());
             query.append(") ");
@@ -79,96 +77,6 @@ public class JoinerJPQLSerializer {
     }
 
     /**
-     * Serialize the given query metadata to a JPQL string.
-     * This method is used as a replacement for querydsl's JPQLSerializer.serialize method.
-     *
-     * @param metadata   the query metadata to serialize
-     * @param isCount    whether this is a count query
-     * @param projection optional projection to use instead of the one in metadata
-     * @return this serializer instance
-     */
-    public JoinerJPQLSerializer serialize(QueryMetadata metadata, boolean isCount, Expression<?> projection) {
-        query.setLength(0);
-        constants.clear();
-        constantToLabel.clear();
-
-        if (isCount) {
-            query.append("select count(");
-            if (metadata.getJoins().isEmpty()) {
-                query.append("1");
-            } else {
-                query.append(metadata.getJoins().get(0).getTarget().toString());
-            }
-            query.append(") ");
-        } else {
-            query.append("select ");
-            if (metadata.isDistinct()) {
-                query.append("distinct ");
-            }
-            if (projection != null) {
-                query.append(serializeExpression(projection));
-            } else if (metadata.getProjection() != null) {
-                query.append(serializeExpression(metadata.getProjection()));
-            } else if (!metadata.getJoins().isEmpty()) {
-                query.append(metadata.getJoins().get(0).getTarget().toString());
-            } else {
-                query.append("1");
-            }
-            query.append(" ");
-        }
-
-        if (!metadata.getJoins().isEmpty()) {
-            query.append("from ");
-            for (int i = 0; i < metadata.getJoins().size(); i++) {
-                if (i > 0) {
-                    query.append(", ");
-                }
-                query.append(getEntityName(metadata.getJoins().get(i).getTarget().getType()))
-                        .append(" ")
-                        .append(metadata.getJoins().get(i).getTarget().toString());
-            }
-            query.append(" ");
-        }
-
-        if (metadata.getWhere() != null) {
-            query.append("where ")
-                    .append(serializeExpression(metadata.getWhere()))
-                    .append(" ");
-        }
-
-        if (!metadata.getGroupBy().isEmpty()) {
-            query.append("group by ");
-            for (int i = 0; i < metadata.getGroupBy().size(); i++) {
-                if (i > 0) {
-                    query.append(", ");
-                }
-                query.append(serializeExpression(metadata.getGroupBy().get(i)));
-            }
-            query.append(" ");
-        }
-
-        if (metadata.getHaving() != null) {
-            query.append("having ")
-                    .append(serializeExpression(metadata.getHaving()))
-                    .append(" ");
-        }
-
-        if (!metadata.getOrderBy().isEmpty()) {
-            query.append("order by ");
-            for (int i = 0; i < metadata.getOrderBy().size(); i++) {
-                if (i > 0) {
-                    query.append(", ");
-                }
-                query.append(serializeExpression(metadata.getOrderBy().get(i).getTarget()))
-                        .append(metadata.getOrderBy().get(i).isAscending() ? " asc" : " desc");
-            }
-            query.append(" ");
-        }
-
-        return this;
-    }
-
-    /**
      * Serialize a subquery to a JPQL string.
      * This method reuses the serializeJoinerQuery method to avoid code duplication.
      * It also ensures that "fetch" is not used in subqueries, as it's not allowed.
@@ -179,16 +87,11 @@ public class JoinerJPQLSerializer {
     private String serializeSubQuery(JoinerQuery<?, ?> subQuery) {
         // Create a copy of the subquery with fetch set to false for all joins
         JoinerQuery<?, ?> subQueryCopy = subQuery.copy();
-        for (JoinDescription join : subQueryCopy.getJoins()) {
+        for (JoinDescription join : J.unrollChildrenJoins(subQueryCopy.getJoins())) {
             join.fetch(false);
-            if (join.getChildren() != null) {
-                for (JoinDescription nestedJoin : join.getChildren()) {
-                    nestedJoin.fetch(false);
-                }
-            }
         }
 
-        serializeJoinerQuery(subQueryCopy, subQueryCopy.isCount());
+        serializeJoinerQuery(subQueryCopy);
         return query.toString();
     }
 

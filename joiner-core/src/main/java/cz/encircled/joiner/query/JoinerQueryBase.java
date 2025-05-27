@@ -6,6 +6,7 @@ import com.querydsl.core.Tuple;
 import com.querydsl.core.types.*;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.CollectionPathBase;
+import cz.encircled.joiner.core.JoinerJPQLSerializer;
 import cz.encircled.joiner.query.join.J;
 import cz.encircled.joiner.query.join.JoinDescription;
 import cz.encircled.joiner.util.Assert;
@@ -436,6 +437,8 @@ public class JoinerQueryBase<T, R> implements JoinerQuery<T, R>, JoinRoot, SubQu
 
     @Override
     public String toString() {
+        JoinerJPQLSerializer serializer = new JoinerJPQLSerializer();
+
         return "JoinerQueryBase{" +
                 "from=" + from +
                 ", returnProjection=" + returnProjection +
@@ -451,7 +454,7 @@ public class JoinerQueryBase<T, R> implements JoinerQuery<T, R>, JoinRoot, SubQu
                 ", limit=" + limit +
                 ", orders=" + orders +
                 ", isCount=" + isCount +
-                '}';
+                "}, query:\n" + serializer.serialize(this);
     }
 
     @Override

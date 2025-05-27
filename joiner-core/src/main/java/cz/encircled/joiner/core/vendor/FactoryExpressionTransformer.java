@@ -1,30 +1,21 @@
 package cz.encircled.joiner.core.vendor;
 
 import com.querydsl.core.types.FactoryExpression;
-import org.hibernate.transform.ResultTransformer;
-
-import java.util.List;
+import org.hibernate.query.TupleTransformer;
 
 /**
- * {@code FactoryExpressionTransformer} is a ResultTransformer implementation using
+ * {@code FactoryExpressionTransformer} is a TupleTransformer implementation using
  * FactoryExpression instances for transformation
  *
  * @author QueryDSL team
  *
  */
-public final class FactoryExpressionTransformer implements ResultTransformer {
-
-    private static final long serialVersionUID = -3625957233853100239L;
+public final class FactoryExpressionTransformer implements TupleTransformer<Object> {
 
     private final transient FactoryExpression<?> projection;
 
     public FactoryExpressionTransformer(FactoryExpression<?> projection) {
         this.projection = projection;
-    }
-
-    @Override
-    public List transformList(List collection) {
-        return collection;
     }
 
     @Override

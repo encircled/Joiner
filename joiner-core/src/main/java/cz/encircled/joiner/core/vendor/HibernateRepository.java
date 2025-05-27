@@ -19,7 +19,7 @@ public class HibernateRepository extends VendorRepository {
     @Override
     public JoinerJpaQuery createQuery(JoinerQuery<?, ?> request, JoinerProperties joinerProperties, EntityManager entityManager) {
         JoinerJPQLSerializer serializer = new JoinerJPQLSerializer();
-        String queryString = serializer.serialize(request, request.isCount());
+        String queryString = serializer.serialize(request);
 
         StatelessSession session = null;
         Query<?> jpaQuery;
@@ -27,7 +27,7 @@ public class HibernateRepository extends VendorRepository {
         if (isStateless) {
             request.setStatelessSession(true);
             session = entityManager.unwrap(Session.class).getSessionFactory().openStatelessSession();
-            jpaQuery = session.createQuery(queryString);
+            jpaQuery = session.createQuery(queryString, null);
         } else {
             jpaQuery = (Query<?>) entityManager.createQuery(queryString);
         }
@@ -45,13 +45,14 @@ public class HibernateRepository extends VendorRepository {
         }
 
         if (request.getReturnProjection() instanceof FactoryExpression<?> p) {
-            jpaQuery.setResultTransformer(new FactoryExpressionTransformer(p));
+            jpaQuery.setTupleTransformer(new FactoryExpressionTransformer(p));
         }
 
         return new JoinerJpaQuery(jpaQuery, queryString, session);
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public <T> List<T> fetchResult(JoinerQuery<?, T> request, jakarta.persistence.Query jpaQuery) {
         return jpaQuery.getResultList();
     }

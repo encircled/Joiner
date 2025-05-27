@@ -111,7 +111,7 @@ abstract class GenericHibernateReactiveJoiner(val emf: EntityManagerFactory) {
     protected fun <R> createQuery(session: Stage.Session, query: JoinerQuery<*, R>): Stage.Query<R> {
         joiner.toJPAQuery(query)
         val serializer = JoinerJPQLSerializer()
-        val queryString = serializer.serialize(query, query.isCount)
+        val queryString = serializer.serialize(query)
         val jpaQuery = session.createQuery<R>(queryString)
 
         query.limit?.apply { jpaQuery.maxResults = toInt() }
