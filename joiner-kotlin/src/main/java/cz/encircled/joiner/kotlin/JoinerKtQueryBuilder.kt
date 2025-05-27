@@ -19,11 +19,8 @@ import kotlin.reflect.KClass
  */
 
 class PredicateContinuation<T>(
-    val block: ((SimpleExpression<T>) -> BooleanExpression) -> BooleanExpression
-) {
-    inline val t: ((SimpleExpression<T>) -> BooleanExpression) -> BooleanExpression
-        get() = block
-}
+    val chain: ((SimpleExpression<T>) -> BooleanExpression) -> BooleanExpression
+)
 
 object JoinerKtOps : ConditionOps, JoinOps {
     override var lastJoin: JoinDescription? = null

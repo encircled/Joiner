@@ -52,7 +52,7 @@ public class EclipselinkRepository extends VendorRepository {
         Query jpaQuery = entityManager.createQuery(queryString);
         setQueryParams(serializer, jpaQuery, request, joinerProperties);
 
-        return new JoinerJpaQuery(jpaQuery, queryString,null);
+        return new JoinerJpaQuery(jpaQuery, queryString, null);
     }
 
     @Override
@@ -61,24 +61,28 @@ public class EclipselinkRepository extends VendorRepository {
         Expression<T> projection = request.getReturnProjection();
         if (projection instanceof FactoryExpression<?> p) {
             List<?> results = jpaQuery.getResultList();
-            List<Object> rv = new ArrayList<>(results.size());
-
-            for (Object o : results) {
-                if (o != null) {
-                    if (!o.getClass().isArray()) {
-                        o = new Object[]{o};
-                    }
-
-                    rv.add(p.newInstance((Object[]) o));
-                } else {
-                    rv.add(p.newInstance(new Object[]{null}));
-                }
-            }
-
-            return (List<T>) rv;
+            return (List<T>) transformToTuple(p, results);
         } else {
             return jpaQuery.getResultList();
         }
+    }
+
+    List<?> transformToTuple(FactoryExpression<?> exp, List<?> results) {
+        List<Object> rv = new ArrayList<>(results.size());
+
+        for (Object o : results) {
+            if (o != null) {
+                if (!o.getClass().isArray()) {
+                    o = new Object[]{o};
+                }
+
+                rv.add(exp.newInstance((Object[]) o));
+            } else {
+                rv.add(exp.newInstance(new Object[]{null}));
+            }
+        }
+
+        return rv;
     }
 
     private String resolvePathToFieldFromRoot(String rootAlias, JoinDescription targetJoinDescription, Collection<JoinDescription> joins) {
