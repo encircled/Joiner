@@ -3,6 +3,7 @@ package cz.encircled.joiner.core;
 import cz.encircled.joiner.TestDataListener;
 import cz.encircled.joiner.TestWithLogging;
 import cz.encircled.joiner.config.TestConfig;
+import cz.encircled.joiner.core.vendor.JoinerJpaQuery;
 import cz.encircled.joiner.model.AbstractEntity;
 import cz.encircled.joiner.query.JoinerQuery;
 import cz.encircled.joiner.query.join.JoinGraphRegistry;
@@ -87,8 +88,10 @@ public abstract class AbstractTest extends TestWithLogging {
     }
 
     void assertQueryContains(String expected, JoinerQuery<?, ?> query) {
-        String actual = joiner.toJPAQuery(query).queryString.replaceAll(" join fetch ", " join ");
-        assertTrue(actual.contains(expected), "actual: " + actual);
+        try (JoinerJpaQuery jpaQuery = joiner.toJPAQuery(query)) {
+            String actual = jpaQuery.queryString.replaceAll(" join fetch ", " join ");
+            assertTrue(actual.contains(expected), "actual: " + actual);
+        }
     }
 
 }

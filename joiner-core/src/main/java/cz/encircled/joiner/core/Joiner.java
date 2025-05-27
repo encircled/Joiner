@@ -119,7 +119,7 @@ public class Joiner {
         return vendorRepository.createQuery(request, joinerProperties, entityManager);
     }
 
-    protected  <T, R> void preprocessRequestQuery(JoinerQuery<T, R> request) {
+    public <T, R> void preprocessRequestQuery(JoinerQuery<T, R> request) {
         notNull(request);
         notNull(request.getFrom());
 

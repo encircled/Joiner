@@ -438,23 +438,7 @@ public class JoinerQueryBase<T, R> implements JoinerQuery<T, R>, JoinRoot, SubQu
     @Override
     public String toString() {
         JoinerJPQLSerializer serializer = new JoinerJPQLSerializer();
-
-        return "JoinerQueryBase{" +
-                "from=" + from +
-                ", returnProjection=" + returnProjection +
-                ", where=" + where +
-                ", joins=" + joins +
-                ", joinGraphs=" + joinGraphs +
-                ", distinct=" + distinct +
-                ", groupBy=" + groupBy +
-                ", having=" + having +
-                ", hints=" + hints +
-                ", features=" + features +
-                ", offset=" + offset +
-                ", limit=" + limit +
-                ", orders=" + orders +
-                ", isCount=" + isCount +
-                "}, query:\n" + serializer.serialize(this);
+        return serializer.serialize(this);
     }
 
     @Override
