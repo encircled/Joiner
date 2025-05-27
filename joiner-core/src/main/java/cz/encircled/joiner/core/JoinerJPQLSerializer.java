@@ -334,6 +334,8 @@ public class JoinerJPQLSerializer {
     }
 
     private void appendOrderBy(JoinerQuery<?, ?> joinerQuery) {
+        if (joinerQuery.isCount()) return;
+
         List<QueryOrder> orders = joinerQuery.getOrder();
         if (orders != null && !orders.isEmpty()) {
             query.append(" order by ");
@@ -356,10 +358,27 @@ public class JoinerJPQLSerializer {
      * @return the serialized expression
      */
     private String serializeExpression(Expression<?> expression) {
+        return serializeExpression(expression, null);
+    }
+
+    /**
+     * Serialize an expression to a JPQL string.
+     * This implementation handles basic expressions and operations.
+     *
+     * @param expression the expression to serialize
+     * @return the serialized expression
+     */
+    private String serializeExpression(Expression<?> expression, String constantOperator) {
         // For constants, we add them to the constants list and return a parameter placeholder
         if (expression instanceof com.querydsl.core.types.Constant) {
             Object constant = ((com.querydsl.core.types.Constant<?>) expression).getConstant();
-            constants.add(constant);
+            if (Objects.equals(constantOperator, "STRING_CONTAINS")) {
+                constants.add("%" + constant + "%");
+            } else if (Objects.equals(constantOperator, "STARTS_WITH")) {
+                constants.add(constant + "%");
+            } else {
+                constants.add(constant);
+            }
             String label = constantPrefix + constants.size();
             constantToLabel.put(constant, label);
             return "?" + constants.size();
@@ -389,8 +408,8 @@ public class JoinerJPQLSerializer {
             // Handle different types of operations
             if (args.size() == 2) {
                 // Binary operation (e.g., a = b, a > b)
-                String left = serializeExpression(args.get(0));
-                String right = serializeExpression(args.get(1));
+                String left = serializeExpression(args.get(0), operator);
+                String right = serializeExpression(args.get(1), operator);
 
                 // Special handling for common operators
                 return switch (operator) {
@@ -400,11 +419,8 @@ public class JoinerJPQLSerializer {
                     case "GE" -> left + " >= " + right;
                     case "LT" -> left + " < " + right;
                     case "LE" -> left + " <= " + right;
-                    case "AND" -> left + " and " + right;
-                    case "OR" -> left + " or " + right;
-                    case "LIKE" -> left + " like " + right;
-                    case "IN" -> left + " in " + right;
-                    default -> left + " " + operator.toLowerCase() + " " + right;
+                    case "STARTS_WITH", "STRING_CONTAINS" -> left + " like " + right;
+                    default -> left + " " + operator.toLowerCase().replaceAll("_", " ") + " " + right;
                 };
             } else if (args.size() == 1) {
                 // Unary operation (e.g., not a)

@@ -104,6 +104,14 @@ public class Joiner {
         boolean skip = false;
         JPQLQuery<R> query = toJPAQuery(request);
 
+        try {
+            Method m = JPAQueryBase.class.getDeclaredMethod("serialize", boolean.class);
+            m.setAccessible(true);
+            System.out.println("\nQDSL:\n" + m.invoke(query, request.isCount()) + "\n\n");
+        } catch (Exception e) {
+
+        }
+
         List<R> result;
         if (request.isCount()) {
             if (skip) {
@@ -112,13 +120,7 @@ public class Joiner {
                 result = joinerVendorRepository.getResultList(request, getJoinerProperties(), entityManager);
             }
         } else {
-            try {
-                Method m = JPAQueryBase.class.getDeclaredMethod("serialize", boolean.class);
-                m.setAccessible(true);
-                System.out.println("\nQDSL:\n" + m.invoke(query, false) + "\n\n");
-            } catch (Exception e) {
 
-            }
 
             if (skip) {
                 result = query.fetch();

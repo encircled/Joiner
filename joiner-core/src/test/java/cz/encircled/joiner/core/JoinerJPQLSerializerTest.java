@@ -40,6 +40,7 @@ public class JoinerJPQLSerializerTest {
         JoinerQuery<?, ?> query = Q.from(user);
         String jpql = serializer.serialize(query, false);
         assertEquals("select distinct user1 from User user1 ", jpql);
+        assertConstants(serializer);
     }
 
     @Test
@@ -47,6 +48,7 @@ public class JoinerJPQLSerializerTest {
         JoinerQuery<?, ?> query = Q.select(ProjectionTest.class, user.name, user.id).from(user);
         String jpql = serializer.serialize(query, false);
         assertEquals("select distinct user1.name, user1.id from User user1 ", jpql);
+        assertConstants(serializer);
     }
 
     @Test
@@ -55,6 +57,7 @@ public class JoinerJPQLSerializerTest {
         JoinerQuery<?, ?> query = Q.select(myUser.name).from(myUser);
         String jpql = serializer.serialize(query, false);
         assertEquals("select distinct my_user.name from User my_user ", jpql);
+        assertConstants(serializer);
     }
 
     @Test
@@ -62,6 +65,7 @@ public class JoinerJPQLSerializerTest {
         JoinerQuery<?, ?> query = Q.from(user);
         String jpql = serializer.serialize(query, true);
         assertEquals("select count(user1) from User user1 ", jpql);
+        assertConstants(serializer);
     }
 
     @Test
@@ -69,8 +73,60 @@ public class JoinerJPQLSerializerTest {
         JoinerQuery<?, ?> query = Q.from(user).where(user.name.eq("John"));
         String jpql = serializer.serialize(query, false);
         assertEquals("select distinct user1 from User user1  where user1.name = ?1", jpql);
-        assertEquals(1, serializer.getConstants().size());
-        assertEquals("John", serializer.getConstants().get(0));
+        assertConstants(serializer, "John");
+    }
+
+    @Nested
+    class ExpressionOperators {
+
+        @Test
+        public void inWithSingleParam() {
+            JoinerQuery<?, ?> query = Q.from(user).where(user.id.in(0L));
+            String jpql = serializer.serialize(query, false);
+            assertEquals("select distinct user1 from User user1  where user1.id = ?1", jpql);
+            assertConstants(serializer, 0L);
+        }
+
+        @Test
+        public void inWithMultipleParam() {
+            JoinerQuery<?, ?> query = Q.from(user).where(user.id.in(0L, 1L));
+            String jpql = serializer.serialize(query, false);
+            assertEquals("select distinct user1 from User user1  where user1.id in ?1", jpql);
+            assertConstants(serializer, List.of(0L, 1L));
+        }
+
+        @Test
+        public void notInWithSingleParam() {
+            JoinerQuery<?, ?> query = Q.from(user).where(user.id.notIn(0L));
+            String jpql = serializer.serialize(query, false);
+            assertEquals("select distinct user1 from User user1  where user1.id <> ?1", jpql);
+            assertConstants(serializer, 0L);
+        }
+
+        @Test
+        public void notInWithMultipleParam() {
+            JoinerQuery<?, ?> query = Q.from(user).where(user.id.notIn(0L, 1L));
+            String jpql = serializer.serialize(query, false);
+            assertEquals("select distinct user1 from User user1  where user1.id not in ?1", jpql);
+            assertConstants(serializer, List.of(0L, 1L));
+        }
+
+        @Test
+        public void isNull() {
+            JoinerQuery<?, ?> query = Q.from(user).where(user.id.isNull());
+            String jpql = serializer.serialize(query, false);
+            assertEquals("select distinct user1 from User user1  where user1.id is null", jpql);
+            assertConstants(serializer);
+        }
+
+        @Test
+        public void startsWith() {
+            JoinerQuery<?, ?> query = Q.from(user).where(user.name.startsWith("J"));
+            String jpql = serializer.serialize(query, false);
+            assertEquals("select distinct user1 from User user1  where user1.name like ?1", jpql);
+            assertConstants(serializer, "J%");
+        }
+
     }
 
     @Test
@@ -86,17 +142,14 @@ public class JoinerJPQLSerializerTest {
         JoinerQuery<?, ?> query = Q.from(user).joins(J.left(user.groups).collectionPath(user.groups).nested(J.left(group.users).collectionPath(group.users)));
         String jpql = serializer.serialize(query, false);
         assertEquals("select distinct user1 from User user1  left join fetch user1.groups as group1 left join fetch group1.users as user1_on_group1", jpql);
-        assertTrue(jpql.contains("left join fetch user1.groups"));
-        assertTrue(jpql.contains("left join fetch group1.users"));
     }
 
     @Test
     public void testOrderBy() {
         JoinerQuery<?, ?> query = Q.from(user).asc(user.name);
         String jpql = serializer.serialize(query, false);
-        System.out.println("testOrderBy JPQL: " + jpql);
-        assertTrue(jpql.contains("order by"));
-        assertTrue(jpql.contains("user1.name asc"));
+        assertEquals("select distinct user1 from User user1  order by user1.name asc", jpql);
+        assertConstants(serializer);
     }
 
     @Test
@@ -111,9 +164,8 @@ public class JoinerJPQLSerializerTest {
     public void testHaving() {
         JoinerQuery<?, ?> query = Q.from(user).groupBy(user.name).having(user.id.gt(0L));
         String jpql = serializer.serialize(query, false);
-        System.out.println(jpql);
         assertEquals("select distinct user1 from User user1  group by user1.name having user1.id > ?1", jpql);
-        assertEquals(0L, serializer.getConstants().get(0));
+        assertConstants(serializer, 0L);
     }
 
     @Test
@@ -125,10 +177,8 @@ public class JoinerJPQLSerializerTest {
         serializer.serialize(metadata, false, null);
         String jpql = serializer.toString();
 
-        System.out.println(jpql);
-        assertTrue(jpql.contains("select"));
-        assertTrue(jpql.contains("from User"));
-        assertTrue(jpql.contains("where"));
+        assertEquals("select user1 from User user1 where user1.name = ?1 ", jpql);
+        assertConstants(serializer, "John");
     }
 
     @Test
@@ -156,22 +206,14 @@ public class JoinerJPQLSerializerTest {
 
     @Test
     public void testPredicateWithConstants() {
-        // Create a query with a predicate that contains constants
         JoinerQuery<?, ?> query = Q.from(user).where(user.name.eq("John").and(user.id.gt(10L)));
 
-        // Serialize the query
         String jpql = serializer.serialize(query, false);
-        System.out.println("testPredicateWithConstants JPQL: " + jpql);
 
-        // Verify that the constants are replaced with parameter placeholders
         assertTrue(jpql.contains("user1.name = ?"));
         assertTrue(jpql.contains("user1.id > ?"));
 
-        // Verify that the constants are added to the constants list
-        List<Object> constants = serializer.getConstants();
-        assertEquals(2, constants.size());
-        assertEquals("John", constants.get(0));
-        assertEquals(10L, constants.get(1));
+        assertConstants(serializer, "John", 10L);
     }
 
     @Nested
@@ -179,7 +221,7 @@ public class JoinerJPQLSerializerTest {
 
         @Test
         public void testAvgFunction() {
-            // Create a query with avg function in projection
+            // Create a query with avg function in the projection
             JoinerQuery<?, ?> query = Q.select(address.id.avg()).from(address).groupBy(address.user);
 
             // Serialize the query
@@ -255,14 +297,10 @@ public class JoinerJPQLSerializerTest {
                     .groupBy(address.user)
                     .having(address.id.count().gt(2));
 
-            // Serialize the query
             String jpql = serializer.serialize(query, false);
-            System.out.println("testFunctionInHaving JPQL: " + jpql);
 
-            // Verify that the function in having clause is correctly serialized
-            assertTrue(jpql.contains("select distinct avg(address.id)"));
-            assertTrue(jpql.contains("group by address.user"));
-            assertTrue(jpql.contains("having count(address.id) > ?"));
+            assertEquals("select distinct avg(address.id) from Address address  group by address.user having count(address.id) > ?1", jpql);
+            assertConstants(serializer, 2L);
         }
     }
 
@@ -275,7 +313,7 @@ public class JoinerJPQLSerializerTest {
 
             String jpql = serializer.serialize(query, false);
             assertEquals("select distinct user1 from User user1  where user1.id = ?1 or user1.id in (select distinct address.user.id from Address address  where address.id = ?2)", jpql);
-            assertEquals(2, serializer.getConstants().size());
+            assertConstants(serializer, 2L, 1L);
         }
 
         @Test
@@ -286,9 +324,15 @@ public class JoinerJPQLSerializerTest {
             String jpql = serializer.serialize(query, false);
             System.out.println("testNestedSubQueryInPredicate JPQL: " + jpql);
 
-            assertTrue(jpql.contains("select distinct user1 from"));
-            assertTrue(jpql.contains("where user1.id <> ("));
-            assertTrue(jpql.contains("select distinct max(user1.id) from"));
+            assertEquals("select distinct user1 from User user1  where user1.id <> (select distinct max(user1.id) from User user1 )", jpql);
+            assertConstants(serializer);
+        }
+    }
+
+    void assertConstants(JoinerJPQLSerializer serializer, Object... expected) {
+        assertEquals(expected.length, serializer.getConstants().size());
+        for (int i = 0; i < expected.length; i++) {
+            assertEquals(expected[i], serializer.getConstants().get(i));
         }
     }
 

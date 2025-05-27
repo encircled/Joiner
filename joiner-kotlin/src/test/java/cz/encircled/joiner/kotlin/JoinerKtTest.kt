@@ -126,7 +126,7 @@ class JoinerKtTest : AbstractTest() {
 
                     where { it.name eq "user1" or it.id ne 1 or it.id isIn listOf(1) }
 
-                    asc user1.id
+                    asc user1.id // this should be ignored as we have countOf() in the query
         )
 
         assertEquals(7, find)

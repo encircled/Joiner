@@ -1,7 +1,6 @@
 package cz.encircled.joiner.eclipse;
 
 import cz.encircled.joiner.exception.JoinerException;
-import org.eclipse.persistence.config.DescriptorCustomizer;
 import org.eclipse.persistence.descriptors.ClassDescriptor;
 import org.eclipse.persistence.descriptors.InheritancePolicy;
 import org.eclipse.persistence.internal.descriptors.ObjectBuilder;
@@ -17,7 +16,7 @@ import java.util.HashMap;
  *
  * @author Vlad on 06-Sep-16.
  */
-public class InheritanceJoiningCustomizer implements DescriptorCustomizer {
+public class InheritanceJoiningCustomizer implements org.eclipse.persistence.descriptors.DescriptorCustomizer {
 
     private static final String SPACE = " ";
 

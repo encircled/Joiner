@@ -27,8 +27,8 @@ public class PageableFeatureTest {
 
         new PageableFeature(PageRequest.of(2, 10)).before(request);
 
-        assertEquals(Long.valueOf(10L), request.getLimit());
-        assertEquals(Long.valueOf(20L), request.getOffset());
+        assertEquals(10, request.getLimit());
+        assertEquals(20, request.getOffset());
     }
 
     @Test
