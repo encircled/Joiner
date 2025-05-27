@@ -113,28 +113,19 @@ public class JoinerJPQLSerializer {
         return constantToLabel;
     }
 
-    @Override
-    public String toString() {
-        return query.toString();
-    }
-
     private void appendProjection(JoinerQuery<?, ?> joinerQuery) {
         Expression<?> projection = joinerQuery.getReturnProjection();
-        if (projection != null) {
-            if (projection instanceof FactoryExpressionBase) {
-                List<Expression<?>> args = ((FactoryExpressionBase) projection).getArgs();
-                for (int i = 0; i < args.size(); i++) {
-                    if (i > 0) {
-                        query.append(", ");
-                    }
-                    query.append(serializeExpression(args.get(i)));
+        if (projection instanceof FactoryExpressionBase<?> p) {
+            List<Expression<?>> args = p.getArgs();
+            for (int i = 0; i < args.size(); i++) {
+                if (i > 0) {
+                    query.append(", ");
                 }
-
-            } else {
-                query.append(serializeExpression(projection));
+                query.append(serializeExpression(args.get(i)));
             }
+
         } else {
-            query.append(joinerQuery.getFrom().getMetadata().getName());
+            query.append(serializeExpression(projection));
         }
     }
 
@@ -372,6 +363,7 @@ public class JoinerJPQLSerializer {
                     case "NULLIF" -> "nullif(" + left + ", " + right + ")";
                     case "CAST" -> "cast(" + left + " as " + right + ")";
                     case "TREAT" -> "treat(" + left + " as " + right + ")";
+                    case "LIST" -> "(" + left + ", " + right + ")";
                     default -> left + " " + operator.toLowerCase().replaceAll("_", " ") + " " + right;
                 };
             } else if (args.size() == 1) {

@@ -38,7 +38,6 @@ import static cz.encircled.joiner.util.Assert.notNull;
  * @author Kisel on 26.01.2016.
  */
 public class Joiner {
-    // TODO query level conf ?
 
     private static final Logger log = LoggerFactory.getLogger(Joiner.class);
 
@@ -85,7 +84,7 @@ public class Joiner {
     }
 
     public <T, R> List<R> find(JoinerQuery<T, R> request) {
-        toJPAQuery(request);
+        preprocessRequestQuery(request);
 
         List<R> result;
         try (JoinerJpaQuery jpaQuery = vendorRepository.createQuery(request, joinerProperties, entityManager)) {
@@ -115,19 +114,18 @@ public class Joiner {
         return entity;
     }
 
-    public <T, R> JoinerJpaQuery toJPAQuery2(JoinerQuery<T, R> request) {
-        toJPAQuery(request);
+    public <T, R> JoinerJpaQuery toJPAQuery(JoinerQuery<T, R> request) {
+        preprocessRequestQuery(request);
         return vendorRepository.createQuery(request, joinerProperties, entityManager);
     }
 
-    public <T, R> void toJPAQuery(JoinerQuery<T, R> request) {
+    protected  <T, R> void preprocessRequestQuery(JoinerQuery<T, R> request) {
         notNull(request);
         notNull(request.getFrom());
 
         setJoinsFromJoinsGraphs(request);
 
-        List<QueryFeature> queryFeatures = getQueryFeatures(request);
-        for (QueryFeature feature : queryFeatures) {
+        for (QueryFeature feature : getQueryFeatures(request)) {
             request = feature.before(request);
         }
 
@@ -137,9 +135,7 @@ public class Joiner {
         List<JoinDescription> joins = preprocessJoins(request, usedAliases);
 
         addJoins(joins, request);
-
         applyPredicates(request, usedAliases, joins);
-
         applyPaging(request, usedAliases, joins);
     }
 
@@ -170,12 +166,6 @@ public class Joiner {
 
     /**
      * Apply "where", "groupBy" and "having"
-     *
-     * @param request
-     * @param usedAliases
-     * @param joins
-     * @param <T>
-     * @param <R>
      */
     private <T, R> void applyPredicates(JoinerQuery<T, R> request, Set<Path<?>> usedAliases, List<JoinDescription> joins) {
         if (request.getWhere() != null) {

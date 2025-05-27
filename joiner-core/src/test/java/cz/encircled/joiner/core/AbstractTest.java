@@ -87,7 +87,7 @@ public abstract class AbstractTest extends TestWithLogging {
     }
 
     void assertQueryContains(String expected, JoinerQuery<?, ?> query) {
-        String actual = joiner.toJPAQuery2(query).queryString.replaceAll(" join fetch ", " join ");
+        String actual = joiner.toJPAQuery(query).queryString.replaceAll(" join fetch ", " join ");
         assertTrue(actual.contains(expected), "actual: " + actual);
     }
 

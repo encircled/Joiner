@@ -1,7 +1,6 @@
 package cz.encircled.joiner.core;
 
 import com.querydsl.core.BooleanBuilder;
-import com.querydsl.core.DefaultQueryMetadata;
 import com.querydsl.core.types.Expression;
 import com.querydsl.core.types.Operation;
 import com.querydsl.core.types.Operator;
@@ -101,7 +100,7 @@ public class DefaultPredicateAliasResolver implements PredicateAliasResolver {
                 newArg = resolvePath((Path<?>) arg, classToJoin, usedAliases);
             } else if (arg instanceof JoinerQuery<?, ?>) {
                 JoinerQuery<?, ?> subQuery = (JoinerQuery<?, ?>) arg;
-                joiner.toJPAQuery(subQuery);
+                joiner.preprocessRequestQuery(subQuery);
             }
 
             result.args.add(newArg);

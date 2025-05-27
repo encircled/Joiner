@@ -30,8 +30,10 @@ public class EclipselinkRepository extends VendorRepository {
         String path = resolvePathToFieldFromRoot(rootEntityAlias, joinDescription, joins);
 
         String fetchHint = joinDescription.getJoinType().equals(JoinType.LEFTJOIN) ? "eclipselink.left-join-fetch" : "eclipselink.join-fetch";
-        request.addHint(fetchHint, path);
-
+        List<Object> existing = request.getHints().get(fetchHint);
+        if (existing == null || !existing.contains(path)) {
+            request.addHint(fetchHint, path);
+        }
     }
 
     @Override

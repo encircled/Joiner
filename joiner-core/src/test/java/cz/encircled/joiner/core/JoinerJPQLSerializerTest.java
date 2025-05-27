@@ -95,7 +95,7 @@ public class JoinerJPQLSerializerTest {
         }
 
         @Test
-        public void notInWithSingleParam() {
+        public void notInWithSingleConstant() {
             JoinerQuery<?, ?> query = Q.from(user).where(user.id.notIn(0L));
             String jpql = serializer.serialize(query);
             assertEquals("select distinct user1 from User user1 where user1.id <> ?1", jpql);
@@ -103,11 +103,27 @@ public class JoinerJPQLSerializerTest {
         }
 
         @Test
-        public void notInWithMultipleParam() {
+        public void notInWithMultipleConstants() {
             JoinerQuery<?, ?> query = Q.from(user).where(user.id.notIn(0L, 1L));
             String jpql = serializer.serialize(query);
             assertEquals("select distinct user1 from User user1 where user1.id not in ?1", jpql);
             assertConstants(serializer, List.of(0L, 1L));
+        }
+
+        @Test
+        public void notInWithTwoParams() {
+            JoinerQuery<?, ?> query = Q.from(user).where(user.id.notIn(user.id, user.id));
+            String jpql = serializer.serialize(query);
+            assertEquals("select distinct user1 from User user1 where user1.id not in (user1.id, user1.id)", jpql);
+            assertConstants(serializer);
+        }
+
+        @Test
+        public void notInWithMultipleParams() {
+            JoinerQuery<?, ?> query = Q.from(user).where(user.id.notIn(user.id, user.id, user.id));
+            String jpql = serializer.serialize(query);
+            assertEquals("select distinct user1 from User user1 where user1.id not in ((user1.id, user1.id), user1.id)", jpql);
+            assertConstants(serializer);
         }
 
         @Test
@@ -466,8 +482,7 @@ public class JoinerJPQLSerializerTest {
         public void testCoalesce() {
             JoinerQuery<?, ?> query = Q.from(user).where(user.name.coalesce("Unknown").eq("John"));
             String jpql = serializer.serialize(query);
-            assertTrue(jpql.contains("where coalesce(user1.name") && 
-                       jpql.contains("= ?2"));
+            assertEquals("select distinct user1 from User user1 where coalesce((user1.name, ?1)) = ?2", jpql);
             assertConstants(serializer, "Unknown", "John");
         }
     }

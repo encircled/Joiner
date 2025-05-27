@@ -352,7 +352,6 @@ public abstract class BasicJoinTest extends AbstractTest {
         assertQueryContains("userStatus_on_user1.id is not null", query);
     }
 
-    // select distinct group1 from Group group1 left join fetch group1.statuses as groupStatus left join fetch group1.users as user1 left join fetch user1.statuses as userStatus_on_user1 on userStatus_on_user1.id is not null
     @Test
     public void testPredicateAliasInJoinOn() {
         JoinerQuery<Group, Group> query = Q.from(QGroup.group)
@@ -364,9 +363,18 @@ public abstract class BasicJoinTest extends AbstractTest {
 
     @Test
     public void testRepeatedExecution() {
-        JoinerQuery<Group, Group> request = Q.from(QGroup.group).joins(J.left(QUser.user1).nested(J.left(QAddress.address))).where(QAddress.address.name.eq("street1"));
-        joiner.find(request);
-        joiner.find(request);
+        JoinerQuery<Group, Group> request = Q.from(QGroup.group).joins(J.left(QUser.user1).nested(J.left(QAddress.address))).where(QAddress.address.name.eq("user1street1"));
+
+        List<Group> groups = joiner.find(request);
+        assertEquals(1, groups.size());
+        assertTrue(isLoaded(groups.get(0), "users"));
+
+        entityManager.flush();
+        entityManager.clear();
+
+        groups = joiner.find(request);
+        assertEquals(1, groups.size());
+        assertTrue(isLoaded(groups.get(0), "users"));
     }
 
 }
