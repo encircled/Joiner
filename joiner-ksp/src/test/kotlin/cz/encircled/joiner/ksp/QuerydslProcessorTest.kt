@@ -2,6 +2,7 @@
 
 package cz.encircled.joiner.ksp
 
+import com.google.devtools.ksp.processing.KSPLogger
 import com.google.devtools.ksp.symbol.*
 import com.tschuchort.compiletesting.KotlinCompilation
 import com.tschuchort.compiletesting.SourceFile
@@ -17,17 +18,16 @@ import kotlin.test.assertTrue
 class QuerydslProcessorTest {
 
     @Test
-    fun test2() {
-        val actual = QuerydslProcessor().processEntity(MockKSClassDeclaration(Customer::class) as KSClassDeclaration)
-        println(actual)
+    fun testEntityWithAllFieldTypes() {
+        val actual = QuerydslProcessor(TestLogger()).processEntity(MockKSClassDeclaration(Customer::class) as KSClassDeclaration)
+        assertTrue(actual.contains("NumberPath<Double> doubleValue = createNumber(\"doubleValue\", kotlin.Double.class)"))
     }
 
     @Test
-    fun test() {
+    fun testEntityWithInheritance() {
         val sourceCode =
             File("../joiner-test-support/target/generated-sources/annotations/cz/encircled/joiner/model/QUser.java").readText()
-        val actual = QuerydslProcessor().processEntity(MockKSClassDeclaration(User::class) as KSClassDeclaration)
-        println(actual)
+        val actual = QuerydslProcessor(TestLogger()).processEntity(MockKSClassDeclaration(User::class) as KSClassDeclaration)
 
         sourceCode.lines().filter { !it.contains("@Generated") && !it.contains("serialVersionUID") && !it.trim().startsWith("//") }.forEach { line ->
             assertTrue(actual.contains(line.trim()))
@@ -59,7 +59,10 @@ class QuerydslProcessorTest {
                 val children: List<TestEntity> = listOf(),
 
                 @ManyToOne
-                val parent: TestEntity? = null
+                val parent: TestEntity? = null,
+
+                @ManyToOne
+                val testEntity: TestEntity? = null // self ref with the same name
             )
         """.trimIndent()
         )
@@ -85,4 +88,27 @@ class QuerydslProcessorTest {
         assertTrue("public final NumberPath<Long> id" in content)
         assertTrue("public final StringPath name" in content)
     }
+
+    class TestLogger : KSPLogger {
+        override fun error(message: String, symbol: KSNode?) {
+            println(message)
+        }
+
+        override fun exception(e: Throwable) {
+            println(e.message)
+        }
+
+        override fun info(message: String, symbol: KSNode?) {
+            println(message)
+        }
+
+        override fun logging(message: String, symbol: KSNode?) {
+            println(message)
+        }
+
+        override fun warn(message: String, symbol: KSNode?) {
+            println(message)
+        }
+    }
+
 }

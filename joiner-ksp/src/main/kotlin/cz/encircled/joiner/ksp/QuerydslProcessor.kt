@@ -9,16 +9,15 @@ import com.google.devtools.ksp.validate
  * This processor replicates the functionality of the Querydsl apt-maven-plugin.
  */
 class QuerydslProcessor(
+    private val logger: KSPLogger,
     private val codeGenerator: CodeGenerator? = null,
-    private val logger: KSPLogger? = null,
-    private val options: Map<String, String> = mapOf()
 ) : SymbolProcessor {
 
     fun Resolver.getSymbolsWithAnnotations(vararg annotations: String) =
         annotations.flatMap { getSymbolsWithAnnotation(it) }
 
     override fun process(resolver: Resolver): List<KSAnnotated> {
-        logger?.info("Starting Querydsl processor2")
+        logger.info("Starting Querydsl processor2")
 
         // Find all classes annotated with @Entity\@MappedSuperclass
         val entitySymbols =
@@ -27,7 +26,7 @@ class QuerydslProcessor(
                 .filter { it.validate() }
 
         if (entitySymbols.isEmpty()) {
-            logger?.info("No jakarta entity classes found")
+            logger.info("No jakarta entity classes found")
             return emptyList()
         }
 
@@ -58,7 +57,7 @@ class QuerydslProcessor(
             outputStream?.write(content.toByteArray())
         }
 
-        logger?.info("Generated Querydsl metamodel class: $packageName.$qClassName")
+        logger.info("Generated Querydsl metamodel class: $packageName.$qClassName")
         return content
     }
 
@@ -72,14 +71,14 @@ class QuerydslProcessor(
         ctx.append(
             """
         package $packageName;
-    
+
         import static com.querydsl.core.types.PathMetadataFactory.*;
         import com.querydsl.core.types.dsl.*;
         import com.querydsl.core.types.PathMetadata;
         import javax.annotation.processing.Generated;
         import com.querydsl.core.types.Path;
         import com.querydsl.core.types.dsl.PathInits;
-    
+
         /**
          * $qClassName is a Querydsl query type for $className
          */
@@ -135,7 +134,7 @@ class QuerydslProcessor(
         val propertyType = property.type.resolve()
         val propertyTypeDeclaration = propertyType.declaration
 
-        logger?.info("Processing property $propertyName of type ${propertyType.declaration.qualifiedName?.asString()}")
+        logger.info("Processing property $propertyName of type ${propertyType.declaration.qualifiedName?.asString()}")
 
         // Skip transient properties
         if (propertyName.startsWith("_") ||
@@ -154,7 +153,7 @@ class QuerydslProcessor(
         when {
             // Collection types
             propertyType.isCollectionType() -> {
-                logger?.info("Property $propertyName is a collection type")
+                logger.info("Property $propertyName is a collection type")
                 val elementType = propertyType.arguments.firstOrNull()?.type?.resolve()
                 if (elementType != null) {
                     val elementTypeName = elementType.declaration.simpleName.asString()
@@ -172,11 +171,13 @@ class QuerydslProcessor(
             }
             // Basic types
             propertyType.isBasicType() -> {
-                logger?.info("Property $propertyName is a basic type: ${propertyType.declaration.simpleName.asString()} (${propertyType.declaration.qualifiedName?.asString()}) - adding as a simple path")
+                logger.info("Property $propertyName is a basic type: ${propertyType.declaration.simpleName.asString()} (${propertyType.declaration.qualifiedName?.asString()}) - adding as a simple path")
                 val pathType = getPathTypeForBasicType(propertyType)
                 val value = if (isInherited) "= _super.$propertyName;"
-                else "createSimple(\"$propertyName\", ${propertyType.declaration.qualifiedName?.asString()}.class);"
-                ctx.append("    public final $pathType $propertyName $value\n")
+                else "= ${getCreateMethodForPathType(pathType)}(\"$propertyName\", ${getJavaClassName(propertyType)}.class);"
+                val line = "    public final $pathType $propertyName $value\n"
+                logger.info("Generated line: $line")
+                ctx.append(line)
             }
             // Entity references
             propertyTypeDeclaration is KSClassDeclaration && propertyTypeDeclaration.annotations.any { it.shortName.asString() == "Entity" } -> {
@@ -288,6 +289,23 @@ class QuerydslProcessor(
         }
     }
 
+    private fun getCreateMethodForPathType(pathType: String): String {
+        return when {
+            pathType.startsWith("StringPath") -> "createString"
+            pathType.startsWith("NumberPath") -> "createNumber"
+            pathType.startsWith("BooleanPath") -> "createBoolean"
+            pathType.startsWith("DatePath") -> "createDate"
+            pathType.startsWith("DateTimePath") -> "createDateTime"
+            pathType.startsWith("EnumPath") -> "createEnum"
+            else -> "createSimple"
+        }
+    }
+
+    private fun getJavaClassName(type: KSType): String {
+        val typeName = type.declaration.qualifiedName?.asString() ?: return "Object"
+        return typeName
+    }
+
     private fun String.decapitalize(): String {
         if (isEmpty() || !first().isUpperCase()) return this
         return first().lowercase() + substring(1)
@@ -312,10 +330,6 @@ class QuerydslProcessor(
  */
 class QuerydslProcessorProvider : SymbolProcessorProvider {
     override fun create(environment: SymbolProcessorEnvironment): SymbolProcessor {
-        return QuerydslProcessor(
-            codeGenerator = environment.codeGenerator,
-            logger = environment.logger,
-            options = environment.options
-        )
+        return QuerydslProcessor(environment.logger, environment.codeGenerator)
     }
 }

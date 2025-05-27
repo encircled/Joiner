@@ -8,6 +8,7 @@ import jakarta.persistence.ManyToOne
 import jakarta.persistence.MappedSuperclass
 import jakarta.persistence.OneToMany
 import jakarta.persistence.Table
+import java.time.LocalDate
 
 @MappedSuperclass
 abstract class AbstractEntity {
@@ -37,5 +38,9 @@ class Customer() : AbstractEntity() {
 
     @OneToMany(mappedBy = "customer")
     var employments: List<Employment> = listOf()
+
+    var doubleValue: Double? = null
+    var booleanValue: Boolean? = null
+    var localDateValue: LocalDate? = null
 
 }
