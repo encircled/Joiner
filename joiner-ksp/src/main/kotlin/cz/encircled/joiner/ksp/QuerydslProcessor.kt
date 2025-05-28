@@ -4,6 +4,11 @@ import com.google.devtools.ksp.processing.*
 import com.google.devtools.ksp.symbol.*
 import com.google.devtools.ksp.validate
 
+typealias PropertyType = String
+typealias ResultType = String
+
+val mapping: Map<Set<PropertyType>, ResultType> = mapOf()
+
 /**
  * KSP processor for generating Querydsl metamodel classes from JPA entities.
  * This processor replicates the functionality of the Querydsl apt-maven-plugin.
@@ -158,8 +163,6 @@ ${generateConstructors(ctx, className, qClassName)}
         val propertyType = property.type.resolve()
         val propertyTypeDeclaration = propertyType.declaration
 
-        logger.logging("Processing property $propertyName of type ${propertyType.declaration.qualifiedName?.asString()}")
-
         if (propertyName.startsWith("_") ||
             property.modifiers.contains(Modifier.JAVA_TRANSIENT) ||
             property.annotations.any { it.shortName.asString() == "Transient" } ||
@@ -177,7 +180,7 @@ ${generateConstructors(ctx, className, qClassName)}
             propertyType.isCollectionType() -> {
                 val elementType = propertyType.arguments.firstOrNull()?.type?.resolve()
                 if (elementType != null) {
-                    val elementTypeName = elementType.declaration.simpleName.asString()
+                    val elementTypeName = elementType.shortName()
                     val qElementTypeName = "Q$elementTypeName"
                     val collectionType = when {
                         propertyType.isListType() -> "List"
@@ -194,7 +197,7 @@ ${generateConstructors(ctx, className, qClassName)}
                     )
                 }
             }
-            // Basic types
+
             propertyType.isBasicType() -> {
                 val pathType = getPathTypeForBasicType(propertyType)
                 val value = when {
@@ -204,6 +207,7 @@ ${generateConstructors(ctx, className, qClassName)}
                 }
                 ctx.addField(pathType, propertyName, value)
             }
+
             // Entity references
             propertyTypeDeclaration is KSClassDeclaration && propertyTypeDeclaration.annotations.any { it.shortName.asString() == "Entity" } -> {
                 val referencedEntityName = propertyTypeDeclaration.simpleName.asString()
@@ -216,7 +220,7 @@ ${generateConstructors(ctx, className, qClassName)}
                     ctx.singularReferences.add(propertyName to propertyType)
                 }
             }
-            // Other types
+
             else -> {
                 ctx.addField(
                     "SimplePath<${propertyTypeDeclaration.simpleName.asString()}>",
@@ -233,58 +237,25 @@ ${generateConstructors(ctx, className, qClassName)}
 
     private fun KSType.isBasicType(): Boolean {
         val typeName = declaration.qualifiedName?.asString() ?: return false
-        return typeName.startsWith("java.lang.") ||
-                typeName.startsWith("kotlin.") ||
-                typeName == "java.util.Date" ||
-                typeName == "java.time.LocalDate" ||
-                typeName == "java.time.LocalDateTime" ||
-                typeName == "java.math.BigDecimal" ||
-                typeName == "java.math.BigInteger" ||
-                declaration.modifiers.contains(Modifier.ENUM)
+        return typeName in basicTypeToPathType.keys || declaration.modifiers.contains(Modifier.ENUM)
     }
 
     private fun KSType.isCollectionType(): Boolean {
         val typeName = declaration.qualifiedName?.asString() ?: return false
-        return typeName.startsWith("java.util.Collection") ||
-                typeName.startsWith("java.util.List") ||
-                typeName.startsWith("java.util.Set") ||
-                typeName.startsWith("kotlin.collections") ||
-                typeName == "kotlin.Array"
+        return typeName in collectionTypeMapping.keys
     }
 
-    private fun KSType.isListType(): Boolean {
-        val typeName = declaration.qualifiedName?.asString() ?: return false
-        return typeName.startsWith("java.util.List") ||
-                typeName == "kotlin.collections.List" ||
-                typeName == "kotlin.collections.MutableList"
-    }
+    private fun KSType.isListType() = listTypeMapping.contains(name())
 
-    private fun KSType.isSetType(): Boolean {
-        val typeName = declaration.qualifiedName?.asString() ?: return false
-        return typeName.startsWith("java.util.Set") ||
-                typeName == "kotlin.collections.Set" ||
-                typeName == "kotlin.collections.MutableSet"
-    }
+    private fun KSType.isSetType() = setTypeMapping.contains(name())
 
     private fun getPathTypeForBasicType(type: KSType): String {
-        val typeName = type.declaration.qualifiedName?.asString() ?: return "SimplePath<Object>"
-        return when {
-            typeName == "java.lang.String" || typeName == "kotlin.String" -> "StringPath"
-            typeName == "java.lang.Integer" || typeName == "int" || typeName == "kotlin.Int" -> "NumberPath<Integer>"
-            typeName == "java.lang.Long" || typeName == "long" || typeName == "kotlin.Long" -> "NumberPath<Long>"
-            typeName == "java.lang.Boolean" || typeName == "boolean" || typeName == "kotlin.Boolean" -> "BooleanPath"
-            typeName == "java.lang.Float" || typeName == "float" || typeName == "kotlin.Float" -> "NumberPath<Float>"
-            typeName == "java.lang.Double" || typeName == "double" || typeName == "kotlin.Double" -> "NumberPath<Double>"
-            typeName == "java.lang.Short" || typeName == "short" || typeName == "kotlin.Short" -> "NumberPath<Short>"
-            typeName == "java.lang.Byte" || typeName == "byte" || typeName == "kotlin.Byte" -> "NumberPath<Byte>"
-            typeName == "java.util.Date" -> "DatePath<java.util.Date>"
-            typeName == "java.time.LocalDate" -> "DatePath<java.time.LocalDate>"
-            typeName == "java.time.LocalDateTime" -> "DateTimePath<java.time.LocalDateTime>"
-            typeName == "java.math.BigDecimal" -> "NumberPath<java.math.BigDecimal>"
-            typeName == "java.math.BigInteger" -> "NumberPath<java.math.BigInteger>"
-            type.declaration.modifiers.contains(Modifier.ENUM) -> "EnumPath<${type.declaration.simpleName.asString()}>"
-            else -> "SimplePath<${type.declaration.simpleName.asString()}>"
-        }
+        val typeName = type.name() ?: return "SimplePath<Object>"
+        return basicTypeToPathType[typeName]
+            ?: if (type.declaration.modifiers.contains(Modifier.ENUM))
+                "EnumPath<${type.declaration.simpleName.asString()}>"
+            else
+                "SimplePath<${type.declaration.simpleName.asString()}>"
     }
 
     private fun getCreateMethodForPathType(pathType: String): String {
@@ -300,12 +271,16 @@ ${generateConstructors(ctx, className, qClassName)}
     }
 
     private fun getJavaClassName(type: KSType): String {
-        val typeName = type.declaration.qualifiedName?.asString() ?: return "Object"
+        val typeName = type.name() ?: return "Object"
         if (typeName == "kotlin.Int") {
             return "Integer"
         }
         return typeName.replace("kotlin.", "")
     }
+
+    private fun KSType.name(): String? = declaration.qualifiedName?.asString()
+
+    private fun KSType.shortName(): String = declaration.simpleName.asString()
 
     private fun generateConstructors(ctx: ClassCtx, className: String, qClassName: String): String {
         val referenceInit = ctx.singularReferences.joinToString("\n") {
