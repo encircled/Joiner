@@ -161,11 +161,11 @@ ${generateConstructors(ctx, className, qClassName)}
     ) {
         val propertyName = property.simpleName.asString()
         val propertyType = property.type.resolve()
-        val propertyTypeDeclaration = propertyType.declaration
+        val typeDeclaration = propertyType.declaration
 
         if (propertyName.startsWith("_") ||
             property.modifiers.contains(Modifier.JAVA_TRANSIENT) ||
-            property.annotations.any { it.shortName.asString() == "Transient" } ||
+            property.hasAnnotation("Transient") ||
             property.isInCompanionObject()
         ) {
             return
@@ -209,8 +209,8 @@ ${generateConstructors(ctx, className, qClassName)}
             }
 
             // Entity references
-            propertyTypeDeclaration is KSClassDeclaration && propertyTypeDeclaration.annotations.any { it.shortName.asString() == "Entity" } -> {
-                val referencedEntityName = propertyTypeDeclaration.simpleName.asString()
+            typeDeclaration is KSClassDeclaration && typeDeclaration.hasAnnotation("Entity") -> {
+                val referencedEntityName = typeDeclaration.simpleName.asString()
                 val qReferencedEntityName = "Q$referencedEntityName"
                 val value = if (isInherited) " = _super.$propertyName;" else ""
 
@@ -223,13 +223,15 @@ ${generateConstructors(ctx, className, qClassName)}
 
             else -> {
                 ctx.addField(
-                    "SimplePath<${propertyTypeDeclaration.simpleName.asString()}>",
+                    "SimplePath<${typeDeclaration.simpleName.asString()}>",
                     propertyName,
-                    "createSimple(\"$propertyName\", ${propertyTypeDeclaration.simpleName.asString()}.class)"
+                    "createSimple(\"$propertyName\", ${typeDeclaration.simpleName.asString()}.class)"
                 )
             }
         }
     }
+
+    fun KSDeclaration.hasAnnotation(name: String): Boolean = annotations.any { it.shortName.asString() == name }
 
     fun KSPropertyDeclaration.isInCompanionObject(): Boolean {
         return (parentDeclaration as? KSClassDeclaration)?.isCompanionObject == true
