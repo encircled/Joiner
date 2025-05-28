@@ -4,11 +4,6 @@ import com.google.devtools.ksp.processing.*
 import com.google.devtools.ksp.symbol.*
 import com.google.devtools.ksp.validate
 
-typealias PropertyType = String
-typealias ResultType = String
-
-val mapping: Map<Set<PropertyType>, ResultType> = mapOf()
-
 /**
  * KSP processor for generating Querydsl metamodel classes from JPA entities.
  * This processor replicates the functionality of the Querydsl apt-maven-plugin.
@@ -48,7 +43,6 @@ class QuerydslProcessor(
         val className = entityClass.simpleName.asString()
         val qClassName = "Q$className"
 
-        // Generate the metamodel class
         val fileSpec = codeGenerator?.createNewFile(
             dependencies = Dependencies(false, entityClass.containingFile!!),
             packageName = packageName,
@@ -57,10 +51,7 @@ class QuerydslProcessor(
         )
 
         val content = generateMetamodelClass(packageName, className, qClassName, entityClass)
-        fileSpec.use { outputStream ->
-            // Generate the metamodel class content
-            outputStream?.write(content.toByteArray())
-        }
+        fileSpec.use { it?.write(content.toByteArray()) }
 
         logger.info("Generated Querydsl metamodel class: $packageName.$qClassName")
         return content
@@ -83,12 +74,10 @@ class QuerydslProcessor(
             ctx.addField(it, "_super", "new $it(this)")
         }
 
-        // Process properties
         entityClass.getAllProperties().forEach {
             processProperty(ctx, it, entityClass)
         }
 
-        // Default static accessor
         getStaticAccessor(ctx, className).let {
             ctx.addField(qClassName, it, "new $qClassName(\"$it\")", true)
         }
@@ -111,8 +100,7 @@ public class $qClassName extends EntityPathBase<$className> {
 
 ${ctx.fields.joinToString("\n\n") { "    $it" }}
 
-${generateConstructors(ctx, className, qClassName)}
-
+${generateConstructors(ctx, className).joinToString("") { it.stringify(qClassName) }}
 }
 """
     }
@@ -120,7 +108,7 @@ ${generateConstructors(ctx, className, qClassName)}
     class Field(
         val type: String,
         val name: String,
-        val value: String,
+        val value: String = "",
         val isStatic: Boolean = false,
         val isPublic: Boolean = true
     ) {
@@ -143,15 +131,12 @@ ${generateConstructors(ctx, className, qClassName)}
     }
 
     private fun getStaticAccessor(ctx: ClassCtx, className: String): String {
-        val candidate = className.decapitalize()
-        if (ctx.fieldNames.contains(candidate)) {
-            var i = 1
-            while (ctx.fieldNames.contains(candidate + i)) {
-                i++
-            }
-            return candidate + i
-        }
-        return candidate
+        val base = className.decapitalize()
+        if (base !in ctx.fieldNames) return base
+
+        return generateSequence(1) { it + 1 }
+            .map { "$base$it" }
+            .first { it !in ctx.fieldNames }
     }
 
     private fun processProperty(
@@ -187,7 +172,7 @@ ${generateConstructors(ctx, className, qClassName)}
                         propertyType.isSetType() -> "Set"
                         else -> "Collection"
                     }
-                    val value = if (isInherited) "_super.$propertyName;"
+                    val value = if (isInherited) "_super.$propertyName"
                     else "this.<$elementTypeName, $qElementTypeName>create$collectionType(\"$propertyName\", $elementTypeName.class, $qElementTypeName.class, PathInits.DIRECT2)"
 
                     ctx.addField(
@@ -212,7 +197,7 @@ ${generateConstructors(ctx, className, qClassName)}
             typeDeclaration is KSClassDeclaration && typeDeclaration.hasAnnotation("Entity") -> {
                 val referencedEntityName = typeDeclaration.simpleName.asString()
                 val qReferencedEntityName = "Q$referencedEntityName"
-                val value = if (isInherited) " = _super.$propertyName;" else ""
+                val value = if (isInherited) "= _super.$propertyName" else ""
 
                 ctx.addField(qReferencedEntityName, propertyName, value)
 
@@ -237,19 +222,14 @@ ${generateConstructors(ctx, className, qClassName)}
         return (parentDeclaration as? KSClassDeclaration)?.isCompanionObject == true
     }
 
-    private fun KSType.isBasicType(): Boolean {
-        val typeName = declaration.qualifiedName?.asString() ?: return false
-        return typeName in basicTypeToPathType.keys || declaration.modifiers.contains(Modifier.ENUM)
-    }
+    private fun KSType.isBasicType(): Boolean =
+        name() in basicTypeToPathType.keys || declaration.modifiers.contains(Modifier.ENUM)
 
-    private fun KSType.isCollectionType(): Boolean {
-        val typeName = declaration.qualifiedName?.asString() ?: return false
-        return typeName in collectionTypeMapping.keys
-    }
+    private fun KSType.isCollectionType(): Boolean = name() in collectionTypeMapping.keys
 
-    private fun KSType.isListType() = listTypeMapping.contains(name())
+    private fun KSType.isListType() = name() in listTypeMapping
 
-    private fun KSType.isSetType() = setTypeMapping.contains(name())
+    private fun KSType.isSetType() = name() in setTypeMapping
 
     private fun getPathTypeForBasicType(type: KSType): String {
         val typeName = type.name() ?: return "SimplePath<Object>"
@@ -262,7 +242,6 @@ ${generateConstructors(ctx, className, qClassName)}
 
     private fun getCreateMethodForPathType(pathType: String): String {
         return when {
-            pathType.startsWith("StringPath") -> "createString"
             pathType.startsWith("NumberPath") -> "createNumber"
             pathType.startsWith("BooleanPath") -> "createBoolean"
             pathType.startsWith("DatePath") -> "createDate"
@@ -280,39 +259,59 @@ ${generateConstructors(ctx, className, qClassName)}
         return typeName.replace("kotlin.", "")
     }
 
+    private fun generateConstructors(ctx: ClassCtx, className: String): List<Constructor> {
+        val referenceInit = ctx.singularReferences.joinToString("\n") {
+            "this.${it.first} = inits.isInitialized(\"${it.first}\") ? new Q${it.second.shortName()}(forProperty(\"${it.first}\"), inits.get(\"${it.first}\")) : null"
+        }
+
+        return listOf(
+            Constructor(listOf("this($className.class, forVariable(variable), INITS)"), "String" to "variable"),
+
+            Constructor(
+                listOf("this(path.getType(), path.getMetadata(), PathInits.getFor(path.getMetadata(), INITS))"),
+                "Path<? extends $className>" to "path"
+            ),
+
+            Constructor(listOf("this(metadata, PathInits.getFor(metadata, INITS))"), "PathMetadata" to "metadata"),
+
+            Constructor(
+                listOf("this($className.class, metadata, inits)"),
+                "PathMetadata" to "metadata",
+                "PathInits" to "inits"
+            ),
+
+            Constructor(
+                listOf("this($className.class, metadata, inits)"),
+                "PathMetadata" to "metadata",
+                "PathInits" to "inits"
+            ),
+
+            Constructor(
+                listOf("super(type, metadata, inits)", referenceInit),
+                "Class<? extends $className>" to "type",
+                "PathMetadata" to "metadata",
+                "PathInits" to "inits"
+            ),
+        )
+    }
+
+    class Constructor(
+        private val body: List<String>,
+        private vararg val fields: Pair<String, String>,
+    ) {
+        fun stringify(qClassName: String): String {
+            val fieldsStr = fields.joinToString { it.first + " " + it.second }
+            return """
+    public $qClassName($fieldsStr) {
+    ${body.filter { it.isNotBlank() }.joinToString("\n") { "    $it;" }}
+    }
+    """
+        }
+    }
+
     private fun KSType.name(): String? = declaration.qualifiedName?.asString()
 
     private fun KSType.shortName(): String = declaration.simpleName.asString()
-
-    private fun generateConstructors(ctx: ClassCtx, className: String, qClassName: String): String {
-        val referenceInit = ctx.singularReferences.joinToString("\n") {
-            "this.${it.first} = inits.isInitialized(\"${it.first}\") ? new Q${it.second.declaration.simpleName.asString()}(forProperty(\"${it.first}\"), inits.get(\"${it.first}\")) : null;"
-        }
-
-        val constructors = """
-    public $qClassName(String variable) {
-        this($className.class, forVariable(variable), INITS);
-    }
-
-    public $qClassName(Path<? extends $className> path) {
-        this(path.getType(), path.getMetadata(), PathInits.getFor(path.getMetadata(), INITS));
-    }
-
-    public $qClassName(PathMetadata metadata) {
-        this(metadata, PathInits.getFor(metadata, INITS));
-    }
-
-    public $qClassName(PathMetadata metadata, PathInits inits) {
-        this($className.class, metadata, inits);
-    }
-
-    public $qClassName(Class<? extends $className> type, PathMetadata metadata, PathInits inits) {
-        super(type, metadata, inits);
-        $referenceInit
-    }
-        """
-        return constructors
-    }
 
     private fun String.decapitalize(): String {
         if (isEmpty() || !first().isUpperCase()) return this
