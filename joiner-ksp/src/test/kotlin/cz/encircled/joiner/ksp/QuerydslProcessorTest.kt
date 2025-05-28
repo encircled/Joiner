@@ -39,11 +39,11 @@ class QuerydslProcessorTest {
         val actual = QuerydslProcessor(TestLogger()).processEntity(MockKSClassDeclaration(User::class) as KSClassDeclaration)
 
         sourceCode.lines().filter { !it.contains("@Generated") && !it.contains("serialVersionUID") && !it.trim().startsWith("//") }.forEach { line ->
-            assertTrue(actual.contains(line.trim()))
+            assertTrue(actual.contains(line.trim()), "$line not present!")
         }
 
         actual.lines().filter { !it.contains("@Generated") && !it.contains("serialVersionUID") && !it.trim().startsWith("//") }.forEach { line ->
-            assertTrue(sourceCode.contains(line.trim()))
+            assertTrue(sourceCode.contains(line.trim()), "$line was not expected!")
         }
     }
 
@@ -93,7 +93,8 @@ class QuerydslProcessorTest {
 
         val content = generatedFile.readText()
 
-        assertTrue("public class QTestEntity" in content)
+        assertTrue("public class QTestEntity extends EntityPathBase<TestEntity> {" in content)
+        assertTrue("public static final QTestEntity testEntity1 = new QTestEntity(\"testEntity1\");" in content)
         assertTrue("public final NumberPath<Long> id" in content)
         assertTrue("public final StringPath name" in content)
     }

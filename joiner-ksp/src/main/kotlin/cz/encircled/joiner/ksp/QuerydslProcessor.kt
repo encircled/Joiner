@@ -17,7 +17,7 @@ class QuerydslProcessor(
         annotations.flatMap { getSymbolsWithAnnotation(it) }
 
     override fun process(resolver: Resolver): List<KSAnnotated> {
-        logger.info("Starting Querydsl processor2")
+        logger.info("Starting Joiner Querydsl processor")
 
         // Find all classes annotated with @Entity\@MappedSuperclass
         val entitySymbols =
@@ -67,54 +67,74 @@ class QuerydslProcessor(
         qClassName: String,
         entityClass: KSClassDeclaration
     ): String {
-        val ctx = ClassCtx()
-        ctx.append(
-            """
-        package $packageName;
-
-        import static com.querydsl.core.types.PathMetadataFactory.*;
-        import com.querydsl.core.types.dsl.*;
-        import com.querydsl.core.types.PathMetadata;
-        import javax.annotation.processing.Generated;
-        import com.querydsl.core.types.Path;
-        import com.querydsl.core.types.dsl.PathInits;
-
-        /**
-         * $qClassName is a Querydsl query type for $className
-         */
-        @Generated("cz.encircled.joiner.ksp.QuerydslProcessor")
-        public class $qClassName extends EntityPathBase<$className> {
-
-            private static final long serialVersionUID = ${className.hashCode()}L;
-            private static final PathInits INITS = PathInits.DIRECT2;
-
-    """.trimIndent()
+        val ctx = ClassCtx(
+            mutableListOf(
+                Field("long", "serialVersionUID", "${className.hashCode()}L", true),
+                Field("PathInits", "INITS", "PathInits.DIRECT2", true, false)
+            )
         )
 
-        // Process superclass if any
-        val superClass = entityClass.superTypes.firstOrNull()?.resolve()?.declaration as? KSClassDeclaration
-        if (superClass != null && superClass.qualifiedName?.asString() != "java.lang.Object" && superClass.qualifiedName?.asString() != "kotlin.Any") {
-            val superClassName = superClass.simpleName.asString()
-            val qSuperClassName = "Q$superClassName"
-            ctx.append("    public final $qSuperClassName _super = new $qSuperClassName(this);\n")
+        getSupertype(entityClass)?.let {
+            ctx.addField(it, "_super", "new $it(this)")
         }
 
         // Process properties
-        entityClass.getAllProperties().forEach { property ->
-            processProperty(ctx, property, entityClass)
+        entityClass.getAllProperties().forEach {
+            processProperty(ctx, it, entityClass)
         }
 
         // Default static accessor
-        val staticAccessor = getStaticAccessor(ctx, className)
-        ctx.append("    public static final $qClassName $staticAccessor = new $qClassName(\"$staticAccessor\");")
+        getStaticAccessor(ctx, className).let {
+            ctx.addField(qClassName, it, "new $qClassName(\"$it\")", true)
+        }
 
-        // Constructors
-        generateConstructors(ctx, className, qClassName)
+        return """
+package $packageName;
 
-        // Close class
-        ctx.append("}\n")
+import static com.querydsl.core.types.PathMetadataFactory.*;
+import com.querydsl.core.types.dsl.*;
+import com.querydsl.core.types.PathMetadata;
+import javax.annotation.processing.Generated;
+import com.querydsl.core.types.Path;
+import com.querydsl.core.types.dsl.PathInits;
 
-        return ctx.toString()
+/**
+ * $qClassName is a Querydsl query type for $className
+ */
+@Generated("cz.encircled.joiner.ksp.QuerydslProcessor")
+public class $qClassName extends EntityPathBase<$className> {
+
+${ctx.fields.joinToString("\n\n") { "    $it" }}
+
+${generateConstructors(ctx, className, qClassName)}
+
+}
+"""
+    }
+
+    class Field(
+        val type: String,
+        val name: String,
+        val value: String,
+        val isStatic: Boolean = false,
+        val isPublic: Boolean = true
+    ) {
+        override fun toString(): String {
+            val visibility = if (isPublic) "public" else "private"
+            val static = if (isStatic) "static " else ""
+            val modifiers = "$visibility ${static}final"
+            val initializer = if (value.isNotBlank()) " = $value" else ""
+
+            return "$modifiers $type $name$initializer;"
+        }
+    }
+
+    private fun getSupertype(entityClass: KSClassDeclaration): String? {
+        val superClass = entityClass.superTypes.firstOrNull()?.resolve()?.declaration as? KSClassDeclaration
+        val superclassName = superClass?.qualifiedName?.asString() ?: ""
+        return if (superClass != null && superclassName != "java.lang.Object" && superclassName != "kotlin.Any") {
+            "Q${superClass.simpleName.asString()}"
+        } else null
     }
 
     private fun getStaticAccessor(ctx: ClassCtx, className: String): String {
@@ -129,14 +149,17 @@ class QuerydslProcessor(
         return candidate
     }
 
-    private fun processProperty(ctx: ClassCtx, property: KSPropertyDeclaration, entityClass: KSClassDeclaration) {
+    private fun processProperty(
+        ctx: ClassCtx,
+        property: KSPropertyDeclaration,
+        entityClass: KSClassDeclaration,
+    ) {
         val propertyName = property.simpleName.asString()
         val propertyType = property.type.resolve()
         val propertyTypeDeclaration = propertyType.declaration
 
-        logger.info("Processing property $propertyName of type ${propertyType.declaration.qualifiedName?.asString()}")
+        logger.logging("Processing property $propertyName of type ${propertyType.declaration.qualifiedName?.asString()}")
 
-        // Skip transient properties
         if (propertyName.startsWith("_") ||
             property.modifiers.contains(Modifier.JAVA_TRANSIENT) ||
             property.annotations.any { it.shortName.asString() == "Transient" } ||
@@ -146,14 +169,12 @@ class QuerydslProcessor(
         }
 
         ctx.fieldNames.add(propertyName)
+
         val isInherited =
             property.parentDeclaration?.qualifiedName?.asString() != entityClass.qualifiedName!!.asString()
 
-        // Handle different property types
         when {
-            // Collection types
             propertyType.isCollectionType() -> {
-                logger.info("Property $propertyName is a collection type")
                 val elementType = propertyType.arguments.firstOrNull()?.type?.resolve()
                 if (elementType != null) {
                     val elementTypeName = elementType.declaration.simpleName.asString()
@@ -163,24 +184,25 @@ class QuerydslProcessor(
                         propertyType.isSetType() -> "Set"
                         else -> "Collection"
                     }
-                    val value = if (isInherited) " = _super.$propertyName;"
+                    val value = if (isInherited) "_super.$propertyName;"
                     else "this.<$elementTypeName, $qElementTypeName>create$collectionType(\"$propertyName\", $elementTypeName.class, $qElementTypeName.class, PathInits.DIRECT2)"
 
-                    ctx.append("    public final ${collectionType}Path<$elementTypeName, $qElementTypeName> $propertyName = $value;\n")
+                    ctx.addField(
+                        "${collectionType}Path<$elementTypeName, $qElementTypeName>",
+                        propertyName,
+                        value
+                    )
                 }
             }
             // Basic types
             propertyType.isBasicType() -> {
-                logger.info("Property $propertyName is a basic type: ${propertyType.declaration.simpleName.asString()} (${propertyType.declaration.qualifiedName?.asString()}) - adding as a simple path")
                 val pathType = getPathTypeForBasicType(propertyType)
                 val value = when {
-                    isInherited -> "= _super.$propertyName;"
-                    pathType == "StringPath" -> "= createString(\"$propertyName\");"
-                    else -> "= ${getCreateMethodForPathType(pathType)}(\"$propertyName\", ${getJavaClassName(propertyType)}.class);"
+                    isInherited -> "_super.$propertyName"
+                    pathType == "StringPath" -> "createString(\"$propertyName\")"
+                    else -> "${getCreateMethodForPathType(pathType)}(\"$propertyName\", ${getJavaClassName(propertyType)}.class)"
                 }
-                val line = "    public final $pathType $propertyName $value\n"
-                logger.info("Generated line: $line")
-                ctx.append(line)
+                ctx.addField(pathType, propertyName, value)
             }
             // Entity references
             propertyTypeDeclaration is KSClassDeclaration && propertyTypeDeclaration.annotations.any { it.shortName.asString() == "Entity" } -> {
@@ -188,7 +210,7 @@ class QuerydslProcessor(
                 val qReferencedEntityName = "Q$referencedEntityName"
                 val value = if (isInherited) " = _super.$propertyName;" else ""
 
-                ctx.append("    public final $qReferencedEntityName ${propertyName}${value};\n")
+                ctx.addField(qReferencedEntityName, propertyName, value)
 
                 if (!isInherited) {
                     ctx.singularReferences.add(propertyName to propertyType)
@@ -196,44 +218,17 @@ class QuerydslProcessor(
             }
             // Other types
             else -> {
-                // Handle as a simple path
-                ctx.append("    public final SimplePath<${propertyTypeDeclaration.simpleName.asString()}> $propertyName = createSimple(\"$propertyName\", ${propertyTypeDeclaration.simpleName.asString()}.class);\n")
+                ctx.addField(
+                    "SimplePath<${propertyTypeDeclaration.simpleName.asString()}>",
+                    propertyName,
+                    "createSimple(\"$propertyName\", ${propertyTypeDeclaration.simpleName.asString()}.class)"
+                )
             }
         }
     }
 
     fun KSPropertyDeclaration.isInCompanionObject(): Boolean {
         return (parentDeclaration as? KSClassDeclaration)?.isCompanionObject == true
-    }
-
-    private fun generateConstructors(ctx: ClassCtx, className: String, qClassName: String) {
-        val referenceInit = ctx.singularReferences.joinToString("\n") {
-            "this.${it.first} = inits.isInitialized(\"${it.first}\") ? new Q${it.second.declaration.simpleName.asString()}(forProperty(\"${it.first}\"), inits.get(\"${it.first}\")) : null;"
-        }
-        ctx.append(
-            """
-    public $qClassName(String variable) {
-        this($className.class, forVariable(variable), INITS);
-    }
-
-    public $qClassName(Path<? extends $className> path) {
-        this(path.getType(), path.getMetadata(), PathInits.getFor(path.getMetadata(), INITS));
-    }
-
-    public $qClassName(PathMetadata metadata) {
-        this(metadata, PathInits.getFor(metadata, INITS));
-    }
-
-    public $qClassName(PathMetadata metadata, PathInits inits) {
-        this($className.class, metadata, inits);
-    }
-
-    public $qClassName(Class<? extends $className> type, PathMetadata metadata, PathInits inits) {
-        super(type, metadata, inits);
-        $referenceInit
-    }
-        """
-        )
     }
 
     private fun KSType.isBasicType(): Boolean {
@@ -312,21 +307,55 @@ class QuerydslProcessor(
         return typeName.replace("kotlin.", "")
     }
 
+    private fun generateConstructors(ctx: ClassCtx, className: String, qClassName: String): String {
+        val referenceInit = ctx.singularReferences.joinToString("\n") {
+            "this.${it.first} = inits.isInitialized(\"${it.first}\") ? new Q${it.second.declaration.simpleName.asString()}(forProperty(\"${it.first}\"), inits.get(\"${it.first}\")) : null;"
+        }
+
+        val constructors = """
+    public $qClassName(String variable) {
+        this($className.class, forVariable(variable), INITS);
+    }
+
+    public $qClassName(Path<? extends $className> path) {
+        this(path.getType(), path.getMetadata(), PathInits.getFor(path.getMetadata(), INITS));
+    }
+
+    public $qClassName(PathMetadata metadata) {
+        this(metadata, PathInits.getFor(metadata, INITS));
+    }
+
+    public $qClassName(PathMetadata metadata, PathInits inits) {
+        this($className.class, metadata, inits);
+    }
+
+    public $qClassName(Class<? extends $className> type, PathMetadata metadata, PathInits inits) {
+        super(type, metadata, inits);
+        $referenceInit
+    }
+        """
+        return constructors
+    }
+
     private fun String.decapitalize(): String {
         if (isEmpty() || !first().isUpperCase()) return this
         return first().lowercase() + substring(1)
     }
 
     class ClassCtx(
-        val sb: java.lang.StringBuilder = StringBuilder(),
+        val fields: MutableList<Field>,
         val fieldNames: MutableSet<String> = mutableSetOf(),
         val singularReferences: MutableSet<Pair<String, KSType>> = mutableSetOf()
     ) {
-        fun append(lines: String) {
-            sb.append(lines + "\n")
+        fun addField(
+            type: String,
+            name: String,
+            value: String,
+            isStatic: Boolean = false,
+            isPublic: Boolean = true
+        ) {
+            fields.add(Field(type, name, value, isStatic, isPublic))
         }
-
-        override fun toString(): String = sb.toString()
     }
 
 }
