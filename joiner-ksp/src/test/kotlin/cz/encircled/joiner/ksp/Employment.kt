@@ -51,5 +51,9 @@ class Customer() : AbstractEntity() {
     var bigDecimalValue: BigDecimal? = null
     var byteValue: Byte? = null
     var shortValue: Short? = null
+    var enumValue: TestEnum = TestEnum.OK
+}
 
+enum class TestEnum {
+    OK
 }

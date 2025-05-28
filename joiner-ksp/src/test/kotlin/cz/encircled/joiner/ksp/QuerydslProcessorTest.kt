@@ -30,6 +30,7 @@ class QuerydslProcessorTest {
         assertTrue(actual.contains("NumberPath<java.math.BigDecimal> bigDecimalValue = createNumber(\"bigDecimalValue\", java.math.BigDecimal.class)"))
         assertTrue(actual.contains("NumberPath<Byte> byteValue = createNumber(\"byteValue\", Byte.class)"))
         assertTrue(actual.contains("NumberPath<Short> shortValue = createNumber(\"shortValue\", Short.class)"))
+        assertTrue(actual.contains("EnumPath<TestEnum> enumValue = createEnum(\"enumValue\", cz.encircled.joiner.ksp.TestEnum.class)"))
     }
 
     @Test

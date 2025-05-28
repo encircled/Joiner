@@ -29,7 +29,7 @@ class MockKSClassDeclaration(private val kClass: KClass<*>) : KSClassDeclaration
     override val classKind: ClassKind = ClassKind.CLASS
     override val origin: Origin = Origin.KOTLIN
     override val location: Location = NonExistLocation
-    override val modifiers: Set<Modifier> = emptySet()
+    override val modifiers: Set<Modifier> = if(kClass.java.isEnum) setOf(Modifier.ENUM) else setOf()
     override val annotations: Sequence<KSAnnotation> = kClass.java.annotations.asSequence().map { MockKSAnnotation(it) }
     override val containingFile: KSFile? = null
     override val parentDeclaration: KSDeclaration? = null
