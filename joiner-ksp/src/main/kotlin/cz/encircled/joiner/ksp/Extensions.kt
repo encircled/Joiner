@@ -28,6 +28,8 @@ fun KSType.isCollectionType(): Boolean = name() in collectionTypeMapping
 
 fun KSType.isListType() = name() in listTypeMapping
 
+fun KSType.isMapType() = name() in mapTypeMapping
+
 fun KSType.isSetType() = name() in setTypeMapping
 
 fun KSType.isArrayType() = name() in arrayTypeMapping

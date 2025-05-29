@@ -55,6 +55,7 @@ class Customer() : AbstractEntity() {
     var mutableListOfSimpleValues: MutableList<TestEnum> = mutableListOf()
     var byteArrayValue: ByteArray? = null
     var stringArrayValue: Array<String>? = null
+    var mapStrToInt: Map<String, Int> = HashMap()
 }
 
 enum class TestEnum {

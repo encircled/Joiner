@@ -53,6 +53,12 @@ val arrayTypeMapping: Map<String, String> = mapOf(
     "kotlin.ByteArray" to "Array",
 )
 
+val mapTypeMapping: Map<String, String> = mapOf(
+    "java.util.Map" to "Map",
+    "kotlin.collections.Map" to "Map",
+    "kotlin.collections.Mutable.Map" to "Map",
+)
+
 val listTypeMapping: Map<String, String> = mapOf(
     "java.util.List" to "List",
     "kotlin.collections.List" to "List",
@@ -69,4 +75,4 @@ val collectionTypeMapping: Map<String, String> = mapOf(
     "java.util.Collection" to "Collection",
     "kotlin.collections.Collection" to "Collection",
     "kotlin.Array" to "Collection"
-) + setTypeMapping + listTypeMapping + arrayTypeMapping
+) + setTypeMapping + listTypeMapping + arrayTypeMapping + mapTypeMapping

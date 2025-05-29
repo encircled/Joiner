@@ -7,6 +7,7 @@ import cz.encircled.joiner.ksp.simpleName
 
 class ArrayProcessor(val propertyName : String, val propertyType: KSType) {
 
+    // TODO must use template
     fun process() : Field {
         val elementType = when (propertyType.name()) {
             "kotlin.ByteArray" -> "Byte"

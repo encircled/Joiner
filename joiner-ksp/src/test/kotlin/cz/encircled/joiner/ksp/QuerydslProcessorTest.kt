@@ -50,7 +50,9 @@ class QuerydslProcessorTest {
                 "ListPath<TestEnum, SimplePath<TestEnum>> mutableListOfSimpleValues = this.<TestEnum, SimplePath<TestEnum>>createList(\"mutableListOfSimpleValues\", TestEnum.class, SimplePath.class, PathInits.DIRECT2)",
 
                 "public final ArrayPath<Byte[], Byte> byteArrayValue = createArray(\"byteArrayValue\", Byte[].class);",
-                "public final ArrayPath<String[], String> stringArrayValue = createArray(\"stringArrayValue\", String[].class);"
+                "public final ArrayPath<String[], String> stringArrayValue = createArray(\"stringArrayValue\", String[].class);",
+
+                "public final MapPath<String, Integer, SimplePath<Integer>> mapStrToInt = this.<String, Integer, SimplePath<Integer>>createMap(\"mapStrToInt\", String.class, Integer.class, SimplePath.class);"
             )
         }
 
@@ -82,6 +84,7 @@ class QuerydslProcessorTest {
                 assertTrue(sourceCode.contains(line.trim()), "$line was not expected!")
             }
     }
+
 
     @Test
     fun `Q class should be generated for entity`() {

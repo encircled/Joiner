@@ -9,8 +9,8 @@ import cz.encircled.joiner.ksp.property.ArrayProcessor
 
 class QuerydslClassProcessor(
     private val entityClass: KSClassDeclaration,
-    private val classPackage : String = entityClass.packageName.asString(),
-    template : JoinerTemplate = JavaJoinerTemplate(classPackage)
+    private val classPackage: String = entityClass.packageName.asString(),
+    template: JoinerTemplate = JavaJoinerTemplate(classPackage)
 ) : JoinerTemplate by template {
 
     private val fields: MutableList<Field>
@@ -112,34 +112,29 @@ class QuerydslClassProcessor(
             }
 
             propertyType.isCollectionType() -> {
-                val elementType = propertyType.arguments.firstOrNull()?.type?.resolve()
-                if (elementType != null) {
-                    val elementTypeName = classReference(elementType)
-                    val elementTypeLiteral = classLiteral(elementType)
+                val elementTypes = propertyType.arguments.mapNotNull { it.type?.resolve() }
 
-                    val qElementTypeName: String
-                    val qElementRawTypeName: String
+                if (elementTypes.isNotEmpty()) {
+                    val resolved = elementTypes.map { resolveQTypeInfo(it) }
 
-                    if (elementType.declaration.hasAnnotation("Entity")) {
-                        qElementTypeName = "Q$elementTypeName"
-                        qElementRawTypeName = classLiteral(elementType, "Q")
-                    } else {
-                        // Collection of non-entities, like a list of strings
-                        qElementTypeName = "SimplePath<$elementTypeName>"
-                        qElementRawTypeName = "SimplePath${classLiteralSuffix()}"
-                    }
+                    val allTypeNames = resolved.joinToString { it.typeName }
+                    val allTypeLiterals = resolved.joinToString { it.literal }
 
                     val collectionType = when {
                         propertyType.isListType() -> "List"
                         propertyType.isSetType() -> "Set"
+                        propertyType.isMapType() -> "Map"
                         propertyType.isArrayType() -> "Array"
                         else -> "Collection"
                     }
+
+                    val pathInits = if (collectionType == "Map") "" else ", PathInits.DIRECT2"
                     val value = if (isInherited) "_super.$propertyName"
-                    else "this.<$elementTypeName, $qElementTypeName>create$collectionType(\"$propertyName\", $elementTypeLiteral, $qElementRawTypeName, PathInits.DIRECT2)"
+                    else "this.<$allTypeNames, ${resolved.last().qTypeName}>" +
+                            "create$collectionType(\"$propertyName\", $allTypeLiterals, ${resolved.last().qTypeLiteral}$pathInits)"
 
                     addField(
-                        "${collectionType}Path<$elementTypeName, $qElementTypeName>",
+                        "${collectionType}Path<$allTypeNames, ${resolved.last().qTypeName}>",
                         propertyName,
                         value
                     )
@@ -183,6 +178,31 @@ class QuerydslClassProcessor(
         }
     }
 
+    data class QTypeInfo(
+        val typeName: String,
+        val literal: String,
+        val qTypeName: String,
+        val qTypeLiteral: String
+    )
+
+    fun resolveQTypeInfo(type: KSType): QTypeInfo {
+        val typeName = classReference(type)
+        val literal = classLiteral(type)
+
+        val qTypeName: String
+        val qTypeLiteral: String
+
+        if (type.declaration.hasAnnotation("Entity")) {
+            qTypeName = "Q$typeName"
+            qTypeLiteral = classLiteral(type, "Q")
+        } else {
+            qTypeName = "SimplePath<$typeName>"
+            qTypeLiteral = "SimplePath${classLiteralSuffix()}"
+        }
+
+        return QTypeInfo(typeName, literal, qTypeName, qTypeLiteral)
+    }
+
     private fun getPathTypeForBasicType(type: KSType): String {
         val typeName = classReference(type)
 
@@ -203,7 +223,8 @@ class QuerydslClassProcessor(
 
     private fun generateConstructors(className: String): List<Constructor> {
         val referenceInit = singularReferences.joinToString("\n") {
-            val ifInitialized = "new ${classReference(it.second, "Q")}(forProperty(\"${it.first}\"), inits.get(\"${it.first}\"))"
+            val ifInitialized =
+                "new ${classReference(it.second, "Q")}(forProperty(\"${it.first}\"), inits.get(\"${it.first}\"))"
 
             "this.${it.first} = inits.isInitialized(\"${it.first}\") ? $ifInitialized : null"
         }
