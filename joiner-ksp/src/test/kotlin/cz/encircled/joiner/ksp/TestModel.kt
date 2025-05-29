@@ -37,7 +37,6 @@ class Employment() : AbstractEntity() {
 @Entity
 @Table
 class Customer() : AbstractEntity() {
-
     @OneToMany(mappedBy = "customer")
     var employments: List<Employment> = listOf()
 
@@ -52,6 +51,10 @@ class Customer() : AbstractEntity() {
     var byteValue: Byte? = null
     var shortValue: Short? = null
     var enumValue: TestEnum = TestEnum.OK
+    var listOfSimpleValues: List<TestEnum> = listOf()
+    var mutableListOfSimpleValues: MutableList<TestEnum> = mutableListOf()
+    var byteArrayValue: ByteArray? = null
+    var stringArrayValue: Array<String>? = null
 }
 
 enum class TestEnum {

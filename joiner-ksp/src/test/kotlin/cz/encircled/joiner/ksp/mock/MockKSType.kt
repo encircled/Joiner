@@ -7,6 +7,7 @@ import com.google.devtools.ksp.symbol.KSTypeArgument
 import com.google.devtools.ksp.symbol.Nullability
 import java.lang.reflect.ParameterizedType
 import java.lang.reflect.Type
+import java.lang.reflect.WildcardType
 import kotlin.reflect.KProperty1
 import kotlin.reflect.jvm.javaField
 
@@ -48,7 +49,8 @@ class MockKSType(
         get() = TODO("Not yet implemented")
     override val arguments: List<KSTypeArgument>
     override val declaration: KSDeclaration
-//    override val declaration: KSDeclaration = MockKSDeclaration(type, simpleName)
+
+    //    override val declaration: KSDeclaration = MockKSDeclaration(type, simpleName)
 //        get() = MockKSDeclaration(type, simpleName)
     override val isError: Boolean
         get() = TODO("Not yet implemented")
@@ -67,9 +69,18 @@ class MockKSType(
             val kClass = (type.rawType as Class<*>).kotlin
             declaration = MockKSClassDeclaration(kClass)
             arguments = type.actualTypeArguments.map { MockKSTypeArgument(it) }
-        } else {
-            declaration = MockKSClassDeclaration((type as Class<*>).kotlin)
+        } else if (type is WildcardType) {
+            declaration = MockKSClassDeclaration((type.upperBounds[0] as Class<*>).kotlin)
             arguments = listOf()
+        } else {
+            val clazz = type as Class<*>
+            if (clazz.isArray) {
+                declaration = MockKSClassDeclaration(clazz.kotlin)
+                arguments = listOf(MockKSTypeArgument(clazz.componentType))
+            } else {
+                declaration = MockKSClassDeclaration(clazz.kotlin)
+                arguments = listOf()
+            }
         }
     }
 }

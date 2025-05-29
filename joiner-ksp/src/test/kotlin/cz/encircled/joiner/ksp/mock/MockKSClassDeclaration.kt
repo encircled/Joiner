@@ -22,11 +22,11 @@ import kotlin.reflect.KClass
 import kotlin.reflect.full.memberProperties
 import kotlin.reflect.full.superclasses
 
-class MockKSClassDeclaration(private val kClass: KClass<*>) : KSClassDeclaration {
+class MockKSClassDeclaration(kClass: KClass<*>) : KSClassDeclaration {
     override val simpleName: KSName = KSNameImpl(kClass.simpleName ?: "")
     override val qualifiedName: KSName? = KSNameImpl(kClass.qualifiedName ?: "")
     override val packageName: KSName = KSNameImpl(kClass.qualifiedName?.substringBeforeLast('.') ?: "")
-    override val classKind: ClassKind = ClassKind.CLASS
+    override val classKind: ClassKind = if (kClass.java.isInterface) ClassKind.INTERFACE else ClassKind.CLASS
     override val origin: Origin = Origin.KOTLIN
     override val location: Location = NonExistLocation
     override val modifiers: Set<Modifier> = if(kClass.java.isEnum) setOf(Modifier.ENUM) else setOf()
@@ -36,9 +36,7 @@ class MockKSClassDeclaration(private val kClass: KClass<*>) : KSClassDeclaration
     override val typeParameters: List<KSTypeParameter> = emptyList()
     override val primaryConstructor: KSFunctionDeclaration? = null
     override val superTypes: Sequence<KSTypeReference> = kClass.superclasses.asSequence().map { MockKSClassReference(it) }
-    override val declarations: Sequence<KSDeclaration> = kClass.memberProperties.asSequence()
-        .filter { it != null }
-        .map { MockKSPropertyDeclaration(it) }
+    override val declarations: Sequence<KSDeclaration> = kClass.memberProperties.asSequence().map { MockKSPropertyDeclaration(it) }
 
     override fun getAllProperties(): Sequence<KSPropertyDeclaration> = declarations.filterIsInstance<KSPropertyDeclaration>().asSequence()
 

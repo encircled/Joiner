@@ -17,35 +17,70 @@ import kotlin.test.assertTrue
 
 class QuerydslProcessorTest {
 
+    // TODO Map type
+    @Test
+    fun testJavaEntityWithAllFieldTypes() {
+        QuerydslProcessor(TestLogger()).processEntity(MockKSClassDeclaration(JavaCustomer::class)).apply {
+            println(this)
+
+            assertContains(
+                "public final ArrayPath<String[], String> arrayOfStrings = createArray(\"arrayOfStrings\", String[].class);"
+            )
+        }
+    }
+
     @Test
     fun testEntityWithAllFieldTypes() {
-        val actual = QuerydslProcessor(TestLogger()).processEntity(MockKSClassDeclaration(Customer::class) as KSClassDeclaration)
-        assertTrue(actual.contains("NumberPath<Double> doubleValue = createNumber(\"doubleValue\", Double.class)"))
-        assertTrue(actual.contains("BooleanPath booleanValue = createBoolean(\"booleanValue\", Boolean.class)"))
-        assertTrue(actual.contains("DatePath<java.time.LocalDate> localDateValue = createDate(\"localDateValue\", java.time.LocalDate.class)"))
-        assertTrue(actual.contains("NumberPath<Float> floatValue = createNumber(\"floatValue\", Float.class)"))
-        assertTrue(actual.contains("NumberPath<Integer> intValue = createNumber(\"intValue\", Integer.class)"))
-        assertTrue(actual.contains("StringPath stringValue = createString(\"stringValue\")"))
-        assertTrue(actual.contains("DateTimePath<java.time.LocalDateTime> localDateTimeValue = createDateTime(\"localDateTimeValue\", java.time.LocalDateTime.class)"))
-        assertTrue(actual.contains("NumberPath<java.math.BigDecimal> bigDecimalValue = createNumber(\"bigDecimalValue\", java.math.BigDecimal.class)"))
-        assertTrue(actual.contains("NumberPath<Byte> byteValue = createNumber(\"byteValue\", Byte.class)"))
-        assertTrue(actual.contains("NumberPath<Short> shortValue = createNumber(\"shortValue\", Short.class)"))
-        assertTrue(actual.contains("EnumPath<TestEnum> enumValue = createEnum(\"enumValue\", cz.encircled.joiner.ksp.TestEnum.class)"))
+        QuerydslProcessor(TestLogger()).processEntity(MockKSClassDeclaration(Customer::class)).apply {
+            println(this)
+            assertContains(
+                "NumberPath<Double> doubleValue = createNumber(\"doubleValue\", Double.class)",
+                "BooleanPath booleanValue = createBoolean(\"booleanValue\")",
+                "DatePath<java.time.LocalDate> localDateValue = createDate(\"localDateValue\", java.time.LocalDate.class)",
+                "NumberPath<Float> floatValue = createNumber(\"floatValue\", Float.class)",
+                "NumberPath<Integer> intValue = createNumber(\"intValue\", Integer.class)",
+                "StringPath stringValue = createString(\"stringValue\")",
+                "DateTimePath<java.time.LocalDateTime> localDateTimeValue = createDateTime(\"localDateTimeValue\", java.time.LocalDateTime.class)",
+                "NumberPath<java.math.BigDecimal> bigDecimalValue = createNumber(\"bigDecimalValue\", java.math.BigDecimal.class)",
+                "NumberPath<Byte> byteValue = createNumber(\"byteValue\", Byte.class)",
+                "NumberPath<Short> shortValue = createNumber(\"shortValue\", Short.class)",
+
+                "EnumPath<TestEnum> enumValue = createEnum(\"enumValue\", TestEnum.class)",
+                "ListPath<TestEnum, SimplePath<TestEnum>> listOfSimpleValues = this.<TestEnum, SimplePath<TestEnum>>createList(\"listOfSimpleValues\", TestEnum.class, SimplePath.class, PathInits.DIRECT2)",
+                "ListPath<TestEnum, SimplePath<TestEnum>> mutableListOfSimpleValues = this.<TestEnum, SimplePath<TestEnum>>createList(\"mutableListOfSimpleValues\", TestEnum.class, SimplePath.class, PathInits.DIRECT2)",
+
+                "public final ArrayPath<Byte[], Byte> byteArrayValue = createArray(\"byteArrayValue\", Byte[].class);",
+                "public final ArrayPath<String[], String> stringArrayValue = createArray(\"stringArrayValue\", String[].class);"
+            )
+        }
+
+
+    }
+
+    private fun String.assertContains(vararg expected: String) {
+        expected.forEach {
+            assertTrue(this.contains(it), "Generated class must contain:\n $it")
+        }
     }
 
     @Test
     fun testEntityWithInheritance() {
         val sourceCode =
             File("../joiner-test-support/target/generated-sources/annotations/cz/encircled/joiner/model/QUser.java").readText()
-        val actual = QuerydslProcessor(TestLogger()).processEntity(MockKSClassDeclaration(User::class) as KSClassDeclaration)
+        val actual =
+            QuerydslProcessor(TestLogger()).processEntity(MockKSClassDeclaration(User::class) as KSClassDeclaration)
 
-        sourceCode.lines().filter { !it.contains("@Generated") && !it.contains("serialVersionUID") && !it.trim().startsWith("//") }.forEach { line ->
-            assertTrue(actual.contains(line.trim()), "$line not present!")
-        }
+        sourceCode.lines()
+            .filter { !it.contains("@Generated") && !it.contains("serialVersionUID") && !it.trim().startsWith("//") }
+            .forEach { line ->
+                assertTrue(actual.contains(line.trim()), "$line not present!")
+            }
 
-        actual.lines().filter { !it.contains("@Generated") && !it.contains("serialVersionUID") && !it.trim().startsWith("//") }.forEach { line ->
-            assertTrue(sourceCode.contains(line.trim()), "$line was not expected!")
-        }
+        actual.lines()
+            .filter { !it.contains("@Generated") && !it.contains("serialVersionUID") && !it.trim().startsWith("//") }
+            .forEach { line ->
+                assertTrue(sourceCode.contains(line.trim()), "$line was not expected!")
+            }
     }
 
     @Test
@@ -98,6 +133,7 @@ class QuerydslProcessorTest {
         assertTrue("public static final QTestEntity testEntity1 = new QTestEntity(\"testEntity1\");" in content)
         assertTrue("public final NumberPath<Long> id" in content)
         assertTrue("public final StringPath name" in content)
+        assertTrue("public final QTestEntity testEntity;" in content)
     }
 
     class TestLogger : KSPLogger {
