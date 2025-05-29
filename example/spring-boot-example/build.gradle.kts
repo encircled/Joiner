@@ -23,7 +23,7 @@ repositories {
 
 
 dependencies {
-    ksp("cz.encircled:joiner-ksp:1.23-SNAPSHOT")
+    ksp("cz.encircled:joiner-ksp:2.0.0")
 
     implementation("cz.encircled:joiner-kotlin:$joinerVersion")
 
