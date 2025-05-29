@@ -28,8 +28,8 @@ class QuerydslClassProcessor(
     }
 
     fun generateMetamodelClass(): String {
-        getSupertype(entityClass)?.let {
-            addField(it, "_super", "new $it(this)")
+        getSupertype(entityClass).let {
+            if (it.isNotBlank()) addField(it, "_super", "new $it(this)")
         }
 
         entityClass.getAllProperties().forEach {
@@ -68,7 +68,7 @@ class QuerydslClassProcessor(
         return sb.toString()
     }
 
-    private fun getSupertype(entityClass: KSClassDeclaration): String? {
+    private fun getSupertype(entityClass: KSClassDeclaration): String {
         val parent = entityClass.superTypes
             .map { it.resolve().declaration }
             .filterIsInstance<KSClassDeclaration>()
