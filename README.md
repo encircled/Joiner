@@ -539,6 +539,14 @@ then, add querydsl annotation processors to the `maven-compiler-pluguin` configu
 
 ### Kotlin
 
+For gradle projects, add a ksp Joiner plugin:
+```kotlin
+dependencies {
+    // Entities metamodel generation
+    ksp("cz.encircled:joiner-ksp:2.0.0")
+}
+```
+
 For Kotlin, add kapt plugin execution to the `kotlin-maven-plugin`:
 ```xml
 <execution>
