@@ -44,7 +44,7 @@ public class HibernateRepository extends VendorRepository {
             jpaQuery.setTimeout(request.getTimeout());
         }
 
-        if (request.getReturnProjection() instanceof FactoryExpression<?> p) {
+        if (!request.isCount() && request.getReturnProjection() instanceof FactoryExpression<?> p) {
             jpaQuery.setTupleTransformer(new FactoryExpressionTransformer(p));
         }
 

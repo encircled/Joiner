@@ -46,7 +46,7 @@ class QuerydslProcessor(
             extensionName = "java"
         )
 
-        val content = QuerydslClassProcessor(entityClass).generateMetamodelClass()
+        val content = JoinerClassProcessor(entityClass).generateMetamodelClass()
         fileSpec.use { it?.write(content.toByteArray()) }
 
         logger.info("Generated Querydsl metamodel class: $packageName.$qClassName")

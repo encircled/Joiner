@@ -1,14 +1,16 @@
 package cz.encircled.joiner.ksp.property
 
-import com.google.devtools.ksp.symbol.KSType
-import cz.encircled.joiner.ksp.Field
+import cz.encircled.joiner.ksp.OutProperty
 import cz.encircled.joiner.ksp.name
 import cz.encircled.joiner.ksp.simpleName
 
-class ArrayProcessor(val propertyName : String, val propertyType: KSType) {
+object ArrayProcessor {
 
     // TODO must use template
-    fun process() : Field {
+    fun process(info: PropertyInfo) : OutProperty {
+        val propertyType = info.propertyType
+        val propertyName = info.propertyName
+
         val elementType = when (propertyType.name()) {
             "kotlin.ByteArray" -> "Byte"
             "kotlin.IntArray" -> "Int"
@@ -21,7 +23,7 @@ class ArrayProcessor(val propertyName : String, val propertyType: KSType) {
             else -> propertyType.arguments.firstOrNull()?.type?.resolve()?.simpleName()
         }
 
-        return Field("ArrayPath<$elementType[], $elementType>", propertyName, "createArray(\"$propertyName\", $elementType[].class)")
+        return OutProperty("ArrayPath<$elementType[], $elementType>", propertyName, "createArray(\"$propertyName\", $elementType[].class)")
     }
 
 }

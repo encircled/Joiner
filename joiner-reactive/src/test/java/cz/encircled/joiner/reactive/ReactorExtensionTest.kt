@@ -19,7 +19,7 @@ class ReactorExtensionTest {
 
     @Test
     fun `reactor mono value propagated`() {
-        val mono = Mono.create<Int> { mono ->
+        val mono = Mono.create { mono ->
             reactor(mono) {
                 mono.success(1)
             }

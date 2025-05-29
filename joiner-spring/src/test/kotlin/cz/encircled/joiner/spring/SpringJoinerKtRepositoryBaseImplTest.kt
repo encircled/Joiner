@@ -14,7 +14,6 @@ class SpringJoinerKtRepositoryBaseImplTest : AbstractSpringJoinerTest() {
     @Test
     fun test() {
         var repo : SpringJoinerKtRepositoryBaseImpl<*, *> = SpringJoinerKtRepositoryBaseImpl(joinerKt, QUser.user1)
-        repo.
     }
 
 }
