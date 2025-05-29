@@ -2,6 +2,19 @@
 [![codecov](https://codecov.io/gh/encircled/Joiner/branch/master/graph/badge.svg)](https://codecov.io/gh/encircled/Joiner)
 [![Maven Central](https://img.shields.io/maven-central/v/cz.encircled/joiner-core.svg?label=Maven%20Central)](https://central.sonatype.com/artifact/cz.encircled/joiner-core)
 
+# Joiner 2.x and QueryDSL Notice
+
+QueryDSL is no longer actively maintained, and its development has effectively stalled.
+
+Starting with Joiner 2.0.0, QueryDSL is no longer used for query generation. Joiner now uses a custom implementation for building queries, making it more maintainable and future-proof.
+Joiner still depends on querydsl-core to support existing Q types and predicates, for backward compatibility primarily.
+
+The querydsl-jpa dependency should be removed by users.
+
+✨ New: joiner-ksp Metamodel Generator
+For Gradle-based Kotlin projects, Joiner now provides a KSP-based metamodel generator: `joiner-ksp`
+It is a drop-in replacement for querydsl-apt and generates Q-types for entities using Kotlin Symbol Processing (KSP). 
+
 # Overview
 
 Joiner is a Java library that enables the creation of type-safe JPA queries. It is designed for applications with complex domain models that require extensive use of query joins.
