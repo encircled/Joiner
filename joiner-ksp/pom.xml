@@ -7,6 +7,7 @@
         <version>2.0.4-SNAPSHOT</version>
     </parent>
 
+    <name>joiner-ksp</name>
     <artifactId>joiner-ksp</artifactId>
 
     <properties>

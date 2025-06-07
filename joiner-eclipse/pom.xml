@@ -9,6 +9,7 @@
 
     <description>Joiner EclipseLink support module</description>
 
+    <name>joiner-eclipse</name>
     <artifactId>joiner-eclipse</artifactId>
 
     <dependencies>
