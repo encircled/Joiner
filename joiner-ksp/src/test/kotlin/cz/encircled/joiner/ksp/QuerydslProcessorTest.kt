@@ -17,14 +17,15 @@ import kotlin.test.assertTrue
 
 class QuerydslProcessorTest {
 
-    // TODO Map type
     @Test
     fun testJavaEntityWithAllFieldTypes() {
         QuerydslProcessor(TestLogger()).processEntity(MockKSClassDeclaration(JavaCustomer::class)).apply {
             println(this)
 
             assertContains(
-                "public final ArrayPath<String[], String> arrayOfStrings = createArray(\"arrayOfStrings\", String[].class);"
+                "public final ArrayPath<String[], String> arrayOfStrings = createArray(\"arrayOfStrings\", String[].class);",
+                "public final MapPath<String, Integer, SimplePath<Integer>> mapStrToInt = this.<String, Integer, SimplePath<Integer>>createMap(\"mapStrToInt\", String.class, Integer.class, SimplePath.class);",
+                "NumberPath<Integer> intValue = createNumber(\"intValue\", Integer.class)",
             )
         }
     }
