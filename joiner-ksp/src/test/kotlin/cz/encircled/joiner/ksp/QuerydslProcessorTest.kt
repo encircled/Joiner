@@ -24,6 +24,7 @@ class QuerydslProcessorTest {
 
             assertContains(
                 "public final ArrayPath<String[], String> arrayOfStrings = createArray(\"arrayOfStrings\", String[].class);",
+                "ListPath<Object, SimplePath<Object>> listOfObjects = this.<Object, SimplePath<Object>>createList(\"listOfObjects\", Object.class, SimplePath.class, PathInits.DIRECT2);",
                 "public final MapPath<String, Integer, SimplePath<Integer>> mapStrToInt = this.<String, Integer, SimplePath<Integer>>createMap(\"mapStrToInt\", String.class, Integer.class, SimplePath.class);",
                 "NumberPath<Integer> intValue = createNumber(\"intValue\", Integer.class)",
             )

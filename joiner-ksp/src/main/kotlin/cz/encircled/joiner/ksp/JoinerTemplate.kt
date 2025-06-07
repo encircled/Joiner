@@ -65,16 +65,25 @@ abstract class BaseJoinerTemplate(val packageName: String) : JoinerTemplate {
     // TODO mapping
     private fun getJavaClassName(type: KSDeclaration): Pair<String, String> {
         val typeName = type.name() ?: return "java.lang" to "Object"
-        if (typeName == "kotlin.Int") {
-            return "java.lang" to "Integer"
-        } else if (typeName == "kotlin.collections.MutableList" || typeName == "kotlin.collections.List") {
-            return "java.util" to "List"
-        } else if (typeName == "kotlin.collections.MutableSet" || typeName == "kotlin.collections.Set") {
-            return "java.util" to "Set"
-        } else if (typeName == "kotlin.collections.MutableMap" || typeName == "kotlin.collections.Map") {
-            return "java.util" to "Map"
+        return when (typeName) {
+            "kotlin.Int" -> "java.lang" to "Integer"
+            "kotlin.Char" -> "java.lang" to "Character"
+            "kotlin.Any" -> "java.lang" to "Object"
+
+            "kotlin.collections.MutableList", "kotlin.collections.List" -> {
+                "java.util" to "List"
+            }
+
+            "kotlin.collections.MutableSet", "kotlin.collections.Set" -> {
+                "java.util" to "Set"
+            }
+
+            "kotlin.collections.MutableMap", "kotlin.collections.Map" -> {
+                "java.util" to "Map"
+            }
+
+            else -> "java.lang" to type.simpleName()
         }
-        return "java.lang" to type.simpleName()
     }
 
 }
