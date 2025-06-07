@@ -64,7 +64,7 @@ class JoinerClassProcessor(
                 
                 """.trimIndent()
         )
-        sb.append(outProperties.joinToString("\n\n") { "    $it" })
+        sb.append(outProperties.joinToString("\n\n") { it.toString().prependIndent() })
         sb.append("\n")
         sb.append(generateConstructors(className).joinToString("") { it.stringify(qClassName) })
         sb.append("\n}")
@@ -146,11 +146,11 @@ class JoinerClassProcessor(
 
     // TODO template
     private fun generateConstructors(className: String): List<OutConstructor> {
-        val referenceInit = singularReferences.joinToString("\n") {
+        val referenceInit = singularReferences.map {
             val ifInitialized =
                 "new ${classReference(it.second, "Q")}(forProperty(\"${it.first}\"), inits.get(\"${it.first}\"))"
 
-            "this.${it.first} = inits.isInitialized(\"${it.first}\") ? $ifInitialized : null"
+            "this.${it.first} = inits.isInitialized(\"${it.first}\") ? $ifInitialized : null".prependIndent()
         }
 
         return listOf(
@@ -170,7 +170,7 @@ class JoinerClassProcessor(
             ),
 
             OutConstructor(
-                listOf("super(type, metadata, inits)", referenceInit),
+                listOf("super(type, metadata, inits)") + referenceInit,
                 "Class<? extends $className>" to "type",
                 "PathMetadata" to "metadata",
                 "PathInits" to "inits"

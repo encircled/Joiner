@@ -5,7 +5,7 @@ class OutConstructor(val body: List<String>, vararg val fields: Pair<String, Str
         val fieldsStr = fields.joinToString { it.first + " " + it.second }
         return """
     public $qClassName($fieldsStr) {
-    ${body.filter { it.isNotBlank() }.joinToString("\n") { "    $it;" }}
+    ${body.filter { it.isNotBlank() }.joinToString("\n") { "$it;".prependIndent() }}
     }
     """
     }

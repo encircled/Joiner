@@ -65,6 +65,7 @@ class QuerydslProcessorTest {
         }
     }
 
+    // Compares the output with querydsl-apt
     @Test
     fun testEntityWithInheritance() {
         val sourceCode =
@@ -137,6 +138,9 @@ class QuerydslProcessorTest {
         assertTrue("public final NumberPath<Long> id" in content)
         assertTrue("public final StringPath name" in content)
         assertTrue("public final QTestEntity testEntity;" in content)
+        assertTrue("this.parent = inits.isInitialized(\"parent\") ? new QTestEntity(forProperty(\"parent\"), inits.get(\"parent\")) : null;" in content)
+        assertTrue("this.parent = inits.isInitialized(\"parent\") ? new QTestEntity(forProperty(\"parent\"), inits.get(\"parent\")) : null;" in content)
+        assertTrue("this.testEntity = inits.isInitialized(\"testEntity\") ? new QTestEntity(forProperty(\"testEntity\"), inits.get(\"testEntity\")) : null;" in content)
     }
 
     class TestLogger : KSPLogger {
