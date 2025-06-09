@@ -27,15 +27,25 @@ public class PageableFeature implements QueryFeature {
     @Autowired
     private final Pageable pageable;
 
+    private final Boolean onlySort;
+
     public PageableFeature(Pageable pageable) {
         this.pageable = pageable;
+        this.onlySort = false;
+    }
+
+    public PageableFeature(Pageable pageable, Boolean onlySort) {
+        this.pageable = pageable;
+        this.onlySort = onlySort;
     }
 
     @Override
     public <T, R> JoinerQuery<T, R> before(JoinerQuery<T, R> joinerQuery) {
         if (pageable != null) {
-            joinerQuery.limit(pageable.getPageSize());
-            joinerQuery.offset((int) pageable.getOffset());
+            if (!onlySort) {
+                joinerQuery.limit(pageable.getPageSize());
+                joinerQuery.offset((int) pageable.getOffset());
+            }
             Sort sort = Optional.ofNullable(pageable.getSort()).orElse(Sort.unsorted());
             if (!sort.equals(Sort.unsorted())) {
                 sort.forEach(order -> {

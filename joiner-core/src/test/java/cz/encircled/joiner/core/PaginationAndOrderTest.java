@@ -34,9 +34,8 @@ public abstract class PaginationAndOrderTest extends AbstractTest {
 
     @Test
     public void testLimitWithJoin() {
-        List<Address> res = joiner.find(Q.from(QAddress.address).limit(5).joins(J.left(QStatus.status)));
+        List<Address> res = joiner.find(Q.from(QAddress.address).limit(5).joins(J.left(QStatus.status).fetch(false)));
         assertEquals(5, res.size());
-        assertTrue(isLoaded(res.get(0), "statuses"));
     }
 
     @Test

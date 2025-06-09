@@ -139,7 +139,7 @@ public class JoinerJPQLSerializer {
         boolean disableFetchJoins = joinerQuery.getReturnProjection() instanceof FactoryExpression<?> || joinerQuery.isCount();
 
         Collection<JoinDescription> joins = joinerQuery.getJoins();
-        if (joins != null && !joins.isEmpty()) {
+        if (joins != null) {
             for (JoinDescription join : joins) {
                 appendJoin(join, disableFetchJoins);
 

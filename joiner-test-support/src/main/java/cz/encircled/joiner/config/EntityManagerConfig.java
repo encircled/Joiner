@@ -91,6 +91,7 @@ public class EntityManagerConfig {
 
     private Properties hibernateProperties() {
         Properties properties = new Properties();
+        properties.setProperty("hibernate.query.fail_on_pagination_over_collection_fetch", "true");
         properties.setProperty("hibernate.hbm2ddl.auto", "create");
         properties.setProperty("hibernate.show_sql", "false");
         properties.setProperty("hibernate.format_sql", "true");

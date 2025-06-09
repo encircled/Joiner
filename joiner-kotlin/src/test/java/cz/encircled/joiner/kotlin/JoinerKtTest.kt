@@ -84,20 +84,18 @@ class JoinerKtTest : AbstractTest() {
 
     @Test
     fun ktFindOneQueryIntegrationTest() {
-        val find = joinerKt.findOne(
+        val find = joinerKt.find(
             user1 from user1
                     leftJoin QGroup.group
                     leftJoin QStatus.status
                     innerJoin QStatus.status
 
                     where { it.name eq "user1" or it.id ne 1 or it.id isIn listOf(1) }
-                    limit 1
-                    offset 0
 
                     asc user1.id
         )
 
-        assertNotNull(find)
+        assertTrue(find.isNotEmpty())
     }
 
     @Test

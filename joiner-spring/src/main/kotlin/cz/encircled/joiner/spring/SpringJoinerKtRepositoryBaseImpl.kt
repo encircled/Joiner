@@ -36,7 +36,7 @@ class SpringJoinerKtRepositoryBaseImpl<T, E : EntityPath<T>>(val joiner: JoinerK
 
         val (idField, ids) = findMatchingIds(q, pageable)
 
-        val contentQuery = q.copy().where(idField.isIn(ids)).addFeatures(PageableFeature(pageable.withPage(0)))
+        val contentQuery = q.copy().where(idField.isIn(ids)).addFeatures(PageableFeature(pageable, true))
         val content = joiner.find(contentQuery)
 
         return PageImpl(content, pageable, totalCount)
@@ -54,7 +54,7 @@ class SpringJoinerKtRepositoryBaseImpl<T, E : EntityPath<T>>(val joiner: JoinerK
 
         val (idField, ids) = findMatchingIds(q, pageable)
 
-        val contentQuery = q.copy().where(idField.isIn(ids)).addFeatures(PageableFeature(pageable.withPage(0)))
+        val contentQuery = q.copy().where(idField.isIn(ids)).addFeatures(PageableFeature(pageable, true))
         val content = joiner.find(contentQuery)
 
         return PageImpl(content, pageable, totalCount)
