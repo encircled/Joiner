@@ -85,7 +85,7 @@ class SpringJoinerKtRepositoryBaseImpl<T, E : EntityPath<T>>(val joiner: JoinerK
         val idField = ReflectionUtils.getField("id", query.from) as SimpleExpression<Any>
         val orderExpressions = listOf(idField) + PageableFeature.getExpressionsForSortParam(query, pageable.sort)
 
-        val idsQuery = query.copy(orderExpressions.map { it }.toTypedArray())
+        val idsQuery = query.copy(orderExpressions.toTypedArray())
         val ids = joiner.find(idsQuery.addFeatures(PageableFeature(pageable))).map { it.get(idField)!! }
         return Pair(idField, ids)
     }

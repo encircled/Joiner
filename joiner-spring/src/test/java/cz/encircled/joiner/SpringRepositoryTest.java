@@ -1,7 +1,6 @@
 package cz.encircled.joiner;
 
 import cz.encircled.joiner.model.QGroup;
-import cz.encircled.joiner.model.QStatus;
 import cz.encircled.joiner.model.QUser;
 import cz.encircled.joiner.model.User;
 import cz.encircled.joiner.query.Q;
@@ -52,7 +51,6 @@ public class SpringRepositoryTest extends AbstractSpringJoinerTest {
 
         List<User> users = userRepository.find(Q.from(QUser.user1)
                 .where(QUser.user1.name.startsWith("user"))
-                .joins(QStatus.status)
                 .addFeatures(feature)
         );
 
