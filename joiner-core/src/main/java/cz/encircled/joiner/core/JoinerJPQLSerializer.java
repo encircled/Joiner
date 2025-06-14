@@ -262,14 +262,15 @@ public class JoinerJPQLSerializer {
         // For constants, we add them to the constants list and return a parameter placeholder
         if (expression instanceof com.querydsl.core.types.Constant) {
             Object constant = ((com.querydsl.core.types.Constant<?>) expression).getConstant();
-            if (Objects.equals(parentOpOperator, "STRING_CONTAINS") || Objects.equals(parentOpOperator, "STRING_CONTAINS_IC")) {
-                constants.add("%" + constant + "%");
-            } else if (Objects.equals(parentOpOperator, "STARTS_WITH") || Objects.equals(parentOpOperator, "STARTS_WITH_IC")) {
-                constants.add(constant + "%");
-            } else if (Objects.equals(parentOpOperator, "ENDS_WITH") || Objects.equals(parentOpOperator, "ENDS_WITH_IC")) {
-                constants.add("%" + constant);
-            } else {
-                constants.add(constant);
+            switch (parentOpOperator) {
+                case "STRING_CONTAINS" -> constants.add("%" + constant + "%");
+                case "STRING_CONTAINS_IC" -> constants.add("%" + lowered(constant) + "%");
+                case "STARTS_WITH" -> constants.add(constant + "%");
+                case "STARTS_WITH_IC" -> constants.add(lowered(constant) + "%");
+                case "ENDS_WITH" -> constants.add("%" + constant);
+                case "ENDS_WITH_IC" -> constants.add("%" + lowered(constant));
+                case "LIKE_IC" -> constants.add(lowered(constant));
+                default -> constants.add(constant);
             }
             return "?" + constants.size();
         }
@@ -325,8 +326,9 @@ public class JoinerJPQLSerializer {
                     case "GOE" -> left + " >= " + right;
                     case "LT" -> left + " < " + right;
                     case "LOE" -> left + " <= " + right;
-                    case "STARTS_WITH", "STRING_CONTAINS", "STRING_CONTAINS_IC", "LIKE_IC", "LIKE", "ENDS_WITH_IC",
-                         "ENDS_WITH", "STARTS_WITH_IC" -> left + " like " + right;
+                    case "LIKE_IC", "ENDS_WITH_IC", "STARTS_WITH_IC", "STRING_CONTAINS_IC" ->
+                            "lower(" + left + ") like " + right;
+                    case "STARTS_WITH", "STRING_CONTAINS", "LIKE", "ENDS_WITH" -> left + " like " + right;
                     case "LIKE_ESCAPE", "LIKE_ESCAPE_IC" -> left + " like " + right + " escape '!'";
                     case "IN" -> left + " in " + right;
                     case "NOT_IN" -> left + " not in " + right;
@@ -376,6 +378,13 @@ public class JoinerJPQLSerializer {
         }
 
         return expression.toString();
+    }
+
+    private static String lowered(Object constant) {
+        if (constant != null) {
+            return constant.toString().toLowerCase();
+        }
+        return null;
     }
 
 }
