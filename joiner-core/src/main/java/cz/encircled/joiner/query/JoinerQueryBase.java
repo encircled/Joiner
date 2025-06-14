@@ -88,11 +88,7 @@ public class JoinerQueryBase<T, R> implements JoinerQuery<T, R>, JoinRoot, SubQu
         return where;
     }
 
-    /**
-     * @deprecated non-distinct queries are not supported by JPA anymore
-     */
     @Override
-    @Deprecated
     public JoinerQueryBase<T, R> distinct(boolean isDistinct) {
         distinct = isDistinct;
         return this;

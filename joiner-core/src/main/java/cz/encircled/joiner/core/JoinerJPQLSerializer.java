@@ -50,12 +50,17 @@ public class JoinerJPQLSerializer {
      * @param joinerQuery the query to serialize
      */
     private void serializeJoinerQuery(JoinerQuery<?, ?> joinerQuery) {
+        query.append("select ");
         if (joinerQuery.isCount()) {
-            query.append("select count(");
-            query.append(joinerQuery.getFrom().getMetadata().getName());
-            query.append(") ");
+            if (joinerQuery.getReturnProjection() instanceof Operation) {
+                query.append(serializeExpression(joinerQuery.getReturnProjection(), null));
+                query.append(" ");
+            } else {
+                query.append("count(");
+                query.append(joinerQuery.getFrom().getMetadata().getName());
+                query.append(") ");
+            }
         } else {
-            query.append("select ");
             if (joinerQuery.isDistinct()) {
                 query.append("distinct ");
             }
@@ -305,14 +310,7 @@ public class JoinerJPQLSerializer {
                     case "STARTS_WITH", "STRING_CONTAINS", "STRING_CONTAINS_IC", "LIKE_IC", "LIKE", "ENDS_WITH_IC",
                          "ENDS_WITH", "STARTS_WITH_IC" -> left + " like " + right;
                     case "LIKE_ESCAPE", "LIKE_ESCAPE_IC" -> left + " like " + right + " escape '!'";
-                    case "IN" -> {
-                        // For IN operator, check if the right operand is a subquery/constant/collection
-                        if (args.get(1) instanceof JoinerQuery<?, ?>) {
-                            yield left + " in " + right;
-                        } else {
-                            yield left + " = " + right;
-                        }
-                    }
+                    case "IN" -> left + " in " + right;
                     case "NOT_IN" -> {
                         // For NOT_IN operator, we need to check if the right operand is a subquery or if the constant is a collection
                         if (right.startsWith("(") && right.endsWith(")")) {
@@ -360,6 +358,7 @@ public class JoinerJPQLSerializer {
                     case "IS_NOT_NULL" -> arg + " is not null";
                     case "AVG_AGG" -> "avg(" + arg + ")";
                     case "COUNT_AGG" -> "count(" + arg + ")";
+                    case "COUNT_DISTINCT_AGG" -> "count(distinct " + arg + ")";
                     case "MAX_AGG" -> "max(" + arg + ")";
                     case "MIN_AGG" -> "min(" + arg + ")";
                     case "SUM_AGG" -> "sum(" + arg + ")";

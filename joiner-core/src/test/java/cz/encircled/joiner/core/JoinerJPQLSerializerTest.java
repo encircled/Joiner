@@ -44,14 +44,6 @@ public class JoinerJPQLSerializerTest {
     }
 
     @Test
-    public void testDtoProjection() {
-        JoinerQuery<?, ?> query = Q.select(ProjectionTest.class, user.name, user.id).from(user);
-        String jpql = serializer.serialize(query);
-        assertEquals("select distinct user1.name, user1.id from User user1", jpql);
-        assertConstants(serializer);
-    }
-
-    @Test
     public void testBasicQueryWithCustomAlias() {
         QUser myUser = new QUser("my_user");
         JoinerQuery<?, ?> query = Q.select(myUser.name).from(myUser);
@@ -380,7 +372,81 @@ public class JoinerJPQLSerializerTest {
     }
 
     @Nested
+    class BasicProjections {
+
+       @Test
+        public void singleColumnProjection() {
+            JoinerQuery<?, ?> query = Q.select(user.name).from(user);
+            String jpql = serializer.serialize(query);
+            assertEquals("select distinct user1.name from User user1", jpql);
+            assertConstants(serializer);
+        }
+
+        @Test
+        public void singleJoinedColumnProjection() {
+            JoinerQuery<?, ?> query = Q.select(group.name).from(user).joins(J.left(group).collectionPath(user.groups));
+            String jpql = serializer.serialize(query);
+            assertEquals("select distinct group1.name from User user1 left join fetch user1.groups group1", jpql);
+            assertConstants(serializer);
+        }
+
+        @Test
+        public void starEntityProjection() {
+            JoinerQuery<?, ?> query = Q.from(user);
+            String jpql = serializer.serialize(query);
+            assertEquals("select distinct user1 from User user1", jpql);
+            assertConstants(serializer);
+        }
+
+        @Test
+        public void dtoMappingProjection() {
+            JoinerQuery<?, ?> query = Q.select(ProjectionTest.class, user.name, user.id).from(user);
+            String jpql = serializer.serialize(query);
+            assertEquals("select distinct user1.name, user1.id from User user1", jpql);
+            assertConstants(serializer);
+        }
+    }
+
+    @Nested
     class FunctionProjection {
+
+        @Test
+        public void rootCountProjection() {
+            JoinerQuery<?, ?> query = Q.count(user);
+            String jpql = serializer.serialize(query);
+            assertEquals("select count(user1) from User user1", jpql);
+            assertConstants(serializer);
+        }
+
+        @Test
+        public void columnCountProjection() {
+            JoinerQuery<?, ?> query = Q.select(address.id.count()).from(address).groupBy(address.user);
+            String jpql = serializer.serialize(query);
+            assertEquals("select count(address.id) from Address address group by address.user", jpql);
+        }
+
+        @Test
+        public void distinctColumnCountProjection() {
+            JoinerQuery<?, ?> query = Q.select(address.id.countDistinct()).from(address).groupBy(address.user);
+            String jpql = serializer.serialize(query);
+            assertEquals("select count(distinct address.id) from Address address group by address.user", jpql);
+        }
+
+        @Test
+        public void customCountProjection() {
+            JoinerQuery<?, ?> query = Q.select(user.count()).from(user);
+            String jpql = serializer.serialize(query);
+            assertEquals("select count(user1) from User user1", jpql);
+            assertConstants(serializer);
+        }
+
+        @Test
+        public void distinctCustomCountProjection() {
+            JoinerQuery<?, ?> query = Q.select(user.countDistinct()).from(user);
+            String jpql = serializer.serialize(query);
+            assertEquals("select count(distinct user1) from User user1", jpql);
+            assertConstants(serializer);
+        }
 
         @Test
         public void testAvgFunction() {
@@ -397,30 +463,15 @@ public class JoinerJPQLSerializerTest {
         }
 
         @Test
-        public void testCountFunction() {
-            // Create a query with count function in projection
-            JoinerQuery<?, ?> query = Q.select(address.id.count()).from(address).groupBy(address.user);
-
-            // Serialize the query
-            String jpql = serializer.serialize(query);
-
-            // Verify that the count function is correctly serialized
-            assertTrue(jpql.contains("select distinct count(address.id)"));
-            assertTrue(jpql.contains("group by address.user"));
-        }
-
-        @Test
         public void testMaxFunction() {
             // Create a query with max function in a projection
             JoinerQuery<?, ?> query = Q.select(address.id.max()).from(address).groupBy(address.user);
 
             // Serialize the query
             String jpql = serializer.serialize(query);
-            System.out.println("testMaxFunction JPQL: " + jpql);
 
             // Verify that the max function is correctly serialized
-            assertTrue(jpql.contains("select distinct max(address.id)"));
-            assertTrue(jpql.contains("group by address.user"));
+            assertEquals("select distinct max(address.id) from Address address group by address.user", jpql);
         }
 
         @Test
@@ -439,16 +490,9 @@ public class JoinerJPQLSerializerTest {
 
         @Test
         public void testSumFunction() {
-            // Create a query with sum function in a projection
             JoinerQuery<?, ?> query = Q.select(address.id.sum()).from(address).groupBy(address.user);
-
-            // Serialize the query
             String jpql = serializer.serialize(query);
-            System.out.println("testSumFunction JPQL: " + jpql);
-
-            // Verify that the sum function is correctly serialized
-            assertTrue(jpql.contains("select distinct sum(address.id)"));
-            assertTrue(jpql.contains("group by address.user"));
+            assertEquals("select distinct sum(address.id) from Address address group by address.user", jpql);
         }
 
         @Test
@@ -468,6 +512,14 @@ public class JoinerJPQLSerializerTest {
 
     @Nested
     class SqlFunctions {
+
+        @Test
+        public void testLocateFunction() {
+            JoinerQuery<?, ?> query = Q.from(user).where(user.name.locate("oh").gt(0));
+            String jpql = serializer.serialize(query);
+            assertEquals("select distinct user1 from User user1 where locate(?1, user1.name) > ?2", jpql);
+            assertConstants(serializer, "oh", 0);
+        }
 
         @Test
         public void testUpperFunction() {
@@ -593,6 +645,30 @@ public class JoinerJPQLSerializerTest {
             String jpql = serializer.serialize(query);
             assertEquals("select distinct user1 from User user1 where coalesce((user1.name, ?1)) = ?2", jpql);
             assertConstants(serializer, "Unknown", "John");
+        }
+
+        @Test
+        public void testNullif() {
+            JoinerQuery<?, ?> query = Q.from(user).where(user.name.nullif("Unknown").isNull());
+            String jpql = serializer.serialize(query);
+            assertEquals("select distinct user1 from User user1 where nullif(user1.name, ?1) is null", jpql);
+            assertConstants(serializer, "Unknown");
+        }
+
+        @Test
+        public void testIndex() {
+            JoinerQuery<?, ?> query = Q.from(user).where(user.groups.size().eq(1));
+            String jpql = serializer.serialize(query);
+            // TODO not supported yet
+            assertConstants(serializer, 1);
+        }
+
+        @Test
+        public void testCast() {
+            JoinerQuery<?, ?> query = Q.select(user.id.castToNum(Integer.class)).from(user);
+            String jpql = serializer.serialize(query);
+            assertEquals("select distinct user1.id numcast ?1 from User user1", jpql);
+            assertConstants(serializer, Integer.class);
         }
     }
 
