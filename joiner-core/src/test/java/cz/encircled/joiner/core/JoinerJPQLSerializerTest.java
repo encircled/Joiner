@@ -694,7 +694,7 @@ public class JoinerJPQLSerializerTest {
         public void testCoalesce() {
             JoinerQuery<?, ?> query = Q.from(user).where(user.name.coalesce("Unknown").eq("John"));
             String jpql = serializer.serialize(query);
-            assertEquals("select distinct user1 from User user1 where coalesce((user1.name, ?1)) = ?2", jpql);
+            assertEquals("select distinct user1 from User user1 where coalesce(user1.name, ?1) = ?2", jpql);
             assertConstants(serializer, "Unknown", "John");
         }
 
