@@ -15,11 +15,21 @@ public class JoinerProperties {
 
     public Map<String, List<Object>> defaultHints = new LinkedHashMap<>();
 
+    public boolean printQueries = false;
+
     /**
      * If true, Hibernate StatelessSession will be used for all queries
      */
     public JoinerProperties setUseStatelessSessions(boolean useStatelessSessions) {
         this.useStatelessSessions = useStatelessSessions;
+        return this;
+    }
+
+    /**
+     * If true, will print the JPA query string to the INFO log
+     */
+    public JoinerProperties printQueries(boolean printQueries) {
+        this.printQueries = printQueries;
         return this;
     }
 

@@ -8,6 +8,8 @@ import jakarta.persistence.EntityManager;
 import org.hibernate.Session;
 import org.hibernate.StatelessSession;
 import org.hibernate.query.Query;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.List;
 
@@ -16,10 +18,18 @@ import java.util.List;
  */
 public class HibernateRepository extends VendorRepository {
 
+    private static final Logger log = LoggerFactory.getLogger(HibernateRepository.class);
+
     @Override
     public JoinerJpaQuery createQuery(JoinerQuery<?, ?> request, JoinerProperties joinerProperties, EntityManager entityManager) {
         JoinerJPQLSerializer serializer = new JoinerJPQLSerializer();
         String queryString = serializer.serialize(request);
+
+        if (joinerProperties.printQueries) {
+            log.info("Joiner:\n {}", queryString);
+        } else {
+            log.debug("Joiner:\n {}", queryString);
+        }
 
         StatelessSession session = null;
         Query<?> jpaQuery;
