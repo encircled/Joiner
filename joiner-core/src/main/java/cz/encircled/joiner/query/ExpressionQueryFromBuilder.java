@@ -21,6 +21,8 @@ public class ExpressionQueryFromBuilder<R> implements FromBuilder<R> {
             if (((Operation<R>) projection).getOperator().name().startsWith("COUNT_")) {
                 query.count();
             };
+            // 'function' projection should be non-distinct by default
+            query.distinct(false);
         }
         return query;
     }

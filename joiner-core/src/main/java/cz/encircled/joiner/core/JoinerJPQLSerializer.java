@@ -1,6 +1,7 @@
 package cz.encircled.joiner.core;
 
 import com.querydsl.core.types.*;
+import cz.encircled.joiner.exception.JoinerException;
 import cz.encircled.joiner.query.JoinerQuery;
 import cz.encircled.joiner.query.QueryOrder;
 import cz.encircled.joiner.query.join.J;
@@ -181,8 +182,10 @@ public class JoinerJPQLSerializer {
         if (path != null) {
             query.append(serializeExpression(path));
         } else {
-            // If the path is null, use the join's alias or a default value
-            query.append(join.getAlias() != null ? join.getAlias().toString() : "unknown");
+            if (join.getAlias() == null) {
+                throw new JoinerException("Join path is null");
+            }
+            query.append(join.getAlias().toString());
         }
 
         if (join.getAlias() != null) {
@@ -304,9 +307,9 @@ public class JoinerJPQLSerializer {
                     case "EQ" -> left + " = " + right;
                     case "NE" -> left + " <> " + right;
                     case "GT" -> left + " > " + right;
-                    case "GE" -> left + " >= " + right;
+                    case "GOE" -> left + " >= " + right;
                     case "LT" -> left + " < " + right;
-                    case "LE" -> left + " <= " + right;
+                    case "LOE" -> left + " <= " + right;
                     case "STARTS_WITH", "STRING_CONTAINS", "STRING_CONTAINS_IC", "LIKE_IC", "LIKE", "ENDS_WITH_IC",
                          "ENDS_WITH", "STARTS_WITH_IC" -> left + " like " + right;
                     case "LIKE_ESCAPE", "LIKE_ESCAPE_IC" -> left + " like " + right + " escape '!'";
@@ -353,6 +356,8 @@ public class JoinerJPQLSerializer {
 
                 // Special handling for common operators
                 return switch (operator) {
+                    case "STRING_IS_EMPTY" -> "empty(" + arg + ")";
+                    case "STRING_LENGTH" -> "length(" + arg + ")";
                     case "NOT" -> "not " + arg;
                     case "IS_NULL" -> arg + " is null";
                     case "IS_NOT_NULL" -> arg + " is not null";
@@ -389,7 +394,4 @@ public class JoinerJPQLSerializer {
         return expression.toString();
     }
 
-    private static boolean isOperationWithConditionalOps(Expression<?> exp) {
-        return exp instanceof PredicateOperation && (((PredicateOperation) exp).getOperator() == Ops.AND || ((PredicateOperation) exp).getOperator() == Ops.OR);
-    }
 }

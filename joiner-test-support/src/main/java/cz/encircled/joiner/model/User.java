@@ -43,6 +43,8 @@ public class User extends AbstractEntity {
 
     private Boolean active = true;
 
+    private Integer salary = 100;
+
     public User() {
     }
 
