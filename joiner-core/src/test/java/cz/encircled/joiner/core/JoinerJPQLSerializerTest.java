@@ -5,6 +5,7 @@ import cz.encircled.joiner.query.JoinerQuery;
 import cz.encircled.joiner.query.Q;
 import cz.encircled.joiner.query.join.J;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
@@ -33,31 +34,6 @@ public class JoinerJPQLSerializerTest {
     public void testToString() {
         JoinerQuery<?, ?> query = Q.from(user).where(user.name.eq("John"));
         assertEquals("select distinct user1 from User user1 where user1.name = ?1", query.toString());
-    }
-
-    @Test
-    public void testBasicQuery() {
-        JoinerQuery<?, ?> query = Q.from(user);
-        String jpql = serializer.serialize(query);
-        assertEquals("select distinct user1 from User user1", jpql);
-        assertConstants(serializer);
-    }
-
-    @Test
-    public void testBasicQueryWithCustomAlias() {
-        QUser myUser = new QUser("my_user");
-        JoinerQuery<?, ?> query = Q.select(myUser.name).from(myUser);
-        String jpql = serializer.serialize(query);
-        assertEquals("select distinct my_user.name from User my_user", jpql);
-        assertConstants(serializer);
-    }
-
-    @Test
-    public void testCountQuery() {
-        JoinerQuery<?, ?> query = Q.count(user);
-        String jpql = serializer.serialize(query);
-        assertEquals("select count(user1) from User user1", jpql);
-        assertConstants(serializer);
     }
 
     @Nested
@@ -147,7 +123,7 @@ public class JoinerJPQLSerializerTest {
                     .andWhere(user.id.between(100, 200));
             String jpql = serializer.serialize(query);
             assertEquals(
-                    "select distinct user1 from User user1 where between(user1.id, ?1, ?2) and (user1.name = ?3 or (user1.name = ?4 and user1.id = ?5))",
+                    "select distinct user1 from User user1 where user1.id between ?1 and ?2 and (user1.name = ?3 or (user1.name = ?4 and user1.id = ?5))",
                     jpql
             );
             assertConstants(serializer, 100L, 200L, "Anna", "Tom", 1L);
@@ -315,7 +291,7 @@ public class JoinerJPQLSerializerTest {
         public void leftJoinOn() {
             JoinerQuery<?, ?> query = Q.from(user).joins(J.left(user.groups).collectionPath(user.groups).on(group.name.isNotEmpty()));
             String jpql = serializer.serialize(query);
-            assertEquals("select distinct user1 from User user1 left join user1.groups group1 on not empty(group1.name)", jpql);
+            assertEquals("select distinct user1 from User user1 left join user1.groups group1 on not length(group1.name) = 0", jpql);
         }
 
         @Test
@@ -361,7 +337,6 @@ public class JoinerJPQLSerializerTest {
     public void testGroupBy() {
         JoinerQuery<?, ?> query = Q.from(user).groupBy(user.name, user.id);
         String jpql = serializer.serialize(query);
-        System.out.println(jpql);
         assertEquals("select distinct user1 from User user1 group by user1.name, user1.id", jpql);
     }
 
@@ -373,22 +348,19 @@ public class JoinerJPQLSerializerTest {
         assertConstants(serializer, 0L);
     }
 
-    @Test
-    public void testPredicateWithConstants() {
-        JoinerQuery<?, ?> query = Q.from(user).where(user.name.eq("John").and(user.id.gt(10L)));
-
-        String jpql = serializer.serialize(query);
-
-        assertTrue(jpql.contains("user1.name = ?"));
-        assertTrue(jpql.contains("user1.id > ?"));
-
-        assertConstants(serializer, "John", 10L);
-    }
-
     @Nested
     class BasicProjections {
 
-       @Test
+        @Test
+        public void rootCustomAlias() {
+            QUser myUser = new QUser("my_user");
+            JoinerQuery<?, ?> query = Q.select(myUser.name).from(myUser);
+            String jpql = serializer.serialize(query);
+            assertEquals("select distinct my_user.name from User my_user", jpql);
+            assertConstants(serializer);
+        }
+
+        @Test
         public void singleColumnProjection() {
             JoinerQuery<?, ?> query = Q.select(user.name).from(user);
             String jpql = serializer.serialize(query);
@@ -430,6 +402,22 @@ public class JoinerJPQLSerializerTest {
             String jpql = serializer.serialize(query);
             assertEquals("select lower(user1.name) from User user1", jpql);
             assertConstants(serializer);
+        }
+
+        @Test
+        public void testSubstringFunction() {
+            JoinerQuery<?, String> query = Q.select(user.name.substring(2)).from(user);
+            String jpql = serializer.serialize(query);
+            assertEquals("select substring(user1.name, ?1) from User user1", jpql);
+            assertConstants(serializer, 2);
+        }
+
+        @Test
+        public void testSubstring2Function() {
+            JoinerQuery<?, String> query = Q.select(user.name.substring(0, 3)).from(user);
+            String jpql = serializer.serialize(query);
+            assertEquals("select substring(user1.name, ?1, ?2) from User user1", jpql);
+            assertConstants(serializer, 0, 3);
         }
 
         @Test
@@ -497,10 +485,7 @@ public class JoinerJPQLSerializerTest {
         @Test
         public void testAvgFunction() {
             JoinerQuery<?, ?> query = Q.select(address.id.avg()).from(address).groupBy(address.user);
-
             String jpql = serializer.serialize(query);
-            System.out.println("testAvgFunction JPQL: " + jpql);
-
             assertEquals("select avg(address.id) from Address address group by address.user", jpql);
         }
 
@@ -592,13 +577,10 @@ public class JoinerJPQLSerializerTest {
 
         @Test
         public void testSubstringFunction() {
-            // Using StringExpression.substring
             JoinerQuery<?, ?> query = Q.from(user).where(user.name.substring(1, 3).eq("oh"));
             String jpql = serializer.serialize(query);
             System.out.println("testSubstringFunction JPQL: " + jpql);
-            assertTrue(jpql.contains("where") &&
-                    ((jpql.contains("substring(user1.name") || jpql.contains("substr_2args(user1.name"))) &&
-                    jpql.contains("= ?3"));
+            assertEquals("select distinct user1 from User user1 where substring(user1.name, ?1, ?2) = ?3", jpql);
             assertConstants(serializer, 1, 3, "oh");
         }
 
@@ -642,8 +624,7 @@ public class JoinerJPQLSerializerTest {
         public void testBetween() {
             JoinerQuery<?, ?> query = Q.from(user).where(user.id.between(1L, 10L));
             String jpql = serializer.serialize(query);
-            assertTrue(jpql.contains("where between(user1.id, ?1, ?2)") ||
-                    jpql.contains("where user1.id between ?1 and ?2"));
+            assertEquals("select distinct user1 from User user1 where user1.id between ?1 and ?2", jpql);
             assertConstants(serializer, 1L, 10L);
         }
 
@@ -667,8 +648,7 @@ public class JoinerJPQLSerializerTest {
         public void testIsEmpty() {
             JoinerQuery<?, ?> query = Q.from(user).where(user.groups.isEmpty());
             String jpql = serializer.serialize(query);
-            assertTrue(jpql.contains("where col_is_empty(user1.groups)") ||
-                    jpql.contains("where user1.groups is empty"));
+            assertEquals("select distinct user1 from User user1 where user1.groups is empty", jpql);
             assertConstants(serializer);
         }
 
@@ -676,17 +656,24 @@ public class JoinerJPQLSerializerTest {
         public void testIsNotEmpty() {
             JoinerQuery<?, ?> query = Q.from(user).where(user.groups.isNotEmpty());
             String jpql = serializer.serialize(query);
-            assertTrue(jpql.contains("where not col_is_empty(user1.groups)") ||
-                    jpql.contains("where user1.groups is not empty"));
+            assertEquals("select distinct user1 from User user1 where not user1.groups is empty", jpql);
             assertConstants(serializer);
         }
 
         @Test
-        public void testSize() {
-            JoinerQuery<?, ?> query = Q.from(user).where(user.groups.size().eq(2));
+        public void testAssociationSize() {
+            JoinerQuery<?, ?> query = Q.from(user).where(user.groups.size().gt(2));
             String jpql = serializer.serialize(query);
-            System.out.println("testSize JPQL: " + jpql);
-            assertTrue(jpql.contains("where") && jpql.contains("user1.groups") && jpql.contains("= ?1"));
+            assertEquals("select distinct user1 from User user1 where size(user1.groups) > ?1", jpql);
+            assertConstants(serializer, 2);
+        }
+
+        @Test
+        @Disabled
+        public void testAssociationExists() {
+            JoinerQuery<?, ?> query = Q.from(user).where(user1.groups.any().name.eq("test"));
+            String jpql = serializer.serialize(query);
+            assertEquals("select user1 from User user1 where exists (select 1 from user1.groups as user1_groups_0 where user1_groups_0.name = ?1)", jpql);
             assertConstants(serializer, 2);
         }
 

@@ -172,7 +172,7 @@ public class JoinerJPQLSerializer {
         }
 
         // Handle different path types
-        Expression<?> path = null;
+        Expression<?> path;
         if (join.isCollectionPath()) {
             path = join.getCollectionPath();
         } else {
@@ -276,8 +276,13 @@ public class JoinerJPQLSerializer {
 
         // For paths, we return the path name
         if (expression instanceof Path<?> path) {
-            if (path.getMetadata().getParent() != null) {
-                return serializeExpression(path.getMetadata().getParent()) + "." + path.getMetadata().getName();
+            Path<?> parent = path.getMetadata().getParent();
+            if (parent != null) {
+                if ("COLLECTION_ANY".equals(parent.getMetadata().getPathType().name())) {
+                    throw new JoinerException("'Collection any' is not supported, use a join instead");
+                } else {
+                    return serializeExpression(parent) + "." + path.getMetadata().getName();
+                }
             }
             return path.getMetadata().getName();
         }
@@ -293,7 +298,17 @@ public class JoinerJPQLSerializer {
             String operator = operation.getOperator().toString();
 
             // Handle different types of operations
-            if (args.size() == 2) {
+            if (args.size() == 3) {
+                String left = serializeExpression(args.get(0), operator);
+                String middle = serializeExpression(args.get(1), operator);
+                String right = serializeExpression(args.get(2), operator);
+
+                return switch (operator) {
+                    case "SUBSTR_2ARGS" -> "substring(" + left + ", " + middle + ", " + right + ")";
+                    case "BETWEEN" -> left + " between " + middle + " and " + right;
+                    default -> throw new JoinerException("Unsupported operator: " + operator);
+                };
+            } else if (args.size() == 2) {
                 // Binary operation (e.g., a = b, a > b)
                 String left = serializeExpression(args.get(0), operator);
                 String right = serializeExpression(args.get(1), operator);
@@ -314,34 +329,11 @@ public class JoinerJPQLSerializer {
                          "ENDS_WITH", "STARTS_WITH_IC" -> left + " like " + right;
                     case "LIKE_ESCAPE", "LIKE_ESCAPE_IC" -> left + " like " + right + " escape '!'";
                     case "IN" -> left + " in " + right;
-                    case "NOT_IN" -> {
-                        // For NOT_IN operator, we need to check if the right operand is a subquery or if the constant is a collection
-                        if (right.startsWith("(") && right.endsWith(")")) {
-                            yield left + " not in " + right;
-                        } else if (right.startsWith("?")) {
-                            int paramIndex = Integer.parseInt(right.substring(1));
-                            Object constant = constants.get(paramIndex - 1);
-                            if (constant instanceof Collection) {
-                                yield left + " not in " + right;
-                            } else {
-                                yield left + " <> " + right;
-                            }
-                        } else {
-                            yield left + " <> " + right;
-                        }
-                    }
+                    case "NOT_IN" -> left + " not in " + right;
                     case "CONCAT" -> "concat(" + left + ", " + right + ")";
-                    case "SUBSTR" -> "substring(" + left + ", " + right + ")";
-                    case "UPPER" -> "upper(" + left + ")";
-                    case "LOWER" -> "lower(" + left + ")";
-                    case "TRIM" -> "trim(" + left + ")";
-                    case "LENGTH" -> "length(" + left + ")";
+                    case "SUBSTR_1ARG" -> "substring(" + left + ", " + right + ")";
                     case "LOCATE" -> "locate(" + left + ", " + right + ")";
-                    case "ABS" -> "abs(" + left + ")";
-                    case "SQRT" -> "sqrt(" + left + ")";
                     case "MOD" -> "mod(" + left + ", " + right + ")";
-                    case "INDEX" -> "index(" + left + ")";
-                    case "SIZE" -> "size(" + left + ")";
                     case "COALESCE" -> "coalesce(" + left + ", " + right + ")";
                     case "NULLIF" -> "nullif(" + left + ", " + right + ")";
                     case "CAST" -> "cast(" + left + " as " + right + ")";
@@ -356,7 +348,9 @@ public class JoinerJPQLSerializer {
 
                 // Special handling for common operators
                 return switch (operator) {
-                    case "STRING_IS_EMPTY" -> "empty(" + arg + ")";
+                    case "COL_SIZE" -> "size(" + arg + ")";
+                    case "COL_IS_EMPTY" -> arg + " is empty";
+                    case "STRING_IS_EMPTY" -> "length(" + arg + ") = 0";
                     case "STRING_LENGTH" -> "length(" + arg + ")";
                     case "COALESCE" -> "coalesce" + arg;
                     case "NOT" -> "not " + arg;
@@ -377,21 +371,10 @@ public class JoinerJPQLSerializer {
                     default -> operator.toLowerCase() + "(" + arg + ")";
                 };
             } else {
-                // Function call or other operations
-                StringBuilder sb = new StringBuilder();
-                sb.append(operator.toLowerCase()).append("(");
-                for (int i = 0; i < args.size(); i++) {
-                    if (i > 0) {
-                        sb.append(", ");
-                    }
-                    sb.append(serializeExpression(args.get(i)));
-                }
-                sb.append(")");
-                return sb.toString();
+                throw new JoinerException("Unsupported operator: " + operator);
             }
         }
 
-        // For other types of expressions, return the string representation
         return expression.toString();
     }
 

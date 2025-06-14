@@ -100,8 +100,8 @@ class JoinerKtTest : AbstractTest() {
 
     @Test
     fun ktAppendWhere() {
-        assertEquals(user1.id.gt(1).or(user1.id.isNull), (user1.all() orWhere { user1.id.isNull } orWhere { user1.id gt 1 }).where)
-        assertEquals(user1.id.gt(1).and(user1.id.isNull), (user1.all() andWhere { user1.id.isNull } andWhere { user1.id gt 1 }).where)
+        assertEquals(user1.id.gt(1).or(user1.id.isNull), (user1.all() orWhere { user1.id.isNull } orWhere(user1.id gt 1)).where)
+        assertEquals(user1.id.gt(1).and(user1.id.isNull), (user1.all() andWhere { user1.id.isNull } andWhere(user1.id gt 1)).where)
     }
 
     @Test
@@ -148,5 +148,13 @@ class JoinerKtTest : AbstractTest() {
         assertTrue(result.isNotEmpty())
     }
 
+    @Test
+    fun `group, offset, limit infixes`() {
+        val q = user1.all() groupBy user1.name having (user1.id gt 0) offset 10 limit 2
+        assertEquals(10, q.offset)
+        assertEquals(2, q.limit)
+        assertEquals(user1.name, q.groupBy[0])
+        assertEquals(user1.id.gt(0), q.having)
+    }
 
 }
