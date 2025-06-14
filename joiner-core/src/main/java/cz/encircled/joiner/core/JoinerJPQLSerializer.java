@@ -358,6 +358,7 @@ public class JoinerJPQLSerializer {
                 return switch (operator) {
                     case "STRING_IS_EMPTY" -> "empty(" + arg + ")";
                     case "STRING_LENGTH" -> "length(" + arg + ")";
+                    case "COALESCE" -> "coalesce" + arg;
                     case "NOT" -> "not " + arg;
                     case "IS_NULL" -> arg + " is null";
                     case "IS_NOT_NULL" -> arg + " is not null";

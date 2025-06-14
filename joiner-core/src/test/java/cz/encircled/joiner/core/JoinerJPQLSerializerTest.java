@@ -433,6 +433,14 @@ public class JoinerJPQLSerializerTest {
         }
 
         @Test
+        public void testCoalesceProjection() {
+            JoinerQuery<?, ?> query = Q.select(user.salary.coalesce(user.id)).from(user);
+            String jpql = serializer.serialize(query);
+            assertEquals("select coalesce(user1.salary, user1.id) from User user1", jpql);
+            assertConstants(serializer);
+        }
+
+        @Test
         public void testLengthFunction() {
             JoinerQuery<?, Integer> query = Q.select(user.name.length()).from(user);
             String jpql = serializer.serialize(query);
@@ -637,6 +645,22 @@ public class JoinerJPQLSerializerTest {
             assertTrue(jpql.contains("where between(user1.id, ?1, ?2)") ||
                     jpql.contains("where user1.id between ?1 and ?2"));
             assertConstants(serializer, 1L, 10L);
+        }
+
+        @Test
+        public void testCoalesceConstant() {
+            JoinerQuery<?, ?> query = Q.from(user).where(user.salary.coalesce(10).goe(11));
+            String jpql = serializer.serialize(query);
+            assertEquals("select distinct user1 from User user1 where coalesce(user1.salary, ?1) >= ?2", jpql);
+            assertConstants(serializer, 10, 11);
+        }
+
+        @Test
+        public void testCoalesceWithExpression() {
+            JoinerQuery<?, ?> query = Q.from(user).where(user.salary.coalesce(user.id).goe(11));
+            String jpql = serializer.serialize(query);
+            assertEquals("select distinct user1 from User user1 where coalesce(user1.salary, user1.id) >= ?1", jpql);
+            assertConstants(serializer, 11);
         }
 
         @Test
