@@ -250,15 +250,15 @@ public class JoinerJPQLSerializer {
      * @param expression the expression to serialize
      * @return the serialized expression
      */
-    private String serializeExpression(Expression<?> expression, String constantOperator) {
+    private String serializeExpression(Expression<?> expression, String parentOpOperator) {
         // For constants, we add them to the constants list and return a parameter placeholder
         if (expression instanceof com.querydsl.core.types.Constant) {
             Object constant = ((com.querydsl.core.types.Constant<?>) expression).getConstant();
-            if (Objects.equals(constantOperator, "STRING_CONTAINS") || Objects.equals(constantOperator, "STRING_CONTAINS_IC")) {
+            if (Objects.equals(parentOpOperator, "STRING_CONTAINS") || Objects.equals(parentOpOperator, "STRING_CONTAINS_IC")) {
                 constants.add("%" + constant + "%");
-            } else if (Objects.equals(constantOperator, "STARTS_WITH") || Objects.equals(constantOperator, "STARTS_WITH_IC")) {
+            } else if (Objects.equals(parentOpOperator, "STARTS_WITH") || Objects.equals(parentOpOperator, "STARTS_WITH_IC")) {
                 constants.add(constant + "%");
-            } else if (Objects.equals(constantOperator, "ENDS_WITH") || Objects.equals(constantOperator, "ENDS_WITH_IC")) {
+            } else if (Objects.equals(parentOpOperator, "ENDS_WITH") || Objects.equals(parentOpOperator, "ENDS_WITH_IC")) {
                 constants.add("%" + constant);
             } else {
                 constants.add(constant);
@@ -290,8 +290,12 @@ public class JoinerJPQLSerializer {
                 String left = serializeExpression(args.get(0), operator);
                 String right = serializeExpression(args.get(1), operator);
 
+                boolean isConditional = operation.getOperator() == Ops.AND || operation.getOperator() == Ops.OR;
+                boolean isConstantConditional = "AND".equals(parentOpOperator) || "OR".equals(parentOpOperator);
+                boolean addParentheses = isConditional && isConstantConditional;
+
                 // Special handling for common operators
-                return switch (operator) {
+                String result = switch (operator) {
                     case "EQ" -> left + " = " + right;
                     case "NE" -> left + " <> " + right;
                     case "GT" -> left + " > " + right;
@@ -302,17 +306,9 @@ public class JoinerJPQLSerializer {
                          "ENDS_WITH", "STARTS_WITH_IC" -> left + " like " + right;
                     case "LIKE_ESCAPE", "LIKE_ESCAPE_IC" -> left + " like " + right + " escape '!'";
                     case "IN" -> {
-                        // For IN operator, we need to check if the right operand is a subquery or if the constant is a collection
-                        if (right.startsWith("(") && right.endsWith(")")) {
+                        // For IN operator, check if the right operand is a subquery/constant/collection
+                        if (args.get(1) instanceof JoinerQuery<?, ?>) {
                             yield left + " in " + right;
-                        } else if (right.startsWith("?")) {
-                            int paramIndex = Integer.parseInt(right.substring(1));
-                            Object constant = constants.get(paramIndex - 1);
-                            if (constant instanceof Collection) {
-                                yield left + " in " + right;
-                            } else {
-                                yield left + " = " + right;
-                            }
                         } else {
                             yield left + " = " + right;
                         }
@@ -352,6 +348,7 @@ public class JoinerJPQLSerializer {
                     case "LIST" -> "(" + left + ", " + right + ")";
                     default -> left + " " + operator.toLowerCase().replaceAll("_", " ") + " " + right;
                 };
+                return addParentheses ? "(" + result + ")" : result;
             } else if (args.size() == 1) {
                 // Unary operation (e.g., not a)
                 String arg = serializeExpression(args.get(0));
@@ -391,5 +388,9 @@ public class JoinerJPQLSerializer {
 
         // For other types of expressions, return the string representation
         return expression.toString();
+    }
+
+    private static boolean isOperationWithConditionalOps(Expression<?> exp) {
+        return exp instanceof PredicateOperation && (((PredicateOperation) exp).getOperator() == Ops.AND || ((PredicateOperation) exp).getOperator() == Ops.OR);
     }
 }

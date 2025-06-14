@@ -14,6 +14,7 @@ import java.util.List;
 
 import static cz.encircled.joiner.model.QUser.user1;
 import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  * @author Kisel on 26.01.2016.
@@ -45,6 +46,10 @@ public abstract class PredicateTest extends AbstractTest {
 
         query.orWhere(user1.name.eq("3"));
         assertEquals(user1.name.eq("3").or(user1.name.ne("2").and(user1.name.eq("1"))), query.getWhere());
+
+        assertEquals(user1.name.ne("3").and(user1.name.eq("1").or(user1.name.eq("2"))),
+                Q.from(user1).andWhere(user1.name.eq("1").or(user1.name.eq("2"))).andWhere(user1.name.ne("3")).getWhere());
+
     }
 
     @Test

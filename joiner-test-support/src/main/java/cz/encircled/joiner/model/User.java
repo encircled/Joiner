@@ -41,6 +41,8 @@ public class User extends AbstractEntity {
     @JoinColumn(name = "parent_id")
     private User user;
 
+    private Boolean active = true;
+
     public User() {
     }
 
