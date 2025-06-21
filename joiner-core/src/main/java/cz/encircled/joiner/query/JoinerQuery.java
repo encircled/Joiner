@@ -1,6 +1,5 @@
 package cz.encircled.joiner.query;
 
-import com.querydsl.core.QueryMetadata;
 import com.querydsl.core.Tuple;
 import com.querydsl.core.types.*;
 import com.querydsl.core.types.dsl.BooleanExpression;
@@ -20,7 +19,7 @@ import java.util.Set;
  *
  * @author Vlad on 04-Sep-16.
  */
-public interface JoinerQuery<T, R> extends JoinRoot, SubQueryExpression<R> {
+public interface JoinerQuery<T, R> extends JoinRoot, Expression<R> {
 
     EntityPath<T> getFrom();
 

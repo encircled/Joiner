@@ -2,11 +2,11 @@
 package cz.encircled.joiner.kotlin
 
 import com.querydsl.core.types.Expression
-import com.querydsl.core.types.SubQueryExpression
 import com.querydsl.core.types.dsl.BooleanExpression
 import com.querydsl.core.types.dsl.NumberExpression
 import com.querydsl.core.types.dsl.SimpleExpression
 import com.querydsl.core.types.dsl.StringExpression
+import cz.encircled.joiner.query.JoinerQuery
 
 interface ConditionOps {
 
@@ -23,11 +23,11 @@ interface ConditionOps {
 
     infix fun <T> SimpleExpression<T>.isIn(to: Collection<out T>): BooleanExpression = `in`(to)
 
-    infix fun <T> SimpleExpression<T>.isIn(to: SubQueryExpression<T>): BooleanExpression = `in`(to)
+    infix fun <T> SimpleExpression<T>.isIn(to: JoinerQuery<*, T>): BooleanExpression = `in`(to)
 
     infix fun <T> SimpleExpression<T>.notIn(to: Collection<T>): BooleanExpression = notIn(to)
 
-    infix fun <T> SimpleExpression<T>.notIn(to: SubQueryExpression<T>): BooleanExpression = notIn(to)
+    infix fun <T> SimpleExpression<T>.notIn(to: JoinerQuery<*, T>): BooleanExpression = notIn(to)
 
     /**
      * Not equals
@@ -53,7 +53,7 @@ interface ConditionOps {
         return chain.invoke { it.`in`(to) }
     }
 
-    infix fun <T> PredicateContinuation<T>.isIn(to: SubQueryExpression<T>): BooleanExpression {
+    infix fun <T> PredicateContinuation<T>.isIn(to: JoinerQuery<*, T>): BooleanExpression {
         return chain.invoke { it.`in`(to) }
     }
 
@@ -61,7 +61,7 @@ interface ConditionOps {
         return chain.invoke { it.notIn(to) }
     }
 
-    infix fun <T> PredicateContinuation<T>.notIn(to: SubQueryExpression<T>): BooleanExpression {
+    infix fun <T> PredicateContinuation<T>.notIn(to: JoinerQuery<*, T>): BooleanExpression {
         return chain.invoke { it.notIn(to) }
     }
 
