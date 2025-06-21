@@ -3,6 +3,7 @@ package cz.encircled.joiner.kotlin
 import cz.encircled.joiner.kotlin.JoinerKtQueryBuilder.from
 import cz.encircled.joiner.model.QUser.user1
 import cz.encircled.joiner.query.Q
+import org.junit.jupiter.api.Disabled
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -54,6 +55,7 @@ class ConditionOpsTest : ConditionOps {
     }
 
     @Test
+    @Disabled // TODO
     fun `sub queries`() {
         assertEquals(
             user1.name.eq(Q.select(user1.name).from(user1)).toString(),

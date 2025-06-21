@@ -1,6 +1,12 @@
 package cz.encircled.joiner.core;
 
-import com.querydsl.core.types.*;
+import com.querydsl.core.types.Expression;
+import com.querydsl.core.types.FactoryExpression;
+import com.querydsl.core.types.FactoryExpressionBase;
+import com.querydsl.core.types.Operation;
+import com.querydsl.core.types.Ops;
+import com.querydsl.core.types.Path;
+import com.querydsl.core.types.Predicate;
 import cz.encircled.joiner.exception.JoinerException;
 import cz.encircled.joiner.query.JoinerQuery;
 import cz.encircled.joiner.query.QueryOrder;

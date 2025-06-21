@@ -1,7 +1,5 @@
 package cz.encircled.joiner.query;
 
-import com.querydsl.core.DefaultQueryMetadata;
-import com.querydsl.core.QueryMetadata;
 import com.querydsl.core.Tuple;
 import com.querydsl.core.types.*;
 import com.querydsl.core.types.dsl.BooleanExpression;
@@ -12,6 +10,7 @@ import cz.encircled.joiner.query.join.JoinDescription;
 import cz.encircled.joiner.util.Assert;
 import cz.encircled.joiner.util.JoinerUtils;
 import jakarta.persistence.FlushModeType;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -21,7 +20,7 @@ import java.util.stream.Collectors;
  *
  * @author Kisel on 13.9.2016.
  */
-public class JoinerQueryBase<T, R> implements JoinerQuery<T, R>, JoinRoot, SubQueryExpression<R> {
+public class JoinerQueryBase<T, R> implements JoinerQuery<T, R> {
 
     private final EntityPath<T> from;
     private Expression<R> returnProjection;
@@ -59,11 +58,6 @@ public class JoinerQueryBase<T, R> implements JoinerQuery<T, R>, JoinRoot, SubQu
     private Integer timeout;
 
     private boolean isCount;
-
-    /**
-     * Is filled during predicate resolving in case when this query is a sub-query
-     */
-    private QueryMetadata subQueryMetadata;
 
     private Boolean isStatelessSession;
 
@@ -463,25 +457,9 @@ public class JoinerQueryBase<T, R> implements JoinerQuery<T, R>, JoinRoot, SubQu
         return Objects.hash(from, returnProjection, where, joins, joinGraphs, distinct, groupBy, having, hints, features, offset, limit, orders, isCount);
     }
 
-    /*
-     * SUB QUERY
-     */
     @Override
-    public QueryMetadata getMetadata() {
-        // Might happen if a query is being compiled before execution (for instance, called toString)
-        if (subQueryMetadata == null) {
-            DefaultQueryMetadata metadata = new DefaultQueryMetadata();
-            metadata.addWhere(where);
-            metadata.setProjection(from);
-            return metadata;
-        }
-
-        return subQueryMetadata;
-    }
-
-    @Override
-    public <R1, C> R1 accept(Visitor<R1, C> v, C context) {
-        return v.visit(this, context);
+    public <R1, C> @Nullable R1 accept(Visitor<R1, C> v, @Nullable C context) {
+        return null;
     }
 
     @Override
