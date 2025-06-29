@@ -7,7 +7,7 @@ import com.querydsl.core.types.QTuple;
 import cz.encircled.joiner.util.ReflectionUtils;
 
 /**
- * Implementation of joiner query with {@link Tuple} result
+ * Implementation of a joiner query with {@link Tuple} result
  *
  * @author Kisel on 13.9.2016.
  */

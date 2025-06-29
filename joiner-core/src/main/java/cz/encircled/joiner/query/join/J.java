@@ -1,6 +1,7 @@
 package cz.encircled.joiner.query.join;
 
 import com.querydsl.core.types.EntityPath;
+import com.querydsl.core.types.Expression;
 import com.querydsl.core.types.dsl.CollectionPathBase;
 import com.querydsl.core.types.dsl.SimpleExpression;
 import cz.encircled.joiner.util.Assert;
@@ -85,21 +86,21 @@ public class J {
     /**
      * Add <b>left</b> join for given <code>path</code>
      *
-     * @param path alias of object to be joined
+     * @param path alias of an association to be joined
      * @return join description
      */
     public static JoinDescription left(EntityPath<?> path) {
-        return getBasicJoin(path).left();
+        return getBasicJoin(path, path).left();
     }
 
     /**
      * Add <b>right</b> join for given <code>path</code>
      *
-     * @param path alias of object to be joined
+     * @param path alias of an association to be joined
      * @return join description
      */
     public static JoinDescription right(EntityPath<?> path) {
-        return getBasicJoin(path).right();
+        return getBasicJoin(path, path).right();
     }
 
     /**
@@ -109,7 +110,7 @@ public class J {
      * @return join description
      */
     public static JoinDescription left(CollectionPathBase<?, ?, ?> path) {
-        return getBasicJoin(JoinerUtils.getDefaultPath(path)).left();
+        return getBasicJoin(path, JoinerUtils.getDefaultPath(path)).left();
     }
 
     /**
@@ -119,7 +120,7 @@ public class J {
      * @return join description
      */
     public static JoinDescription inner(EntityPath<?> path) {
-        return getBasicJoin(path).inner();
+        return getBasicJoin(path, path).inner();
     }
 
     /**
@@ -129,11 +130,11 @@ public class J {
      * @return join description
      */
     public static JoinDescription inner(CollectionPathBase<?, ?, ?> path) {
-        return getBasicJoin(JoinerUtils.getDefaultPath(path)).inner().collectionPath(path);
+        return getBasicJoin(path, JoinerUtils.getDefaultPath(path)).inner();
     }
 
     /**
-     * Collect all joins and its children to single collection
+     * Collect all joins and its children as a flat collection
      *
      * @param joins root joins
      * @return all joins, including children
@@ -155,10 +156,10 @@ public class J {
         }
     }
 
-    private static JoinDescription getBasicJoin(EntityPath<?> path) {
-        Assert.notNull(path);
+    private static JoinDescription getBasicJoin(Expression<?> path, EntityPath<?> alias) {
+        Assert.notNull(alias);
 
-        return new JoinDescription(path);
+        return new JoinDescription(path, alias);
     }
 
 }

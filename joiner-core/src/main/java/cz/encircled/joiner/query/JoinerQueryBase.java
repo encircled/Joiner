@@ -17,7 +17,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 /**
- * Implementation of joiner query with {@link com.querydsl.core.Tuple non-tuple} result
+ * Implementation of a joiner query with {@link com.querydsl.core.Tuple non-tuple} result
  *
  * @author Kisel on 13.9.2016.
  */
@@ -440,8 +440,7 @@ public class JoinerQueryBase<T, R> implements JoinerQuery<T, R>, JoinRoot, SubQu
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof JoinerQueryBase)) return false;
-        JoinerQueryBase<?, ?> that = (JoinerQueryBase<?, ?>) o;
+        if (!(o instanceof JoinerQueryBase<?, ?> that)) return false;
         return distinct == that.distinct &&
                 isCount == that.isCount &&
                 Objects.equals(from, that.from) &&
@@ -449,7 +448,7 @@ public class JoinerQueryBase<T, R> implements JoinerQuery<T, R>, JoinRoot, SubQu
                 Objects.equals(where, that.where) &&
                 Objects.equals(joins, that.joins) &&
                 Objects.equals(joinGraphs, that.joinGraphs) &&
-                Objects.equals(groupBy, that.groupBy) &&
+                Arrays.equals(groupBy, that.groupBy) &&
                 Objects.equals(having, that.having) &&
                 Objects.equals(hints, that.hints) &&
                 Objects.equals(features, that.features) &&
@@ -460,7 +459,7 @@ public class JoinerQueryBase<T, R> implements JoinerQuery<T, R>, JoinRoot, SubQu
 
     @Override
     public int hashCode() {
-        return Objects.hash(from, returnProjection, where, joins, joinGraphs, distinct, groupBy, having, hints, features, offset, limit, orders, isCount);
+        return Objects.hash(from, returnProjection, where, joins, joinGraphs, distinct, Arrays.hashCode(groupBy), having, hints, features, offset, limit, orders, isCount);
     }
 
     /*

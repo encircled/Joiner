@@ -2,7 +2,7 @@ package cz.encircled.joiner.query.join;
 
 import com.querydsl.core.JoinType;
 import com.querydsl.core.types.EntityPath;
-import com.querydsl.core.types.Path;
+import com.querydsl.core.types.Expression;
 import com.querydsl.core.types.Predicate;
 import com.querydsl.core.types.dsl.CollectionPathBase;
 import cz.encircled.joiner.query.JoinRoot;
@@ -30,6 +30,7 @@ public class JoinDescription implements JoinRoot {
     private EntityPath<?> singularPath;
     private EntityPath<?> alias;
     private JoinType joinType = JoinType.LEFTJOIN;
+    private final Expression<?> path;
 
     private boolean fetch = true;
 
@@ -40,7 +41,12 @@ public class JoinDescription implements JoinRoot {
     private Map<String, JoinDescription> children = new LinkedHashMap<>(4);
 
     public JoinDescription(EntityPath<?> alias) {
+        this(alias, alias);
+    }
+
+    public JoinDescription(Expression<?> path, EntityPath<?> alias) {
         Assert.notNull(alias);
+        this.path = path;
 
         if (alias.getMetadata().getParent() != null) {
             // TODO if parent is present, then it should be moved to a nested join perhaps? Unless parent is the root
@@ -53,7 +59,7 @@ public class JoinDescription implements JoinRoot {
     }
 
     public JoinDescription copy() {
-        JoinDescription copy = new JoinDescription(originalAlias);
+        JoinDescription copy = new JoinDescription(path, originalAlias);
         copy.alias = alias;
 
         copy.children = new HashMap<>(children.size());
@@ -104,9 +110,9 @@ public class JoinDescription implements JoinRoot {
     }
 
     /**
-     * Set different alias for current join
+     * Set different alias for the join
      */
-    private JoinDescription alias(EntityPath<?> alias) {
+    public JoinDescription alias(EntityPath<?> alias) {
         this.alias = alias;
         return this;
     }
@@ -218,6 +224,13 @@ public class JoinDescription implements JoinRoot {
     @Override
     public Map<String, JoinDescription> getAllJoins() {
         return children;
+    }
+
+    /**
+     * @return initial join path. Might be singular or collection
+     */
+    public Expression<?> getPath() {
+        return path;
     }
 
     @Override

@@ -282,14 +282,14 @@ public class JoinerJPQLSerializerTest {
 
         @Test
         public void leftJoins() {
-            JoinerQuery<?, ?> query = Q.from(user).joins(J.left(user.groups).collectionPath(user.groups));
+            JoinerQuery<?, ?> query = Q.from(user).joins(J.left(user.groups));
             String jpql = serializer.serialize(query);
             assertEquals("select distinct user1 from User user1 left join fetch user1.groups group1", jpql);
         }
 
         @Test
         public void leftJoinOn() {
-            JoinerQuery<?, ?> query = Q.from(user).joins(J.left(user.groups).collectionPath(user.groups).on(group.name.isNotEmpty()));
+            JoinerQuery<?, ?> query = Q.from(user).joins(J.left(user.groups).on(group.name.isNotEmpty()));
             String jpql = serializer.serialize(query);
             assertEquals("select distinct user1 from User user1 left join user1.groups group1 on not length(group1.name) = 0", jpql);
         }
@@ -668,15 +668,6 @@ public class JoinerJPQLSerializerTest {
         }
 
         @Test
-        @Disabled
-        public void testAssociationExists() {
-            JoinerQuery<?, ?> query = Q.from(user).where(user1.groups.any().name.eq("test"));
-            String jpql = serializer.serialize(query);
-            assertEquals("select user1 from User user1 where exists (select 1 from user1.groups as user1_groups_0 where user1_groups_0.name = ?1)", jpql);
-            assertConstants(serializer, 2);
-        }
-
-        @Test
         public void testCoalesce() {
             JoinerQuery<?, ?> query = Q.from(user).where(user.name.coalesce("Unknown").eq("John"));
             String jpql = serializer.serialize(query);
@@ -754,6 +745,38 @@ public class JoinerJPQLSerializerTest {
             JoinerQuery<?, ?> query = Q.from(user).where(user.id.ne(Q.select(user.id.max()).from(user)));
             String jpql = serializer.serialize(query);
             assertEquals("select distinct user1 from User user1 where user1.id <> (select max(user1.id) from User user1)", jpql);
+            assertConstants(serializer);
+        }
+
+        @Test
+        public void testSubQueryExistsEq() {
+            JoinerQuery<?, ?> query = Q.from(user).where(user.groups.any().name.eq("test sq"));
+            String jpql = serializer.serialize(query);
+            assertEquals("select distinct user1 from User user1 where exists (select 1 from user1.groups user1_groups_0 where user1_groups_0.name = ?1)", jpql);
+            assertConstants(serializer, "test sq");
+        }
+
+        @Test
+        public void testJoinSubQueryExistsEq() {
+            JoinerQuery<?, ?> query = Q.from(address).joins(J.left(address.user)).where(address.user.groups.any().name.eq("test sq"));
+            String jpql = serializer.serialize(query);
+            assertEquals("select distinct address from Address address left join fetch address.user user where exists (select 1 from address.user.groups address_user_groups_0 where address_user_groups_0.name = ?1)", jpql);
+            assertConstants(serializer, "test sq");
+        }
+
+        @Test
+        public void testNestedSubQueryExists() {
+            JoinerQuery<?, ?> query = Q.from(user).where(user.groups.any().statuses.any().name.eq("test sq"));
+            String jpql = serializer.serialize(query);
+            assertEquals("select distinct user1 from User user1 where exists (select 1 from user1.groups user1_groups_0 inner join user1_groups_0.statuses user1_groups_0_statuses_1 where user1_groups_0_statuses_1.name = ?1)", jpql);
+            assertConstants(serializer, "test sq");
+        }
+
+        @Test
+        public void testSubQueryExistsSingleArgOp() {
+            JoinerQuery<?, ?> query = Q.from(user).where(user.groups.any().name.isNotNull());
+            String jpql = serializer.serialize(query);
+            assertEquals("select distinct user1 from User user1 where exists (select 1 from user1.groups user1_groups_0 where user1_groups_0.name is not null)", jpql);
             assertConstants(serializer);
         }
     }

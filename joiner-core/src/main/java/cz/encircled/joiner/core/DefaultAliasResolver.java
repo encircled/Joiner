@@ -19,6 +19,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import static cz.encircled.joiner.util.JoinerUtils.getQClass;
 import static cz.encircled.joiner.util.ReflectionUtils.getField;
 
 /**
@@ -111,7 +112,7 @@ public class DefaultAliasResolver implements AliasResolver {
     private void findPathOnParentSubclasses(Path<?> parent, Class<?> targetType, List<Path<?>> candidatePaths) {
         for (Class<?> child : ReflectionUtils.getSubclasses(parent.getType(), entityManager)) {
             try {
-                Class<?> clazz = Class.forName(child.getPackage().getName() + ".Q" + child.getSimpleName());
+                Class<?> clazz = getQClass(child);
                 Object childInstance = ReflectionUtils.instantiate(clazz, parent.getMetadata().getElement());
                 for (Field field : clazz.getFields()) {
                     testAliasCandidate(targetType, candidatePaths, getField(field, childInstance));
@@ -135,6 +136,10 @@ public class DefaultAliasResolver implements AliasResolver {
                 candidatePaths.add((Path<?>) candidate);
             }
         }
+    }
+
+    void clearCache() {
+        aliasCache.clear();
     }
 
 }

@@ -7,7 +7,7 @@ import org.junit.jupiter.api.Timeout;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-//@Timeout(10)
+@Timeout(10)
 public abstract class TestWithLogging {
 
     protected final Logger log = LoggerFactory.getLogger(this.getClass());

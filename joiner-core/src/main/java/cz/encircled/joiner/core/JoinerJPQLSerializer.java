@@ -1,7 +1,10 @@
 package cz.encircled.joiner.core;
 
+import com.querydsl.core.support.Context;
 import com.querydsl.core.types.*;
+import cz.encircled.joiner.core.converter.JPACollectionAnyVisitor;
 import cz.encircled.joiner.exception.JoinerException;
+import cz.encircled.joiner.query.CollectionJoinerQuery;
 import cz.encircled.joiner.query.JoinerQuery;
 import cz.encircled.joiner.query.QueryOrder;
 import cz.encircled.joiner.query.join.J;
@@ -61,6 +64,9 @@ public class JoinerJPQLSerializer {
                 query.append(joinerQuery.getFrom().getMetadata().getName());
                 query.append(") ");
             }
+        } else if(joinerQuery instanceof CollectionJoinerQuery<?,?>) {
+            // Used for 'exists' subqueries
+            query.append("1 ");
         } else {
             if (joinerQuery.isDistinct()) {
                 query.append("distinct ");
@@ -70,7 +76,11 @@ public class JoinerJPQLSerializer {
         }
 
         query.append("from ");
-        appendFrom(joinerQuery);
+        if (joinerQuery instanceof CollectionJoinerQuery<?,?> collection) {
+            appendFromCollection(collection);
+        } else {
+            appendFrom(joinerQuery);
+        }
 
         appendJoins(joinerQuery);
         appendWhere(joinerQuery);
@@ -135,6 +145,12 @@ public class JoinerJPQLSerializer {
         }
     }
 
+    private void appendFromCollection(CollectionJoinerQuery<?, ?> joinerQuery) {
+        query.append(joinerQuery.getFromCollection().toString())
+                .append(" ")
+                .append(joinerQuery.getReturnProjection());
+    }
+
     private void appendFrom(JoinerQuery<?, ?> joinerQuery) {
         query.append(getEntityName(joinerQuery.getFrom().getType()))
                 .append(" ")
@@ -178,6 +194,10 @@ public class JoinerJPQLSerializer {
         } else {
             path = join.getSingularPath();
         }
+        // May happen if the query was not processed by alias resolver, in a toString() for example
+        if (path == null) {
+            path = join.getPath();
+        }
 
         if (path != null) {
             query.append(serializeExpression(path));
@@ -197,8 +217,8 @@ public class JoinerJPQLSerializer {
     }
 
     private void appendWhere(JoinerQuery<?, ?> joinerQuery) {
-        Predicate where = joinerQuery.getWhere();
-        if (where != null) {
+        if (joinerQuery.getWhere() != null) {
+            Expression<?> where = joinerQuery.getWhere().accept(new JPACollectionAnyVisitor(), new Context());
             query.append(" where ").append(serializeExpression(where));
         }
     }
@@ -279,11 +299,7 @@ public class JoinerJPQLSerializer {
         if (expression instanceof Path<?> path) {
             Path<?> parent = path.getMetadata().getParent();
             if (parent != null) {
-                if ("COLLECTION_ANY".equals(parent.getMetadata().getPathType().name())) {
-                    throw new JoinerException("'Collection any' is not supported, use a join instead");
-                } else {
-                    return serializeExpression(parent) + "." + path.getMetadata().getName();
-                }
+                return serializeExpression(parent) + "." + path.getMetadata().getName();
             }
             return path.getMetadata().getName();
         }
@@ -319,30 +335,7 @@ public class JoinerJPQLSerializer {
                 boolean addParentheses = isConditional && isConstantConditional;
 
                 // Special handling for common operators
-                String result = switch (operator) {
-                    case "EQ" -> left + " = " + right;
-                    case "NE" -> left + " <> " + right;
-                    case "GT" -> left + " > " + right;
-                    case "GOE" -> left + " >= " + right;
-                    case "LT" -> left + " < " + right;
-                    case "LOE" -> left + " <= " + right;
-                    case "LIKE_IC", "ENDS_WITH_IC", "STARTS_WITH_IC", "STRING_CONTAINS_IC" ->
-                            "lower(" + left + ") like " + right;
-                    case "STARTS_WITH", "STRING_CONTAINS", "LIKE", "ENDS_WITH" -> left + " like " + right;
-                    case "LIKE_ESCAPE", "LIKE_ESCAPE_IC" -> left + " like " + right + " escape '!'";
-                    case "IN" -> left + " in " + right;
-                    case "NOT_IN" -> left + " not in " + right;
-                    case "CONCAT" -> "concat(" + left + ", " + right + ")";
-                    case "SUBSTR_1ARG" -> "substring(" + left + ", " + right + ")";
-                    case "LOCATE" -> "locate(" + left + ", " + right + ")";
-                    case "MOD" -> "mod(" + left + ", " + right + ")";
-                    case "COALESCE" -> "coalesce(" + left + ", " + right + ")";
-                    case "NULLIF" -> "nullif(" + left + ", " + right + ")";
-                    case "CAST" -> "cast(" + left + " as " + right + ")";
-                    case "TREAT" -> "treat(" + left + " as " + right + ")";
-                    case "LIST" -> "(" + left + ", " + right + ")";
-                    default -> left + " " + operator.toLowerCase().replaceAll("_", " ") + " " + right;
-                };
+                String result = serializeOperation(operator, left, right);
                 return addParentheses ? "(" + result + ")" : result;
             } else if (args.size() == 1) {
                 // Unary operation (e.g., not a)
@@ -378,6 +371,33 @@ public class JoinerJPQLSerializer {
         }
 
         return expression.toString();
+    }
+
+    private static String serializeOperation(String operator, String left, String right) {
+        return switch (operator) {
+            case "EQ" -> left + " = " + right;
+            case "NE" -> left + " <> " + right;
+            case "GT" -> left + " > " + right;
+            case "GOE" -> left + " >= " + right;
+            case "LT" -> left + " < " + right;
+            case "LOE" -> left + " <= " + right;
+            case "LIKE_IC", "ENDS_WITH_IC", "STARTS_WITH_IC", "STRING_CONTAINS_IC" ->
+                    "lower(" + left + ") like " + right;
+            case "STARTS_WITH", "STRING_CONTAINS", "LIKE", "ENDS_WITH" -> left + " like " + right;
+            case "LIKE_ESCAPE", "LIKE_ESCAPE_IC" -> left + " like " + right + " escape '!'";
+            case "IN" -> left + " in " + right;
+            case "NOT_IN" -> left + " not in " + right;
+            case "CONCAT" -> "concat(" + left + ", " + right + ")";
+            case "SUBSTR_1ARG" -> "substring(" + left + ", " + right + ")";
+            case "LOCATE" -> "locate(" + left + ", " + right + ")";
+            case "MOD" -> "mod(" + left + ", " + right + ")";
+            case "COALESCE" -> "coalesce(" + left + ", " + right + ")";
+            case "NULLIF" -> "nullif(" + left + ", " + right + ")";
+            case "CAST" -> "cast(" + left + " as " + right + ")";
+            case "TREAT" -> "treat(" + left + " as " + right + ")";
+            case "LIST" -> "(" + left + ", " + right + ")";
+            default -> left + " " + operator.toLowerCase().replaceAll("_", " ") + " " + right;
+        };
     }
 
     private static String lowered(Object constant) {

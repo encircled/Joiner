@@ -84,7 +84,7 @@ public abstract class BasicJoinTest extends AbstractTest {
     @Test
     public void testRightJoinSingleAssociation() {
         Assumptions.assumeFalse(isEclipse());
-        List<User> users = joiner.find(Q.from(QUser.user1).joins(new JoinDescription(QGroup.group).right().fetch(false)));
+        List<User> users = joiner.find(Q.from(QUser.user1).joins(new JoinDescription(QGroup.group, QGroup.group).right().fetch(false)));
 
         assertFalse(users.isEmpty());
         assertFalse(isLoaded(users.get(0), "groups"));

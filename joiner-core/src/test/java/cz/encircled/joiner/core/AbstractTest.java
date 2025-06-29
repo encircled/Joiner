@@ -13,6 +13,8 @@ import jakarta.persistence.spi.LoadState;
 import jakarta.persistence.spi.PersistenceProvider;
 import jakarta.persistence.spi.PersistenceProviderResolverHolder;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.TestInfo;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -50,6 +52,14 @@ public abstract class AbstractTest extends TestWithLogging {
 
     @Value("${orm:hibernate}")
     private String orm;
+
+    @BeforeEach
+    public void beforeEach(TestInfo testInfo) {
+        super.beforeEach(testInfo);
+        if (joiner.getAliasResolver() instanceof DefaultAliasResolver d) {
+            d.clearCache();
+        }
+    }
 
     protected void assertHasName(Collection<? extends AbstractEntity> entities, String name) {
         Assertions.assertFalse(entities.isEmpty(), "Found collection must be not empty!");

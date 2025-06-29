@@ -5,6 +5,7 @@ import com.querydsl.core.types.Expression;
 import com.querydsl.core.types.Operation;
 import com.querydsl.core.types.Path;
 import com.querydsl.core.types.dsl.CollectionPathBase;
+import cz.encircled.joiner.exception.JoinerException;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
@@ -51,7 +52,7 @@ public final class JoinerUtils {
     }
 
     /**
-     * Find default path of an entity (e.g. QUser.user for QUser class)
+     * Find the default path of an entity (i.e., QUser.user for QUser class)
      */
     public static <T extends EntityPath<?>> T getDefaultPath(CollectionPathBase<?, ?, ?> path) {
         Class<T> qClass = (Class<T>) ReflectionUtils.getField(ReflectionUtils.findField(path.getClass(), "queryType"), path);
@@ -82,6 +83,14 @@ public final class JoinerUtils {
             for (Expression<?> exp : ((Operation<?>) expression).getArgs()) {
                 collectPredicatePathsInternal(exp, paths);
             }
+        }
+    }
+
+    public static Class<?> getQClass(Class<?> entityClass) {
+        try {
+            return Class.forName(entityClass.getPackage().getName() + ".Q" + entityClass.getSimpleName());
+        } catch (ClassNotFoundException e) {
+            throw new JoinerException("Can't find Q class for the " + entityClass.getName(), e);
         }
     }
 

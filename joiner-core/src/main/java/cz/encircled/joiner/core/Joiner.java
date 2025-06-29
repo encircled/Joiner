@@ -256,4 +256,8 @@ public class Joiner {
         this.joinerProperties = Objects.requireNonNullElse(joinerProperties, new JoinerProperties());
     }
 
+    AliasResolver getAliasResolver() {
+        return aliasResolver;
+    }
+
 }
