@@ -15,6 +15,7 @@ import jakarta.persistence.Query;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.stream.Stream;
 
 /**
  * @author Vlad on 13-Sep-16.
@@ -83,6 +84,11 @@ public class EclipselinkRepository extends VendorRepository {
         }
 
         return rv;
+    }
+
+    @Override
+    public <T> Stream<T> streamResult(JoinerQuery<?, T> request, Query jpaQuery) {
+        throw new UnsupportedOperationException("Not supported by Eclipselink!");
     }
 
     private String resolvePathToFieldFromRoot(String rootAlias, JoinDescription targetJoinDescription, Collection<JoinDescription> joins) {

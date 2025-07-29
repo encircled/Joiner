@@ -5,13 +5,19 @@ import cz.encircled.joiner.core.JoinerJPQLSerializer;
 import cz.encircled.joiner.core.JoinerProperties;
 import cz.encircled.joiner.query.JoinerQuery;
 import jakarta.persistence.EntityManager;
-import org.hibernate.Session;
-import org.hibernate.StatelessSession;
+import jakarta.persistence.FlushModeType;
+import org.hibernate.*;
 import org.hibernate.query.Query;
+import org.hibernate.query.SelectionQuery;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Iterator;
 import java.util.List;
+import java.util.Spliterator;
+import java.util.Spliterators;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 /**
  * @author Kisel on 21.01.2016.
@@ -67,4 +73,28 @@ public class HibernateRepository extends VendorRepository {
         return jpaQuery.getResultList();
     }
 
+    @Override
+    @SuppressWarnings("unchecked")
+    public <T> Stream<T> streamResult(JoinerQuery<?, T> request, jakarta.persistence.Query jpaQuery) {
+        SelectionQuery<T> query = (SelectionQuery<T>) jpaQuery;
+        query.setHibernateFlushMode(FlushMode.MANUAL);
+        query.setCacheMode(CacheMode.IGNORE);
+        ScrollableResults<T> results = query.scroll(ScrollMode.FORWARD_ONLY);
+        Spliterator<T> spliterator = Spliterators.spliteratorUnknownSize(
+                new Iterator<>() {
+                    @Override
+                    public boolean hasNext() {
+                        return results.next();
+                    }
+
+                    @Override
+                    public T next() {
+                        return results.get();
+                    }
+                },
+                Spliterator.ORDERED
+        );
+
+        return StreamSupport.stream(spliterator, false).onClose(results::close);
+    }
 }

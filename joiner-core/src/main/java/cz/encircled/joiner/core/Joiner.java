@@ -23,6 +23,7 @@ import org.slf4j.LoggerFactory;
 import java.lang.reflect.AnnotatedElement;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static cz.encircled.joiner.util.Assert.notNull;
 
@@ -100,6 +101,25 @@ public class Joiner {
         }
 
         return result;
+    }
+
+    public <T, R> Stream<R> findStream(JoinerQuery<T, R> request) {
+        preprocessRequestQuery(request);
+
+        Stream<R> result;
+        try (JoinerJpaQuery jpaQuery = vendorRepository.createQuery(request, joinerProperties, entityManager)) {
+            Query finalQuery = jpaQuery.jpaQuery;
+            for (QueryFeature feature : getQueryFeatures(request)) {
+                finalQuery = feature.after(request, finalQuery);
+            }
+            result = vendorRepository.streamResult(request, finalQuery);
+        }
+
+        return result.peek(r -> {
+            for (QueryFeature queryFeature : getQueryFeatures(request)) {
+                queryFeature.postLoad(request, List.of(r));
+            }
+        });
     }
 
     public <I, T extends Collection<I>> T save(T entities) {

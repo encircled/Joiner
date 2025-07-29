@@ -11,6 +11,7 @@ import jakarta.persistence.Query;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Stream;
 
 /**
  * Vendor-specific repositories
@@ -24,6 +25,8 @@ public abstract class VendorRepository {
     public abstract JoinerJpaQuery createQuery(JoinerQuery<?, ?> request, JoinerProperties joinerProperties, EntityManager entityManager);
 
     public abstract <T> List<T> fetchResult(JoinerQuery<?, T> request, Query jpaQuery);
+
+    public abstract <T> Stream<T> streamResult(JoinerQuery<?, T> request, Query jpaQuery);
 
     protected void setQueryParams(JoinerJPQLSerializer serializer, Query query, JoinerQuery<?, ?> request, JoinerProperties joinerProperties) {
         List<Object> constants = serializer.getConstants();
