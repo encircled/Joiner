@@ -224,7 +224,7 @@ public class JoinerJPQLSerializer {
     }
 
     private void appendGroupBy(JoinerQuery<?, ?> joinerQuery) {
-        Path<?>[] groupBy = joinerQuery.getGroupBy();
+        Expression<?>[] groupBy = joinerQuery.getGroupBy();
         if (groupBy != null && groupBy.length > 0) {
             query.append(" group by ");
             for (int i = 0; i < groupBy.length; i++) {

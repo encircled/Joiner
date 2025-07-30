@@ -3,7 +3,6 @@ package cz.encircled.joiner.kotlin
 import com.querydsl.core.Tuple
 import com.querydsl.core.types.EntityPath
 import com.querydsl.core.types.Expression
-import com.querydsl.core.types.Path
 import com.querydsl.core.types.Predicate
 import com.querydsl.core.types.dsl.BooleanExpression
 import cz.encircled.joiner.query.JoinerQuery
@@ -105,12 +104,12 @@ open class JoinerKtQuery<FROM_C, PROJ, FROM : EntityPath<FROM_C>>(
         return this
     }
 
-    infix fun groupBy(groupBy: Path<*>): JoinerKtQuery<FROM_C, PROJ, FROM> {
+    infix fun groupBy(groupBy: Expression<*>): JoinerKtQuery<FROM_C, PROJ, FROM> {
         delegate.groupBy(groupBy)
         return this
     }
 
-    infix fun groupBy(groupBy: List<Path<*>>): JoinerKtQuery<FROM_C, PROJ, FROM> {
+    infix fun groupBy(groupBy: List<Expression<*>>): JoinerKtQuery<FROM_C, PROJ, FROM> {
         delegate.groupBy(*groupBy.toTypedArray())
         return this
     }

@@ -37,7 +37,7 @@ public class JoinerQueryBase<T, R> implements JoinerQuery<T, R>, JoinRoot, SubQu
 
     private boolean distinct = true;
 
-    private Path<?>[] groupBy;
+    private Expression<?>[] groupBy;
 
     private Predicate having;
 
@@ -95,13 +95,13 @@ public class JoinerQueryBase<T, R> implements JoinerQuery<T, R>, JoinRoot, SubQu
     }
 
     @Override
-    public JoinerQueryBase<T, R> groupBy(Path<?>... groupBy) {
+    public JoinerQueryBase<T, R> groupBy(Expression<?>... groupBy) {
         this.groupBy = groupBy;
         return this;
     }
 
     @Override
-    public Path<?>[] getGroupBy() {
+    public Expression<?>[] getGroupBy() {
         return groupBy;
     }
 

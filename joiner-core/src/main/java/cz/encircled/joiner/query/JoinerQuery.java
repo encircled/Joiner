@@ -1,6 +1,5 @@
 package cz.encircled.joiner.query;
 
-import com.querydsl.core.QueryMetadata;
 import com.querydsl.core.Tuple;
 import com.querydsl.core.types.*;
 import com.querydsl.core.types.dsl.BooleanExpression;
@@ -38,9 +37,9 @@ public interface JoinerQuery<T, R> extends JoinRoot, SubQueryExpression<R> {
 
     boolean isDistinct();
 
-    JoinerQuery<T, R> groupBy(Path<?>... groupBy);
+    JoinerQuery<T, R> groupBy(Expression<?>... groupBy);
 
-    Path<?>[] getGroupBy();
+    Expression<?>[] getGroupBy();
 
     JoinerQuery<T, R> having(Predicate having);
 
