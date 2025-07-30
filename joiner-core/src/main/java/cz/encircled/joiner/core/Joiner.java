@@ -193,19 +193,25 @@ public class Joiner {
             checkAliasesArePresent(where, usedAliases);
             request.where(where);
         }
+
         if (request.getGroupBy() != null) {
             Map<AnnotatedElement, List<JoinDescription>> grouped = joins.stream()
                     .collect(Collectors.groupingBy(j -> j.getOriginalAlias().getAnnotatedElement()));
-            for (Expression<?> groupBy : request.getGroupBy()) {
-                if (groupBy instanceof Path<?> path) {
-                    Path<?> grouping = predicateAliasResolver.resolvePath(path, grouped, usedAliases);
-                    checkAliasesArePresent(grouping, usedAliases);
-                    request.groupBy(grouping);
-                } else {
-                    request.groupBy(groupBy);
-                }
+            if (!request.getGroupBy().isEmpty()) {
+                List<Expression<?>> mapped = request.getGroupBy().stream().map(g -> {
+                    if (g instanceof Path<?> path) {
+                        Path<?> grouping = predicateAliasResolver.resolvePath(path, grouped, usedAliases);
+                        checkAliasesArePresent(grouping, usedAliases);
+                        return grouping;
+                    } else {
+                        return g;
+                    }
+                }).toList();
+
+                request.groupBy(mapped);
             }
         }
+
         if (request.getHaving() != null) {
             Predicate having = predicateAliasResolver.resolvePredicate(request.getHaving(), joins, usedAliases);
             checkAliasesArePresent(having, usedAliases);

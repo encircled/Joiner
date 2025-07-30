@@ -39,7 +39,9 @@ public interface JoinerQuery<T, R> extends JoinRoot, SubQueryExpression<R> {
 
     JoinerQuery<T, R> groupBy(Expression<?>... groupBy);
 
-    Expression<?>[] getGroupBy();
+    JoinerQuery<T, R> groupBy(List<Expression<?>> groupBy);
+
+    List<Expression<?>> getGroupBy();
 
     JoinerQuery<T, R> having(Predicate having);
 

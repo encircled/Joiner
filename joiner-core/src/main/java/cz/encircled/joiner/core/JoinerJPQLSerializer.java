@@ -224,14 +224,14 @@ public class JoinerJPQLSerializer {
     }
 
     private void appendGroupBy(JoinerQuery<?, ?> joinerQuery) {
-        Expression<?>[] groupBy = joinerQuery.getGroupBy();
-        if (groupBy != null && groupBy.length > 0) {
+        List<Expression<?>> groupBy = joinerQuery.getGroupBy();
+        if (groupBy != null && !groupBy.isEmpty()) {
             query.append(" group by ");
-            for (int i = 0; i < groupBy.length; i++) {
+            for (int i = 0; i < groupBy.size(); i++) {
                 if (i > 0) {
                     query.append(", ");
                 }
-                query.append(serializeExpression(groupBy[i]));
+                query.append(serializeExpression(groupBy.get(i)));
             }
         }
     }

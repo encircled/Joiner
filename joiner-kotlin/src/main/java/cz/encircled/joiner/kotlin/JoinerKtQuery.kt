@@ -109,8 +109,8 @@ open class JoinerKtQuery<FROM_C, PROJ, FROM : EntityPath<FROM_C>>(
         return this
     }
 
-    infix fun groupBy(groupBy: List<Expression<*>>): JoinerKtQuery<FROM_C, PROJ, FROM> {
-        delegate.groupBy(*groupBy.toTypedArray())
+    override infix fun groupBy(groupBy: List<Expression<*>>): JoinerKtQuery<FROM_C, PROJ, FROM> {
+        delegate.groupBy(groupBy)
         return this
     }
 

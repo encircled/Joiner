@@ -1,5 +1,7 @@
 package cz.encircled.joiner.core;
 
+import cz.encircled.joiner.model.Address;
+import cz.encircled.joiner.query.JoinerQuery;
 import cz.encircled.joiner.query.Q;
 import org.junit.jupiter.api.Test;
 
@@ -26,10 +28,10 @@ public abstract class GroupByTest extends AbstractTest {
 
     @Test
     public void testGroupByMultiple() {
-        List<Double> avg = joiner.find(
-                Q.select(address.id.avg())
-                        .from(address).groupBy(address.user.id, address.city)
-        );
+        JoinerQuery<Address, Double> query = Q.select(address.id.avg())
+                .from(address).groupBy(address.user.id, address.city);
+        List<Double> avg = joiner.find(query);
+        assertTrue(query.toString().contains("group by address.user.id, address.city"));
         assertFalse(avg.isEmpty());
         assertTrue(avg.size() < joiner.find(Q.from(address)).size());
     }

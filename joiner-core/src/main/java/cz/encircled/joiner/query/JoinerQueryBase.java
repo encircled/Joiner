@@ -37,7 +37,7 @@ public class JoinerQueryBase<T, R> implements JoinerQuery<T, R>, JoinRoot, SubQu
 
     private boolean distinct = true;
 
-    private Expression<?>[] groupBy;
+    private List<Expression<?>> groupBy;
 
     private Predicate having;
 
@@ -96,12 +96,18 @@ public class JoinerQueryBase<T, R> implements JoinerQuery<T, R>, JoinRoot, SubQu
 
     @Override
     public JoinerQueryBase<T, R> groupBy(Expression<?>... groupBy) {
+        this.groupBy = Arrays.asList(groupBy);
+        return this;
+    }
+
+    @Override
+    public JoinerQueryBase<T, R> groupBy(List<Expression<?>> groupBy) {
         this.groupBy = groupBy;
         return this;
     }
 
     @Override
-    public Expression<?>[] getGroupBy() {
+    public List<Expression<?>> getGroupBy() {
         return groupBy;
     }
 
@@ -448,7 +454,7 @@ public class JoinerQueryBase<T, R> implements JoinerQuery<T, R>, JoinRoot, SubQu
                 Objects.equals(where, that.where) &&
                 Objects.equals(joins, that.joins) &&
                 Objects.equals(joinGraphs, that.joinGraphs) &&
-                Arrays.equals(groupBy, that.groupBy) &&
+                Objects.equals(groupBy, that.groupBy) &&
                 Objects.equals(having, that.having) &&
                 Objects.equals(hints, that.hints) &&
                 Objects.equals(features, that.features) &&
@@ -459,7 +465,7 @@ public class JoinerQueryBase<T, R> implements JoinerQuery<T, R>, JoinRoot, SubQu
 
     @Override
     public int hashCode() {
-        return Objects.hash(from, returnProjection, where, joins, joinGraphs, distinct, Arrays.hashCode(groupBy), having, hints, features, offset, limit, orders, isCount);
+        return Objects.hash(from, returnProjection, where, joins, joinGraphs, distinct, groupBy, having, hints, features, offset, limit, orders, isCount);
     }
 
     /*
