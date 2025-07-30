@@ -33,6 +33,14 @@ class JoinerKtQueryBuilderTest {
     }
 
     @Test
+    fun `add hints`() {
+        assertEquals(
+            (user1.all() hint ("1" to 1) hints listOf("2" to 2, "3" to 3)).delegate,
+            Q.from(user1).addHint("1", 1).addHint("2", 2).addHint("3", 3)
+        )
+    }
+
+    @Test
     fun `custom projection`() {
         assertEquals(
             (user1.name from user1).delegate,

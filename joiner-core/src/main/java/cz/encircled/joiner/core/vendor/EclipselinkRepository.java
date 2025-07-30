@@ -87,8 +87,9 @@ public class EclipselinkRepository extends VendorRepository {
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public <T> Stream<T> streamResult(JoinerQuery<?, T> request, Query jpaQuery) {
-        throw new UnsupportedOperationException("Not supported by Eclipselink!");
+        return jpaQuery.getResultStream();
     }
 
     private String resolvePathToFieldFromRoot(String rootAlias, JoinDescription targetJoinDescription, Collection<JoinDescription> joins) {

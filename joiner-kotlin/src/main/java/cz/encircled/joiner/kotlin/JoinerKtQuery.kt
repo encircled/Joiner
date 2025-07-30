@@ -119,8 +119,18 @@ open class JoinerKtQuery<FROM_C, PROJ, FROM : EntityPath<FROM_C>>(
         return this
     }
 
-    override infix fun distinct(isDistinct: Boolean): JoinerQuery<FROM_C, PROJ> {
+    override infix fun distinct(isDistinct: Boolean): JoinerKtQuery<FROM_C, PROJ, FROM> {
         delegate.distinct(isDistinct)
+        return this
+    }
+
+    infix fun hint(hint: Pair<String, Any>) : JoinerKtQuery<FROM_C, PROJ, FROM> {
+        delegate.addHint(hint.first, hint.second)
+        return this
+    }
+
+    infix fun hints(hints: List<Pair<String, Any>>) : JoinerKtQuery<FROM_C, PROJ, FROM> {
+        hints.forEach(::hint)
         return this
     }
 
