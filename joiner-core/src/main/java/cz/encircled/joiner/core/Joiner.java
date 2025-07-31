@@ -73,6 +73,9 @@ public class Joiner {
         return new Joiner(entityManager, props);
     }
 
+    /**
+     * Execute a query and return a result or null.
+     */
     public <T, R> R findOne(JoinerQuery<T, R> request) {
         List<R> list = find(request);
         if (list.isEmpty()) {
@@ -84,6 +87,9 @@ public class Joiner {
         }
     }
 
+    /**
+     * Execute a query and return the List of results.
+     */
     public <T, R> List<R> find(JoinerQuery<T, R> request) {
         preprocessRequestQuery(request);
 
@@ -103,6 +109,16 @@ public class Joiner {
         return result;
     }
 
+    /**
+     * <p>
+     * Execute a query and stream results using JPA streaming.
+     * Fetch size is configured using a hint <i>org.hibernate.fetchSize</i> (HibernateHints.HINT_FETCH_SIZE)
+     * </p>
+     * <p>
+     * Using streaming disables caching and auto-flush for the query.
+     * </p>
+     * JPA streaming is supported only by Hibernate ORM.
+     */
     public <T, R> Stream<R> findStream(JoinerQuery<T, R> request) {
         preprocessRequestQuery(request);
 
@@ -139,7 +155,7 @@ public class Joiner {
         return vendorRepository.createQuery(request, joinerProperties, entityManager);
     }
 
-    public <T, R> void preprocessRequestQuery(JoinerQuery<T, R> request) {
+    <T, R> void preprocessRequestQuery(JoinerQuery<T, R> request) {
         notNull(request);
         notNull(request.getFrom());
 

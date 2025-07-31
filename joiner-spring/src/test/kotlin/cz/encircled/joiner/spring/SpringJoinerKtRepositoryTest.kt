@@ -5,6 +5,7 @@ import cz.encircled.joiner.kotlin.JoinerKtOps.contains
 import cz.encircled.joiner.kotlin.JoinerKtOps.eq
 import cz.encircled.joiner.model.QGroup
 import cz.encircled.joiner.model.QStatus
+import cz.encircled.joiner.model.QUser.user1
 import cz.encircled.joiner.model.User
 import cz.encircled.joiner.query.join.J
 import cz.encircled.joiner.query.join.JoinGraphRegistry
@@ -43,6 +44,20 @@ open class SpringJoinerKtRepositoryTest : AbstractSpringJoinerTest() {
     @Test
     fun `find many`() {
         val find = userRepository.find { }
+        assertNotNull(find.find { it.name == "user1" })
+        assertEquals(find.size.toLong(), userRepository.count {})
+    }
+
+    @Test
+    fun `find tuple`() {
+        val find = userRepository.findTuple(listOf(user1.name)) { distinct(false) }
+        assertNotNull(find.find { it.get(user1.name) == "user1" })
+        assertEquals(find.size.toLong(), userRepository.count {})
+    }
+
+    @Test
+    fun `stream many`() {
+        val find = userRepository.findStream { }.toList()
         assertNotNull(find.find { it.name == "user1" })
         assertEquals(find.size.toLong(), userRepository.count {})
     }

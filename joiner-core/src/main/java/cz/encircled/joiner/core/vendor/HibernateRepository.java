@@ -5,7 +5,6 @@ import cz.encircled.joiner.core.JoinerJPQLSerializer;
 import cz.encircled.joiner.core.JoinerProperties;
 import cz.encircled.joiner.query.JoinerQuery;
 import jakarta.persistence.EntityManager;
-import jakarta.persistence.FlushModeType;
 import org.hibernate.*;
 import org.hibernate.query.Query;
 import org.hibernate.query.SelectionQuery;
@@ -32,9 +31,9 @@ public class HibernateRepository extends VendorRepository {
         String queryString = serializer.serialize(request);
 
         if (joinerProperties.printQueries) {
-            log.info("Joiner:\n {}", queryString);
+            log.info("Joiner:\n{}", queryString);
         } else {
-            log.debug("Joiner:\n {}", queryString);
+            log.debug("Joiner:\n{}", queryString);
         }
 
         StatelessSession session = null;

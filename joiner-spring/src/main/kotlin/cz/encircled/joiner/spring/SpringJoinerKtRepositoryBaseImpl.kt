@@ -1,13 +1,16 @@
 package cz.encircled.joiner.spring
 
 import com.querydsl.core.JoinType
+import com.querydsl.core.Tuple
 import com.querydsl.core.types.EntityPath
+import com.querydsl.core.types.Expression
 import com.querydsl.core.types.dsl.SimpleExpression
 import cz.encircled.joiner.kotlin.JoinerKt
 import cz.encircled.joiner.kotlin.JoinerKtOps.isIn
 import cz.encircled.joiner.kotlin.JoinerKtQuery
 import cz.encircled.joiner.kotlin.JoinerKtQueryBuilder.all
 import cz.encircled.joiner.kotlin.JoinerKtQueryBuilder.countOf
+import cz.encircled.joiner.kotlin.JoinerKtQueryBuilder.from
 import cz.encircled.joiner.kotlin.JoinerKtQueryBuilder.mappingTo
 import cz.encircled.joiner.query.JoinerQueryBase
 import cz.encircled.joiner.query.join.J
@@ -17,6 +20,7 @@ import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.Pageable
 import java.util.function.Consumer
+import java.util.stream.Stream
 import kotlin.reflect.KClass
 
 class SpringJoinerKtRepositoryBaseImpl<T, E : EntityPath<T>>(val joiner: JoinerKt, val entityPath: E) :
@@ -64,6 +68,18 @@ class SpringJoinerKtRepositoryBaseImpl<T, E : EntityPath<T>>(val joiner: JoinerK
         val q = entityPath.all()
         query.invoke(q)
         return joiner.find(q)
+    }
+
+    override fun findTuple(projection: List<Expression<*>>, query: JoinerKtQuery<T, Tuple, E>.() -> Any): List<Tuple> {
+        val q = projection from entityPath
+        query.invoke(q)
+        return joiner.find(q)
+    }
+
+    override fun findStream(query: JoinerKtQuery<T, T, E>.() -> Any): Stream<T> {
+        val q = entityPath.all()
+        query.invoke(q)
+        return joiner.findStream(q)
     }
 
     override fun findOne(query: JoinerKtQuery<T, T, E>.() -> Any): T? {
