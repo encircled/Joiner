@@ -76,10 +76,10 @@ class SpringJoinerKtRepositoryBaseImpl<T, E : EntityPath<T>>(val joiner: JoinerK
         return joiner.find(q)
     }
 
-    override fun findStream(query: JoinerKtQuery<T, T, E>.() -> Any): Stream<T> {
+    override fun findStream(query: JoinerKtQuery<T, T, E>.() -> Any): Sequence<T> {
         val q = entityPath.all()
         query.invoke(q)
-        return joiner.findStream(q)
+        return joiner.findStream(q).iterator().asSequence()
     }
 
     override fun findOne(query: JoinerKtQuery<T, T, E>.() -> Any): T? {

@@ -7,7 +7,6 @@ import cz.encircled.joiner.kotlin.JoinerKtQuery
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.data.jpa.repository.support.JpaRepositoryConfigurationAware
-import java.util.stream.Stream
 import kotlin.reflect.KClass
 
 interface SpringJoinerKtRepository<T, E : EntityPath<T>> : JpaRepositoryConfigurationAware {
@@ -52,7 +51,7 @@ interface SpringJoinerKtRepository<T, E : EntityPath<T>> : JpaRepositoryConfigur
      *
      * JPA streaming is supported only by Hibernate ORM.
      */
-    fun findStream(query: JoinerKtQuery<T, T, E>.() -> Any): Stream<T>
+    fun findStream(query: JoinerKtQuery<T, T, E>.() -> Any): Sequence<T>
 
     /**
      * Execute a query and return a result or null.
