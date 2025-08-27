@@ -54,7 +54,9 @@ class QuerydslProcessorTest {
                 "public final ArrayPath<Byte[], Byte> byteArrayValue = createArray(\"byteArrayValue\", Byte[].class);",
                 "public final ArrayPath<String[], String> stringArrayValue = createArray(\"stringArrayValue\", String[].class);",
 
-                "public final MapPath<String, Integer, SimplePath<Integer>> mapStrToInt = this.<String, Integer, SimplePath<Integer>>createMap(\"mapStrToInt\", String.class, Integer.class, SimplePath.class);"
+                "public final MapPath<String, Integer, SimplePath<Integer>> mapStrToInt = this.<String, Integer, SimplePath<Integer>>createMap(\"mapStrToInt\", String.class, Integer.class, SimplePath.class);",
+
+                "DateTimePath<java.time.Instant> instantValue = createDateTime(\"instantValue\", java.time.Instant.class)",
             )
         }
 

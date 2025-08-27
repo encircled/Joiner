@@ -9,6 +9,7 @@ import jakarta.persistence.MappedSuperclass
 import jakarta.persistence.OneToMany
 import jakarta.persistence.Table
 import java.math.BigDecimal
+import java.time.Instant
 import java.time.LocalDate
 import java.time.LocalDateTime
 
@@ -56,6 +57,7 @@ class Customer() : AbstractEntity() {
     var byteArrayValue: ByteArray? = null
     var stringArrayValue: Array<String>? = null
     var mapStrToInt: Map<String, Int> = HashMap()
+    var instantValue: Instant? = null
 }
 
 enum class TestEnum {

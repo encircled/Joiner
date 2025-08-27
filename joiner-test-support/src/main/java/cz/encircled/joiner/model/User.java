@@ -2,6 +2,7 @@ package cz.encircled.joiner.model;
 
 import jakarta.persistence.*;
 
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -41,6 +42,9 @@ public class User extends AbstractEntity {
     @JoinColumn(name = "parent_id")
     private User user;
 
+    @Column
+    private Instant lastLogin;
+
     private Boolean active = true;
 
     private Integer salary = 100;
@@ -50,6 +54,14 @@ public class User extends AbstractEntity {
 
     public User(String name) {
         setName(name);
+    }
+
+    public Instant getLastLogin() {
+        return lastLogin;
+    }
+
+    public void setLastLogin(Instant lastLogin) {
+        this.lastLogin = lastLogin;
     }
 
     public Set<Contact> getContacts() {

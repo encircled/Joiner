@@ -42,6 +42,7 @@ val basicTypeToPathType: Map<String, String> = mapOf(
 
     "java.util.Date" to "DatePath<java.util.Date>",
     "java.time.LocalDate" to "DatePath<java.time.LocalDate>",
+    "java.time.Instant" to "DateTimePath<java.time.Instant>",
     "java.time.LocalDateTime" to "DateTimePath<java.time.LocalDateTime>",
 
     "java.math.BigDecimal" to "NumberPath<java.math.BigDecimal>",
