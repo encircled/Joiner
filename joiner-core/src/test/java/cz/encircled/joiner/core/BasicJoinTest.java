@@ -15,6 +15,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
+import static cz.encircled.joiner.model.QUser.user1;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
@@ -375,6 +376,40 @@ public abstract class BasicJoinTest extends AbstractTest {
         groups = joiner.find(request);
         assertEquals(1, groups.size());
         assertTrue(isLoaded(groups.get(0), "users"));
+    }
+
+
+    @Test
+    public void testJoinAliasCombinations() {
+        assertLoadedUsers(Q.from(user1).joins(J.left(QGroup.group).nested(QStatus.status)).where(J.path(user1, QGroup.group).name.eq("group1")), true, false);
+
+        assertLoadedUsers(Q.from(user1).joins(J.left(user1.groups).nested(QStatus.status)).where(J.path(user1, QGroup.group).name.eq("group1")), true, false);
+
+        assertLoadedUsers(Q.from(user1).joins(J.left(user1.groups).nested(QGroup.group.statuses)).where(J.path(user1, QGroup.group).name.eq("group1")), true, false);
+
+        assertLoadedUsers(Q.from(user1).joins(J.left(user1.groups)).joins(J.left(QGroup.group.statuses)).where(J.path(user1, QGroup.group).name.eq("group1")), false, true);
+
+        // Predicate nested join using J.path
+        assertLoadedUsers(Q.from(user1).joins(J.left(user1.groups).nested(QGroup.group.statuses)).where(J.path(user1, QGroup.group, QStatus.status).name.eq("status1group1")), true, false);
+
+        // Predicate nested join using simple alias
+        assertLoadedUsers(Q.from(user1).joins(J.left(user1.groups).nested(QGroup.group.statuses)).where(QStatus.status.name.eq("status1group1")), true, false);
+        assertLoadedUsers(Q.from(user1).joins(J.left(QGroup.group).nested(QGroup.group.statuses)).where(QStatus.status.name.eq("status1group1")), true, false);
+
+        // Predicate nested join using J.path and user1.groups.any().statuses
+        assertLoadedUsers(Q.from(user1).joins(J.left(user1.groups).nested(user1.groups.any().statuses)).where(J.path(user1, QGroup.group, QStatus.status).name.eq("status1group1")), true, false);
+        assertLoadedUsers(Q.from(user1).joins(J.left(QGroup.group).nested(user1.groups.any().statuses)).where(J.path(user1, QGroup.group, QStatus.status).name.eq("status1group1")), true, false);
+    }
+
+    private void assertLoadedUsers(JoinerQuery<User, User> query, boolean shouldFetchGroupStatuses, boolean shouldFetchUserStatuses) {
+        entityManager.clear();
+
+        List<User> users = joiner.find(query);
+        assertFalse(users.isEmpty());
+        assertTrue(isLoaded(users.get(0), "group"));
+        assertEquals(shouldFetchUserStatuses, isLoaded(users.get(0), "statuses"));
+        assertTrue(isLoaded(users.get(0).getGroups(), "groups"));
+        assertEquals(shouldFetchGroupStatuses, isLoaded(users.get(0).getGroups().get(0), "statuses"));
     }
 
 }
