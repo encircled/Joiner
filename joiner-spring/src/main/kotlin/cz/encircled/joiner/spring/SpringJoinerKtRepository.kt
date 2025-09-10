@@ -38,9 +38,17 @@ interface SpringJoinerKtRepository<T, E : EntityPath<T>> : JpaRepositoryConfigur
     fun find(query: JoinerKtQuery<T, T, E>.() -> Any): List<T>
 
     /**
-     * Execute a query and return the List of results.
+     * Execute a query with the given result [projection]
      */
     fun findTuple(projection: List<Expression<*>>, query: JoinerKtQuery<T, Tuple, E>.() -> Any): List<Tuple>
+
+    /**
+     * Execute a query with the given result [projection]
+     */
+    fun <EXP : Expression<EXP_R>, EXP_R> findTuple(
+        projection: EXP,
+        query: JoinerKtQuery<T, EXP_R, E>.() -> Any
+    ): List<EXP_R>
 
     /**
      * Execute a query and stream results using JPA streaming.

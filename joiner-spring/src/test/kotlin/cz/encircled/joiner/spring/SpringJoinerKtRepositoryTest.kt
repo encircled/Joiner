@@ -49,9 +49,16 @@ open class SpringJoinerKtRepositoryTest : AbstractSpringJoinerTest() {
     }
 
     @Test
-    fun `find tuple`() {
+    fun `find tuple list`() {
         val find = userRepository.findTuple(listOf(user1.name)) { distinct(false) }
         assertNotNull(find.find { it.get(user1.name) == "user1" })
+        assertEquals(find.size.toLong(), userRepository.count {})
+    }
+
+    @Test
+    fun `find tuple`() {
+        val find = userRepository.findTuple(user1.name) { distinct(false) }
+        assertNotNull(find.find { it == "user1" })
         assertEquals(find.size.toLong(), userRepository.count {})
     }
 

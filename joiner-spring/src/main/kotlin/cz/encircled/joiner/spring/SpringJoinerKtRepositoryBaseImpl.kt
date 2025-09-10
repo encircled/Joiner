@@ -76,6 +76,12 @@ class SpringJoinerKtRepositoryBaseImpl<T, E : EntityPath<T>>(val joiner: JoinerK
         return joiner.find(q)
     }
 
+    override fun <EXP : Expression<EXP_R>, EXP_R>findTuple(projection: EXP, query: JoinerKtQuery<T, EXP_R, E>.() -> Any): List<EXP_R> {
+        val q = projection from entityPath
+        query.invoke(q)
+        return joiner.find(q)
+    }
+
     override fun findStream(query: JoinerKtQuery<T, T, E>.() -> Any): Sequence<T> {
         val q = entityPath.all()
         query.invoke(q)
