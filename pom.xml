@@ -46,12 +46,12 @@
     <properties>
         <querydsl.version>5.1.0</querydsl.version>
         <spring.version>6.2.11</spring.version>
-        <hibernate.version>6.6.10.Final</hibernate.version>
+        <hibernate.version>6.6.31.Final</hibernate.version>
         <hibernate-reactive.version>2.4.2.Final</hibernate-reactive.version>
         <eclipselink.version>4.0.6</eclipselink.version>
         <vendor.name>hibernate</vendor.name>
-        <kotlin.version>2.1.20</kotlin.version>
-        <kotlin.coroutines.version>1.10.1</kotlin.coroutines.version>
+        <kotlin.version>2.2.20</kotlin.version>
+        <kotlin.coroutines.version>1.10.2</kotlin.coroutines.version>
         <reactor.version>3.6.15</reactor.version>
         <junit-jupiter.version>5.11.2</junit-jupiter.version>
         <slf4j.version>1.7.36</slf4j.version>
@@ -62,7 +62,7 @@
         <mariaDB4j.version>3.0.1</mariaDB4j.version>
         <release.plugin.version>3.1.1</release.plugin.version>
         <junit-platform.version>1.11.2</junit-platform.version>
-        <commons-collections4.version>4.4</commons-collections4.version>
+        <commons-collections4.version>4.5.0</commons-collections4.version>
     </properties>
 
     <distributionManagement>
