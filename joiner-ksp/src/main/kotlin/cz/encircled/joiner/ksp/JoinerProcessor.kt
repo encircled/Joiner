@@ -16,9 +16,9 @@ class QuerydslProcessor(
     override fun process(resolver: Resolver): List<KSAnnotated> {
         logger.info("Starting Joiner Querydsl processor")
 
-        // Find all classes annotated with @Entity\@MappedSuperclass
+        // Find all classes annotated with @Entity\@MappedSuperclass\@Embeddable
         val entitySymbols =
-            resolver.getSymbolsWithAnnotations("jakarta.persistence.Entity", "jakarta.persistence.MappedSuperclass")
+            resolver.getSymbolsWithAnnotations("jakarta.persistence.Entity", "jakarta.persistence.MappedSuperclass", "jakarta.persistence.Embeddable")
                 .filterIsInstance<KSClassDeclaration>()
                 .filter { it.validate() }
 
