@@ -57,6 +57,8 @@ class QuerydslProcessorTest {
                 "public final MapPath<String, Integer, SimplePath<Integer>> mapStrToInt = this.<String, Integer, SimplePath<Integer>>createMap(\"mapStrToInt\", String.class, Integer.class, SimplePath.class);",
 
                 "DateTimePath<java.time.Instant> instantValue = createDateTime(\"instantValue\", java.time.Instant.class)",
+                "CustomerEmbeddable embeddable;",
+                "this.embeddable = inits.isInitialized(\"embeddable\") ? new QCustomerEmbeddable(forProperty(\"embeddable\"), inits.get(\"embeddable\")) : null;"
             )
         }
 

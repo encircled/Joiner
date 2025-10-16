@@ -113,7 +113,7 @@ class JoinerClassProcessor(
             propType.isCollectionType() -> CollectionProcessor.process(info)
             propType.isBasicType() -> BasicPropProcessor.process(info)
 
-            typeDeclaration is KSClassDeclaration && typeDeclaration.hasAnnotation("Entity") -> {
+            typeDeclaration is KSClassDeclaration && (typeDeclaration.hasAnnotation("Entity") || typeDeclaration.hasAnnotation("Embeddable")) -> {
                 processEntityReference(info, typeDeclaration)
             }
 

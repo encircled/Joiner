@@ -1,6 +1,7 @@
 package cz.encircled.joiner.ksp
 
 import jakarta.persistence.Column
+import jakarta.persistence.Embeddable
 import jakarta.persistence.Entity
 import jakarta.persistence.Id
 import jakarta.persistence.JoinColumn
@@ -58,7 +59,13 @@ class Customer() : AbstractEntity() {
     var stringArrayValue: Array<String>? = null
     var mapStrToInt: Map<String, Int> = HashMap()
     var instantValue: Instant? = null
+    var embeddable: CustomerEmbeddable = CustomerEmbeddable()
 }
+
+@Embeddable
+class CustomerEmbeddable(
+    var embeddableField: String = ""
+)
 
 enum class TestEnum {
     OK
