@@ -131,7 +131,7 @@ class JoinerClassProcessor(
     ): OutProperty {
         val propertyName = info.propertyName
         val qReferencedEntityName = "Q${typeDeclaration.simpleName()}"
-        val value = if (info.isInherited) "= _super.$propertyName" else ""
+        val value = if (info.isInherited) "_super.$propertyName" else ""
 
         val qualifiedName =
             if (entityClass.name() == typeDeclaration.name()) qReferencedEntityName
