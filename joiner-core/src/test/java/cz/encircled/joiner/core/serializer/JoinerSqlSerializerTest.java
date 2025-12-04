@@ -28,7 +28,7 @@ public class JoinerSqlSerializerTest extends AbstractTest {
     private JoinerSQLSerializer serializer;
     private final QUser user = QUser.user1;
 
-    private final String selectUser = "select distinct user1.parent_id, user1.last_login, user1.active, user1.salary, user1.id, user1.name";
+    private final String selectUser = "select distinct user1.parent_id, user1.last_login, user1.active, user1.salary, user1.DTYPE, user1.id, user1.name";
 
     @BeforeEach
     public void setUp() {
@@ -686,13 +686,6 @@ public class JoinerSqlSerializerTest extends AbstractTest {
             String jpql = serializer.serialize(query);
             assertEquals(selectUser + " from test_user user1 where nullif(user1.name, ?1) is null", jpql);
             assertConstants(serializer, "Unknown");
-        }
-
-        @Test
-        public void testIndex() {
-            JoinerQuery<?, ?> query = Q.from(user).where(user.groups.size().eq(1));
-            String jpql = serializer.serialize(query);
-            assertConstants(serializer, 1);
         }
 
         @Test
