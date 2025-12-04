@@ -1,11 +1,10 @@
-package cz.encircled.joiner.core;
+package cz.encircled.joiner.core.serializer;
 
 import cz.encircled.joiner.model.QUser;
 import cz.encircled.joiner.query.JoinerQuery;
 import cz.encircled.joiner.query.Q;
 import cz.encircled.joiner.query.join.J;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 

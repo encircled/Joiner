@@ -6,7 +6,7 @@ import com.querydsl.core.Tuple;
 import com.querydsl.core.types.*;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.CollectionPathBase;
-import cz.encircled.joiner.core.JoinerJPQLSerializer;
+import cz.encircled.joiner.core.serializer.JoinerJPQLSerializer;
 import cz.encircled.joiner.query.join.J;
 import cz.encircled.joiner.query.join.JoinDescription;
 import cz.encircled.joiner.util.Assert;
@@ -22,6 +22,8 @@ import java.util.stream.Collectors;
  * @author Kisel on 13.9.2016.
  */
 public class JoinerQueryBase<T, R> implements JoinerQuery<T, R>, JoinRoot, SubQueryExpression<R> {
+
+    private boolean isNative = false;
 
     private final EntityPath<T> from;
     private Expression<R> returnProjection;
@@ -336,7 +338,8 @@ public class JoinerQueryBase<T, R> implements JoinerQuery<T, R>, JoinRoot, SubQu
                 .offset(offset)
                 .limit(limit)
                 .groupBy(groupBy)
-                .having(this.having);
+                .having(this.having)
+                .nativeQuery(isNative);
 
         copy.isCount = isCount;
         copy.orders = new ArrayList<>(orders);
@@ -438,6 +441,17 @@ public class JoinerQueryBase<T, R> implements JoinerQuery<T, R>, JoinRoot, SubQu
     }
 
     @Override
+    public boolean isNativeQuery() {
+        return isNative;
+    }
+
+    @Override
+    public JoinerQueryBase<T, R> nativeQuery(boolean isNative) {
+        this.isNative = isNative;
+        return this;
+    }
+
+    @Override
     public String toString() {
         JoinerJPQLSerializer serializer = new JoinerJPQLSerializer();
         return serializer.serialize(this);
@@ -449,6 +463,7 @@ public class JoinerQueryBase<T, R> implements JoinerQuery<T, R>, JoinRoot, SubQu
         if (!(o instanceof JoinerQueryBase<?, ?> that)) return false;
         return distinct == that.distinct &&
                 isCount == that.isCount &&
+                isNative == that.isNative &&
                 Objects.equals(from, that.from) &&
                 Objects.equals(returnProjection, that.returnProjection) &&
                 Objects.equals(where, that.where) &&

@@ -34,6 +34,14 @@ open class JoinerKtQuery<FROM_C, PROJ, FROM : EntityPath<FROM_C>>(
 
     override var lastJoin: JoinDescription? = null
 
+    /**
+     * @see [JoinerQuery.nativeQuery]
+     */
+    infix fun native(isNative: Boolean = true) :JoinerKtQuery<FROM_C, PROJ, FROM>{
+        delegate.nativeQuery(isNative)
+        return this
+    }
+
     infix fun where(where: (e: FROM) -> Predicate): JoinerKtQuery<FROM_C, PROJ, FROM> {
         delegate.where(where.invoke(entityPath))
         return this

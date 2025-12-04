@@ -42,7 +42,7 @@ public class User extends AbstractEntity {
     @JoinColumn(name = "parent_id")
     private User user;
 
-    @Column
+    @Column(name = "last_login")
     private Instant lastLogin;
 
     private Boolean active = true;

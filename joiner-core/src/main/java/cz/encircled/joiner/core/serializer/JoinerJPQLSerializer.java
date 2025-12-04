@@ -1,4 +1,4 @@
-package cz.encircled.joiner.core;
+package cz.encircled.joiner.core.serializer;
 
 import com.querydsl.core.support.Context;
 import com.querydsl.core.types.*;
@@ -19,17 +19,14 @@ import java.util.*;
  *
  * @author Encircled
  */
-public class JoinerJPQLSerializer {
-
-    private final StringBuilder query = new StringBuilder();
-    private final List<Object> constants;
+public class JoinerJPQLSerializer extends SerializerStrategy {
 
     public JoinerJPQLSerializer() {
         this(new ArrayList<>());
     }
 
     public JoinerJPQLSerializer(List<Object> constants) {
-        this.constants = constants;
+        super(constants);
     }
 
     /**
@@ -38,6 +35,7 @@ public class JoinerJPQLSerializer {
      * @param joinerQuery the query to serialize
      * @return the serialized JPQL string
      */
+    @Override
     public String serialize(JoinerQuery<?, ?> joinerQuery) {
         query.setLength(0);
         constants.clear();
@@ -45,48 +43,6 @@ public class JoinerJPQLSerializer {
         serializeJoinerQuery(joinerQuery);
 
         return query.toString();
-    }
-
-    /**
-     * Helper method to serialize a JoinerQuery to a StringBuilder.
-     * This is used by both the main serialize method and when serializing subqueries.
-     *
-     * @param joinerQuery the query to serialize
-     */
-    private void serializeJoinerQuery(JoinerQuery<?, ?> joinerQuery) {
-        query.append("select ");
-        if (joinerQuery.isCount()) {
-            if (joinerQuery.getReturnProjection() instanceof Operation) {
-                query.append(serializeExpression(joinerQuery.getReturnProjection(), null));
-                query.append(" ");
-            } else {
-                query.append("count(");
-                query.append(joinerQuery.getFrom().getMetadata().getName());
-                query.append(") ");
-            }
-        } else if(joinerQuery instanceof CollectionJoinerQuery<?,?>) {
-            // Used for 'exists' subqueries
-            query.append("1 ");
-        } else {
-            if (joinerQuery.isDistinct()) {
-                query.append("distinct ");
-            }
-            appendProjection(joinerQuery);
-            query.append(" ");
-        }
-
-        query.append("from ");
-        if (joinerQuery instanceof CollectionJoinerQuery<?,?> collection) {
-            appendFromCollection(collection);
-        } else {
-            appendFrom(joinerQuery);
-        }
-
-        appendJoins(joinerQuery);
-        appendWhere(joinerQuery);
-        appendGroupBy(joinerQuery);
-        appendHaving(joinerQuery);
-        appendOrderBy(joinerQuery);
     }
 
     /**
@@ -113,11 +69,13 @@ public class JoinerJPQLSerializer {
      *
      * @return the list of constants
      */
+    @Override
     public List<Object> getConstants() {
         return constants;
     }
 
-    private void appendProjection(JoinerQuery<?, ?> joinerQuery) {
+    @Override
+    protected void appendProjection(JoinerQuery<?, ?> joinerQuery) {
         Expression<?> projection = joinerQuery.getReturnProjection();
         if (projection instanceof FactoryExpressionBase<?> p) {
             List<Expression<?>> args = p.getArgs();
@@ -145,37 +103,24 @@ public class JoinerJPQLSerializer {
         }
     }
 
-    private void appendFromCollection(CollectionJoinerQuery<?, ?> joinerQuery) {
+    @Override
+    protected void appendFromCollection(CollectionJoinerQuery<?, ?> joinerQuery) {
         query.append(joinerQuery.getFromCollection().toString())
                 .append(" ")
                 .append(joinerQuery.getReturnProjection());
     }
 
-    private void appendFrom(JoinerQuery<?, ?> joinerQuery) {
+    @Override
+    protected void appendFrom(JoinerQuery<?, ?> joinerQuery) {
         query.append(getEntityName(joinerQuery.getFrom().getType()))
                 .append(" ")
                 .append(joinerQuery.getFrom().getMetadata().getName());
     }
 
-    private void appendJoins(JoinerQuery<?, ?> joinerQuery) {
+    @Override
+    protected void appendJoin(JoinerQuery<?, ?> joinerQuery, JoinDescription join) {
         boolean disableFetchJoins = joinerQuery.getReturnProjection() instanceof FactoryExpression<?> || joinerQuery.isCount();
 
-        Collection<JoinDescription> joins = joinerQuery.getJoins();
-        if (joins != null) {
-            for (JoinDescription join : joins) {
-                appendJoin(join, disableFetchJoins);
-
-                // Process nested joins recursively
-                if (join.getChildren() != null) {
-                    for (JoinDescription nestedJoin : join.getChildren()) {
-                        appendJoin(nestedJoin, disableFetchJoins);
-                    }
-                }
-            }
-        }
-    }
-
-    private void appendJoin(JoinDescription join, boolean disableFetchJoins) {
         switch (join.getJoinType()) {
             case LEFTJOIN -> query.append(" left join ");
             case INNERJOIN -> query.append(" inner join ");
@@ -216,48 +161,27 @@ public class JoinerJPQLSerializer {
         }
     }
 
-    private void appendWhere(JoinerQuery<?, ?> joinerQuery) {
+    @Override
+    protected void appendWhere(JoinerQuery<?, ?> joinerQuery) {
         if (joinerQuery.getWhere() != null) {
             Expression<?> where = joinerQuery.getWhere().accept(new JPACollectionAnyVisitor(), new Context());
             query.append(" where ").append(serializeExpression(where));
         }
     }
 
-    private void appendGroupBy(JoinerQuery<?, ?> joinerQuery) {
-        List<Expression<?>> groupBy = joinerQuery.getGroupBy();
-        if (groupBy != null && !groupBy.isEmpty()) {
-            query.append(" group by ");
-            for (int i = 0; i < groupBy.size(); i++) {
-                if (i > 0) {
-                    query.append(", ");
-                }
-                query.append(serializeExpression(groupBy.get(i)));
-            }
-        }
-    }
-
-    private void appendHaving(JoinerQuery<?, ?> joinerQuery) {
+    @Override
+    protected void appendHaving(JoinerQuery<?, ?> joinerQuery) {
         Predicate having = joinerQuery.getHaving();
         if (having != null) {
             query.append(" having ").append(serializeExpression(having));
         }
     }
 
-    private void appendOrderBy(JoinerQuery<?, ?> joinerQuery) {
-        if (joinerQuery.isCount()) return;
-
-        List<QueryOrder> orders = joinerQuery.getOrder();
-        if (orders != null && !orders.isEmpty()) {
-            query.append(" order by ");
-            for (int i = 0; i < orders.size(); i++) {
-                if (i > 0) {
-                    query.append(", ");
-                }
-                QueryOrder order = orders.get(i);
-                query.append(serializeExpression(order.getTarget()));
-                query.append(order.isAsc() ? " asc" : " desc");
-            }
-        }
+    @Override
+    void appendCount(JoinerQuery<?, ?> joinerQuery) {
+        query.append("count(");
+        query.append(joinerQuery.getFrom().getMetadata().getName());
+        query.append(") ");
     }
 
     /**
@@ -278,7 +202,8 @@ public class JoinerJPQLSerializer {
      * @param expression the expression to serialize
      * @return the serialized expression
      */
-    private String serializeExpression(Expression<?> expression, String parentOpOperator) {
+    @Override
+    protected String serializeExpression(Expression<?> expression, String parentOpOperator) {
         // For constants, we add them to the constants list and return a parameter placeholder
         if (expression instanceof com.querydsl.core.types.Constant) {
             Object constant = ((com.querydsl.core.types.Constant<?>) expression).getConstant();

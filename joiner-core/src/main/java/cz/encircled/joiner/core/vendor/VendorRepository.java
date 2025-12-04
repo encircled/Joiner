@@ -1,8 +1,8 @@
 package cz.encircled.joiner.core.vendor;
 
 import com.querydsl.core.types.EntityPath;
-import cz.encircled.joiner.core.JoinerJPQLSerializer;
 import cz.encircled.joiner.core.JoinerProperties;
+import cz.encircled.joiner.core.serializer.JoinerSerializer;
 import cz.encircled.joiner.query.JoinerQuery;
 import cz.encircled.joiner.query.join.JoinDescription;
 import jakarta.persistence.EntityManager;
@@ -28,7 +28,7 @@ public abstract class VendorRepository {
 
     public abstract <T> Stream<T> streamResult(JoinerQuery<?, T> request, Query jpaQuery);
 
-    protected void setQueryParams(JoinerJPQLSerializer serializer, Query query, JoinerQuery<?, ?> request, JoinerProperties joinerProperties) {
+    protected void setQueryParams(JoinerSerializer serializer, Query query, JoinerQuery<?, ?> request, JoinerProperties joinerProperties) {
         List<Object> constants = serializer.getConstants();
         for (int i = 0; i < constants.size(); i++) {
             Object val = constants.get(i);

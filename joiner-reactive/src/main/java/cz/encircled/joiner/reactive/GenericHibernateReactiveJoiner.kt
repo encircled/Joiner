@@ -1,6 +1,6 @@
 package cz.encircled.joiner.reactive
 
-import cz.encircled.joiner.core.JoinerJPQLSerializer
+import cz.encircled.joiner.core.serializer.JoinerJPQLSerializer
 import cz.encircled.joiner.core.Joiner
 import cz.encircled.joiner.query.JoinerQuery
 import cz.encircled.joiner.reactive.composer.JoinerComposer
@@ -20,8 +20,6 @@ abstract class GenericHibernateReactiveJoiner(val emf: EntityManagerFactory) {
     private val joiner = Joiner(emf.createEntityManager())
 
     private var sessionFactory: SessionFactory = emf.unwrap(SessionFactory::class.java)
-
-    private val constantPrefix: String = "a"
 
     fun <T, C, P> executeComposed(c: JoinerComposer<T, C, P>): CompletionStage<C> {
         return sessionFactory().withTransaction { session, _ ->

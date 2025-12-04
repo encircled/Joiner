@@ -1,8 +1,11 @@
 package cz.encircled.joiner.core.vendor;
 
 import com.querydsl.core.types.*;
-import cz.encircled.joiner.core.JoinerJPQLSerializer;
+import cz.encircled.joiner.core.serializer.JoinerJPQLSerializer;
 import cz.encircled.joiner.core.JoinerProperties;
+import cz.encircled.joiner.core.serializer.JoinerSQLSerializer;
+import cz.encircled.joiner.core.serializer.JoinerSerializer;
+import cz.encircled.joiner.core.serializer.JpaSqlNamingStrategy;
 import cz.encircled.joiner.query.JoinerQuery;
 import jakarta.persistence.EntityManager;
 import org.hibernate.*;
@@ -27,7 +30,9 @@ public class HibernateRepository extends VendorRepository {
 
     @Override
     public JoinerJpaQuery createQuery(JoinerQuery<?, ?> request, JoinerProperties joinerProperties, EntityManager entityManager) {
-        JoinerJPQLSerializer serializer = new JoinerJPQLSerializer();
+        JoinerSerializer serializer = request.isNativeQuery()
+                ? new JoinerSQLSerializer(new JpaSqlNamingStrategy(entityManager.getMetamodel()))
+                : new JoinerJPQLSerializer();
         String queryString = serializer.serialize(request);
 
         if (joinerProperties.printQueries) {
@@ -42,9 +47,14 @@ public class HibernateRepository extends VendorRepository {
         if (isStateless) {
             request.setStatelessSession(true);
             session = entityManager.unwrap(Session.class).getSessionFactory().openStatelessSession();
-            jpaQuery = session.createQuery(queryString, null);
+            jpaQuery = request.isNativeQuery()
+                    ? session.createNativeQuery(queryString)
+                    : session.createQuery(queryString, null);
         } else {
-            jpaQuery = (Query<?>) entityManager.createQuery(queryString);
+            Class<?> type = request.isCount() ? Long.class : request.getReturnProjection().getType();
+            jpaQuery = request.isNativeQuery()
+                    ? (Query<?>) entityManager.createNativeQuery(queryString, type)
+                    : (Query<?>) entityManager.createQuery(queryString);
         }
 
         setQueryParams(serializer, jpaQuery, request, joinerProperties);

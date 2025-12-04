@@ -4,7 +4,7 @@ import com.querydsl.core.JoinType;
 import com.querydsl.core.types.EntityPath;
 import com.querydsl.core.types.Expression;
 import com.querydsl.core.types.FactoryExpression;
-import cz.encircled.joiner.core.JoinerJPQLSerializer;
+import cz.encircled.joiner.core.serializer.JoinerJPQLSerializer;
 import cz.encircled.joiner.core.JoinerProperties;
 import cz.encircled.joiner.exception.JoinerException;
 import cz.encircled.joiner.query.JoinerQuery;

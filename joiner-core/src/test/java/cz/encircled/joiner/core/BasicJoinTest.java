@@ -177,6 +177,17 @@ public abstract class BasicJoinTest extends AbstractTest {
     }
 
     @Test
+    public void testLeftJoinNativeQuery() {
+        JoinerQuery<Group, Group> q = Q.from(QGroup.group)
+                .nativeQuery(true)
+                .joins(J.left(QStatus.status));
+
+        List<Group> groups = joiner.find(q);
+        assertFalse(groups.isEmpty());
+        assertTrue(groups.stream().anyMatch(g -> g.getName().equals("group1")));
+    }
+
+    @Test
     public void testRightJoin() {
         JoinerQuery<Address, Tuple> q = Q.select(QUser.user1.name, QAddress.address.name)
                 .from(QAddress.address)

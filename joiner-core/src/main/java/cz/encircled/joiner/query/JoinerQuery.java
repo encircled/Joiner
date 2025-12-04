@@ -21,6 +21,15 @@ import java.util.Set;
  */
 public interface JoinerQuery<T, R> extends JoinRoot, SubQueryExpression<R> {
 
+    boolean isNativeQuery();
+
+    /**
+     * Experimental feature, the following is not supported: association fetching, subqueries with implicit joins, expressions which are not a standard SQL
+     * <p>
+     * Configures whether the given query is a native one. Defaults to false.
+     */
+    JoinerQuery<T, R> nativeQuery(boolean isNative);
+
     EntityPath<T> getFrom();
 
     Expression<R> getReturnProjection();

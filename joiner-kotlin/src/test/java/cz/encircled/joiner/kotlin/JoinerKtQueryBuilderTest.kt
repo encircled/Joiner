@@ -65,6 +65,14 @@ class JoinerKtQueryBuilderTest {
     }
 
     @Test
+    fun `native query`() {
+        assertEquals(
+            (user1.all() native true).delegate,
+            Q.from(user1).nativeQuery(true)
+        )
+    }
+
+    @Test
     fun `predicate with chained infix`() {
         assertEquals(
             (user1.name from user1
