@@ -39,11 +39,11 @@ public abstract class CountTest extends AbstractTest {
 
     @Test
     public void testCountNativeQuery() {
-        Long count = joiner.findOne(Q.count(QUser.user1).joins(J.inner(QGroup.group)).nativeQuery(true));
+        Long count = joiner.findOne(Q.count(QUser.user1).joins(J.left(QGroup.group)).nativeQuery(true));
 
         entityManager.clear();
 
-        Long real = (Long) entityManager.createQuery("select count(u) from User u inner join u.groups g").getSingleResult();
+        Long real = (Long) entityManager.createQuery("select count(u) from User u left join u.groups g").getSingleResult();
 
         assertEquals(real, count);
     }
