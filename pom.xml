@@ -47,7 +47,7 @@
         <querydsl.version>5.1.0</querydsl.version>
         <spring.version>6.2.11</spring.version>
         <hibernate.version>6.6.31.Final</hibernate.version>
-        <hibernate-reactive.version>2.4.2.Final</hibernate-reactive.version>
+        <hibernate-reactive.version>4.2.1.Final</hibernate-reactive.version>
         <eclipselink.version>4.0.6</eclipselink.version>
         <vendor.name>hibernate</vendor.name>
         <kotlin.version>2.2.20</kotlin.version>
