@@ -155,8 +155,13 @@ public class JoinerSQLSerializer extends SerializerStrategy {
 
     @Override
     protected String serializeExpression(Expression<?> expression, String parentOpOperator) {
+        return serializeExpression(expression, parentOpOperator, null);
+    }
+
+    private String serializeExpression(Expression<?> expression, String parentOpOperator, Path<?> targetPath) {
         if (expression instanceof com.querydsl.core.types.Constant<?> constantExpr) {
-            Object constant = constantExpr.getConstant();
+            Object constant = convertConstant(constantExpr.getConstant(), targetPath);
+
             switch (parentOpOperator) {
                 case "STRING_CONTAINS" -> constants.add("%" + constant + "%");
                 case "STRING_CONTAINS_IC" -> constants.add("%" + lowered(constant) + "%");
@@ -193,8 +198,9 @@ public class JoinerSQLSerializer extends SerializerStrategy {
                     default -> throw new JoinerException("Unsupported operator: " + operator);
                 };
             } else if (args.size() == 2) {
+                Path<?> pathContext = args.get(0) instanceof Path<?> p ? p : null;
                 String left  = serializeExpression(args.get(0), operator);
-                String right = serializeExpression(args.get(1), operator);
+                String right = serializeExpression(args.get(1), operator, pathContext);
 
                 boolean isConditional         = operation.getOperator() == Ops.AND || operation.getOperator() == Ops.OR;
                 boolean isConstantConditional = "AND".equals(parentOpOperator) || "OR".equals(parentOpOperator);
@@ -235,6 +241,37 @@ public class JoinerSQLSerializer extends SerializerStrategy {
 
         return expression.toString();
     }
+
+    private Object convertConstant(Object constant, Path<?> targetPath) {
+        if (constant instanceof Enum<?> enumValue) {
+            if (targetPath != null) {
+                EnumType enumType = resolveEnumType(targetPath);
+                if (enumType == EnumType.ORDINAL) {
+                    return enumValue.ordinal();
+                }}
+            return enumValue.name();
+        }
+        return constant;
+    }
+
+    private EnumType resolveEnumType(Path<?> path) {
+        PathMetadata metadata = path.getMetadata();
+        Path<?> parent = metadata.getParent();
+        if (parent == null) return EnumType.STRING;
+
+        Class<?> entityType = parent.getType();
+        String fieldName = metadata.getName();
+
+        Field field = findField(entityType, fieldName);
+        if (field != null) {
+            Enumerated enumAnn = field.getAnnotation(Enumerated.class);
+            if (enumAnn != null) {
+                return enumAnn.value();
+            }
+        }
+        return EnumType.STRING; // default
+    }
+
 
     private static String serializeOperation(String operator, String left, String right) {
         return switch (operator) {
