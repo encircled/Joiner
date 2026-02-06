@@ -49,6 +49,10 @@ public class User extends AbstractEntity {
     @Column(name = "user_role")
     private UserRole userRole = UserRole.ADMIN;
 
+    @Enumerated(EnumType.ORDINAL)
+    @Column(name = "secondary_role")
+    private UserRole secondaryRole = UserRole.USER;
+
     private Boolean active = true;
 
     private Integer salary = 100;
@@ -122,6 +126,14 @@ public class User extends AbstractEntity {
 
     public void setUserRole(UserRole userRole) {
         this.userRole = userRole;
+    }
+
+    public UserRole getSecondaryRole() {
+        return secondaryRole;
+    }
+
+    public void setSecondaryRole(UserRole secondaryRole) {
+        this.secondaryRole = secondaryRole;
     }
 
     @Override

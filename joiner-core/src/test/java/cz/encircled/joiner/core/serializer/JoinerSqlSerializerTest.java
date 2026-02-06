@@ -16,7 +16,6 @@ import java.util.List;
 import static cz.encircled.joiner.model.QAddress.address;
 import static cz.encircled.joiner.model.QGroup.group;
 import static cz.encircled.joiner.model.QUser.user1;
-import static java.lang.String.format;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -28,7 +27,7 @@ public class JoinerSqlSerializerTest extends AbstractTest {
     private JoinerSQLSerializer serializer;
     private final QUser user = QUser.user1;
 
-    private final String selectUser = "select distinct user1.parent_id, user1.last_login, user1.user_role, user1.active, user1.salary, user1.DTYPE, user1.id, user1.name";
+    private final String selectUser = "select distinct user1.parent_id, user1.last_login, user1.user_role, user1.secondary_role, user1.active, user1.salary, user1.DTYPE, user1.id, user1.name";
 
     @BeforeEach
     public void setUp() {
