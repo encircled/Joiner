@@ -156,7 +156,8 @@ public class JoinerSQLSerializer extends SerializerStrategy {
     @Override
     protected String serializeExpression(Expression<?> expression, String parentOpOperator) {
         if (expression instanceof com.querydsl.core.types.Constant<?> constantExpr) {
-            Object constant = constantExpr.getConstant();
+            Object constant = convertConstant(constantExpr.getConstant());
+
             switch (parentOpOperator) {
                 case "STRING_CONTAINS" -> constants.add("%" + constant + "%");
                 case "STRING_CONTAINS_IC" -> constants.add("%" + lowered(constant) + "%");
@@ -234,6 +235,13 @@ public class JoinerSQLSerializer extends SerializerStrategy {
         }
 
         return expression.toString();
+    }
+
+    private static Object convertConstant(Object constant) {
+        if (constant instanceof Enum<?> enumValue) {
+            return enumValue.name();
+        }
+        return constant;
     }
 
     private static String serializeOperation(String operator, String left, String right) {
