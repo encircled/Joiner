@@ -9,9 +9,9 @@ import cz.encircled.joiner.query.JoinerQuery;
 import cz.encircled.joiner.query.QueryFeature;
 import jakarta.persistence.Query;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.core.PropertyPath;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-import org.springframework.data.mapping.PropertyPath;
 
 import java.util.Collections;
 import java.util.List;
