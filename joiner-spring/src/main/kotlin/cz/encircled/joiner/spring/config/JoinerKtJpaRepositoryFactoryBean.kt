@@ -33,7 +33,7 @@ open class JoinerKtJpaRepositoryFactoryBean<T : Repository<S, ID>, S, ID>(
     ) : JpaRepositoryFactory(entityManager) {
 
         override fun getRepositoryFragments(metadata: RepositoryMetadata): RepositoryFragments {
-            val fragmentImplementation: Any = getTargetRepositoryViaReflection(
+            val fragmentImplementation: Any = instantiateClass(
                 SpringJoinerKtRepositoryBaseImpl::class.java,
                 applicationContext.getBean(JoinerKt::class.java),
                 SimpleEntityPathResolver.INSTANCE.createPath(metadata.domainType),

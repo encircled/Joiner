@@ -45,15 +45,15 @@
 
     <properties>
         <querydsl.version>5.1.0</querydsl.version>
-        <spring.version>6.2.11</spring.version>
-        <hibernate.version>6.6.31.Final</hibernate.version>
-        <hibernate-reactive.version>2.4.2.Final</hibernate-reactive.version>
+        <spring.version>7.0.3</spring.version>
+        <hibernate.version>7.2.1.Final</hibernate.version>
+        <hibernate-reactive.version>3.2.1.Final</hibernate-reactive.version>
         <eclipselink.version>4.0.6</eclipselink.version>
         <vendor.name>hibernate</vendor.name>
         <kotlin.version>2.2.20</kotlin.version>
         <kotlin.coroutines.version>1.10.2</kotlin.coroutines.version>
         <reactor.version>3.6.15</reactor.version>
-        <junit-jupiter.version>5.11.2</junit-jupiter.version>
+        <junit-jupiter.version>6.0.2</junit-jupiter.version>
         <slf4j.version>1.7.36</slf4j.version>
         <vertx.version>4.5.10</vertx.version>
         <maven.compiler.source>17</maven.compiler.source>
@@ -61,7 +61,7 @@
         <maven.compiler.release>17</maven.compiler.release>
         <mariaDB4j.version>3.0.1</mariaDB4j.version>
         <release.plugin.version>3.1.1</release.plugin.version>
-        <junit-platform.version>1.11.2</junit-platform.version>
+        <junit-platform.version>6.0.2</junit-platform.version>
         <commons-collections4.version>4.5.0</commons-collections4.version>
     </properties>
 
@@ -98,7 +98,7 @@
         <dependency>
             <groupId>jakarta.persistence</groupId>
             <artifactId>jakarta.persistence-api</artifactId>
-            <version>3.1.0</version>
+            <version>3.2.0</version>
         </dependency>
 
         <!-- QueryDSL -->
@@ -225,6 +225,11 @@
             <dependency>
                 <groupId>org.junit.platform</groupId>
                 <artifactId>junit-platform-engine</artifactId>
+                <version>${junit-platform.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.junit.platform</groupId>
+                <artifactId>junit-platform-launcher</artifactId>
                 <version>${junit-platform.version}</version>
             </dependency>
 
