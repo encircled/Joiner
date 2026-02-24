@@ -9,7 +9,7 @@ import org.springframework.data.domain.Pageable
 import org.springframework.data.jpa.repository.support.JpaRepositoryConfigurationAware
 import kotlin.reflect.KClass
 
-interface SpringJoinerKtRepository<T, E : EntityPath<T>> : JpaRepositoryConfigurationAware {
+interface SpringJoinerKtRepository<T: Any, E : EntityPath<T>> : JpaRepositoryConfigurationAware {
     fun count(query: JoinerKtQuery<T, Long, E>.() -> Any): Long
 
     /**

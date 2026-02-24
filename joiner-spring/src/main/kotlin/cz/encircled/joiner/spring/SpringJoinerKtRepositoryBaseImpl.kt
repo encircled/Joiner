@@ -22,7 +22,7 @@ import org.springframework.data.domain.Pageable
 import java.util.function.Consumer
 import kotlin.reflect.KClass
 
-class SpringJoinerKtRepositoryBaseImpl<T, E : EntityPath<T>>(val joiner: JoinerKt, val entityPath: E) :
+class SpringJoinerKtRepositoryBaseImpl<T: Any, E : EntityPath<T>>(val joiner: JoinerKt, val entityPath: E) :
     SpringJoinerKtRepository<T, E> {
 
     override fun count(query: JoinerKtQuery<T, Long, E>.() -> Any): Long {

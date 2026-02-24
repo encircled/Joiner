@@ -13,7 +13,7 @@ import org.springframework.data.repository.core.RepositoryMetadata
 import org.springframework.data.repository.core.support.RepositoryComposition.RepositoryFragments
 import org.springframework.data.repository.core.support.RepositoryFactorySupport
 
-open class JoinerKtJpaRepositoryFactoryBean<T : Repository<S, ID>, S, ID>(
+open class JoinerKtJpaRepositoryFactoryBean<T : Repository<S, ID>, S: Any, ID: Any>(
     repositoryInterface: Class<out T>,
 ) : JpaRepositoryFactoryBean<T, S, ID>(repositoryInterface), ApplicationContextAware {
 
