@@ -1,5 +1,6 @@
 package cz.encircled.joiner.ksp
 
+import com.querydsl.core.annotations.QueryTransient
 import jakarta.persistence.*
 
 /**
@@ -26,6 +27,16 @@ class TestEntity {
     @JoinColumn(name = "parent_id")
     var parent: TestEntity? = null
 
+    @ManyToOne
+    val testEntity: TestEntity? = null // self ref with the same name
+
     @Transient
     var transientField: String? = null
+
+    @QueryTransient
+    var transientField2: String? = null
+
+    @get:Transient
+    val transientFieldWithCustomGetter get() = "Custom Getter"
+
 }

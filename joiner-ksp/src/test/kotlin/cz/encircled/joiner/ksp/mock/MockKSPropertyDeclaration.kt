@@ -63,7 +63,7 @@ class MockKSPropertyDeclaration(private val delegate: KProperty1<out Any, *>) : 
     }
 
     override val getter: KSPropertyGetter?
-        get() = TODO("Not yet implemented")
+        get() = null
     override val hasBackingField: Boolean
         get() = TODO("Not yet implemented")
     override val setter: KSPropertySetter?

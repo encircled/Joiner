@@ -1,15 +1,19 @@
 package cz.encircled.joiner.ksp
 
+import com.google.devtools.ksp.KspExperimental
+import com.google.devtools.ksp.isAnnotationPresent
 import com.google.devtools.ksp.symbol.ClassKind
 import com.google.devtools.ksp.symbol.KSClassDeclaration
 import com.google.devtools.ksp.symbol.KSDeclaration
 import com.google.devtools.ksp.symbol.KSPropertyDeclaration
 import com.google.devtools.ksp.symbol.KSType
 import com.google.devtools.ksp.symbol.Modifier
+import com.querydsl.core.annotations.QueryTransient
 import cz.encircled.joiner.ksp.property.ArrayProcessor
 import cz.encircled.joiner.ksp.property.BasicPropProcessor
 import cz.encircled.joiner.ksp.property.CollectionProcessor
 import cz.encircled.joiner.ksp.property.PropertyInfo
+import jakarta.persistence.Transient
 
 class JoinerClassProcessor(
     private val entityClass: KSClassDeclaration,
@@ -37,7 +41,7 @@ class JoinerClassProcessor(
         }
 
         outProperties.addAll(
-            entityClass.getAllProperties().map { processProperty(it) }.filterNotNull()
+            entityClass.getAllProperties().mapNotNull { processProperty(it) }
         )
 
         getStaticAccessor(className).let {
@@ -90,6 +94,7 @@ class JoinerClassProcessor(
             .first { it !in propertyNames }
     }
 
+    @OptIn(KspExperimental::class)
     private fun processProperty(prop: KSPropertyDeclaration): OutProperty? {
         val propName = prop.simpleName()
         val propType = prop.type.resolve()
@@ -98,8 +103,14 @@ class JoinerClassProcessor(
         if (propName.startsWith("_") ||
             prop.modifiers.contains(Modifier.JAVA_TRANSIENT) ||
             prop.hasAnnotation("Transient") ||
+            prop.hasAnnotation("QueryTransient") ||
             prop.isInCompanionObject()
         ) {
+            return null
+        }
+
+        val getter = prop.getter
+        if (getter != null && (getter.isAnnotationPresent(Transient::class) || getter.isAnnotationPresent(QueryTransient::class))) {
             return null
         }
 
@@ -113,7 +124,9 @@ class JoinerClassProcessor(
             propType.isCollectionType() -> CollectionProcessor.process(info)
             propType.isBasicType() -> BasicPropProcessor.process(info)
 
-            typeDeclaration is KSClassDeclaration && (typeDeclaration.hasAnnotation("Entity") || typeDeclaration.hasAnnotation("Embeddable")) -> {
+            typeDeclaration is KSClassDeclaration && (typeDeclaration.hasAnnotation("Entity") || typeDeclaration.hasAnnotation(
+                "Embeddable"
+            )) -> {
                 processEntityReference(info, typeDeclaration)
             }
 

@@ -13,6 +13,7 @@ import cz.encircled.joiner.model.User
 import org.jetbrains.kotlin.compiler.plugin.ExperimentalCompilerApi
 import org.junit.jupiter.api.Test
 import java.io.File
+import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 class QuerydslProcessorTest {
@@ -95,32 +96,8 @@ class QuerydslProcessorTest {
 
     @Test
     fun `Q class should be generated for entity`() {
-        val source = SourceFile.kotlin(
-            "TestEntity.kt", """
-            package test
-
-            import jakarta.persistence.Entity
-            import jakarta.persistence.Id
-            import jakarta.persistence.OneToMany
-            import jakarta.persistence.ManyToOne
-
-            @Entity
-            class TestEntity(
-                @Id
-                val id: Long,
-                val name: String,
-
-                @OneToMany(mappedBy = "parent")
-                val children: List<TestEntity> = listOf(),
-
-                @ManyToOne
-                val parent: TestEntity? = null,
-
-                @ManyToOne
-                val testEntity: TestEntity? = null // self ref with the same name
-            )
-        """.trimIndent()
-        )
+        val testEntity = File("src/test/kotlin/cz/encircled/joiner/ksp/TestEntity.kt").readText()
+        val source = SourceFile.kotlin("TestEntity.kt", testEntity)
 
         val compilation = KotlinCompilation().apply {
             sources = listOf(source)
@@ -146,6 +123,7 @@ class QuerydslProcessorTest {
         assertTrue("public final QTestEntity testEntity;" in content)
         assertTrue("this.parent = inits.isInitialized(\"parent\") ? new QTestEntity(forProperty(\"parent\"), inits.get(\"parent\")) : null;" in content)
         assertTrue("this.testEntity = inits.isInitialized(\"testEntity\") ? new QTestEntity(forProperty(\"testEntity\"), inits.get(\"testEntity\")) : null;" in content)
+        assertFalse("transientField" in content)
     }
 
     class TestLogger : KSPLogger {

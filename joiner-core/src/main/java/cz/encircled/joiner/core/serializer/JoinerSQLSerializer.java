@@ -189,22 +189,22 @@ public class JoinerSQLSerializer extends SerializerStrategy {
             String operator = operation.getOperator().toString();
 
             if (args.size() == 3) {
-                String left   = serializeExpression(args.get(0), operator);
+                String left = serializeExpression(args.get(0), operator);
                 String middle = serializeExpression(args.get(1), operator);
-                String right  = serializeExpression(args.get(2), operator);
+                String right = serializeExpression(args.get(2), operator);
                 return switch (operator) {
                     case "SUBSTR_2ARGS" -> "substring(" + left + ", " + middle + ", " + right + ")";
-                    case "BETWEEN"      -> left + " between " + middle + " and " + right;
+                    case "BETWEEN" -> left + " between " + middle + " and " + right;
                     default -> throw new JoinerException("Unsupported operator: " + operator);
                 };
             } else if (args.size() == 2) {
                 Path<?> pathContext = args.get(0) instanceof Path<?> p ? p : null;
-                String left  = serializeExpression(args.get(0), operator);
+                String left = serializeExpression(args.get(0), operator);
                 String right = serializeExpression(args.get(1), operator, pathContext);
 
-                boolean isConditional         = operation.getOperator() == Ops.AND || operation.getOperator() == Ops.OR;
+                boolean isConditional = operation.getOperator() == Ops.AND || operation.getOperator() == Ops.OR;
                 boolean isConstantConditional = "AND".equals(parentOpOperator) || "OR".equals(parentOpOperator);
-                boolean addParentheses        = isConditional && isConstantConditional;
+                boolean addParentheses = isConditional && isConstantConditional;
 
                 String result = serializeOperation(operator, left, right);
                 return addParentheses ? "(" + result + ")" : result;
@@ -212,27 +212,27 @@ public class JoinerSQLSerializer extends SerializerStrategy {
                 String arg = serializeExpression(args.get(0));
 
                 return switch (operator) {
-                    case "COL_SIZE"        -> throw new IllegalStateException("COL_SIZE op is not supported");
-                    case "COL_IS_EMPTY"    -> throw new IllegalStateException("COL_IS_EMPTY op is not supported");
+                    case "COL_SIZE" -> throw new IllegalStateException("COL_SIZE op is not supported");
+                    case "COL_IS_EMPTY" -> throw new IllegalStateException("COL_IS_EMPTY op is not supported");
                     case "STRING_IS_EMPTY" -> "length(" + arg + ") = 0";
-                    case "STRING_LENGTH"   -> "length(" + arg + ")";
-                    case "COALESCE"        -> "coalesce" + arg;
-                    case "NOT"             -> "not " + arg;
-                    case "IS_NULL"         -> arg + " is null";
-                    case "IS_NOT_NULL"     -> arg + " is not null";
-                    case "AVG_AGG"         -> "avg(" + arg + ")";
-                    case "COUNT_AGG"       -> "count(" + arg + ")";
+                    case "STRING_LENGTH" -> "length(" + arg + ")";
+                    case "COALESCE" -> "coalesce" + arg;
+                    case "NOT" -> "not " + arg;
+                    case "IS_NULL" -> arg + " is null";
+                    case "IS_NOT_NULL" -> arg + " is not null";
+                    case "AVG_AGG" -> "avg(" + arg + ")";
+                    case "COUNT_AGG" -> "count(" + arg + ")";
                     case "COUNT_DISTINCT_AGG" -> "count(distinct " + arg + ")";
-                    case "MAX_AGG"         -> "max(" + arg + ")";
-                    case "MIN_AGG"         -> "min(" + arg + ")";
-                    case "SUM_AGG"         -> "sum(" + arg + ")";
-                    case "DISTINCT"        -> "distinct " + arg;
-                    case "ALL"             -> "all " + arg;
-                    case "ANY"             -> "any " + arg;
-                    case "SOME"            -> "some " + arg;
-                    case "EXISTS"          -> "exists " + arg;
-                    case "NOT_EXISTS"      -> "not exists " + arg;
-                    default                -> operator.toLowerCase() + "(" + arg + ")";
+                    case "MAX_AGG" -> "max(" + arg + ")";
+                    case "MIN_AGG" -> "min(" + arg + ")";
+                    case "SUM_AGG" -> "sum(" + arg + ")";
+                    case "DISTINCT" -> "distinct " + arg;
+                    case "ALL" -> "all " + arg;
+                    case "ANY" -> "any " + arg;
+                    case "SOME" -> "some " + arg;
+                    case "EXISTS" -> "exists " + arg;
+                    case "NOT_EXISTS" -> "not exists " + arg;
+                    default -> operator.toLowerCase() + "(" + arg + ")";
                 };
             } else {
                 throw new JoinerException("Unsupported operator: " + operator);
@@ -248,7 +248,8 @@ public class JoinerSQLSerializer extends SerializerStrategy {
                 EnumType enumType = resolveEnumType(targetPath);
                 if (enumType == EnumType.ORDINAL) {
                     return enumValue.ordinal();
-                }}
+                }
+            }
             return enumValue.name();
         }
         return constant;
@@ -275,29 +276,27 @@ public class JoinerSQLSerializer extends SerializerStrategy {
 
     private static String serializeOperation(String operator, String left, String right) {
         return switch (operator) {
-            case "EQ"  -> left + " = " + right;
-            case "NE"  -> left + " <> " + right;
-            case "GT"  -> left + " > " + right;
+            case "EQ" -> left + " = " + right;
+            case "NE" -> left + " <> " + right;
+            case "GT" -> left + " > " + right;
             case "GOE" -> left + " >= " + right;
-            case "LT"  -> left + " < " + right;
+            case "LT" -> left + " < " + right;
             case "LOE" -> left + " <= " + right;
             case "LIKE_IC", "ENDS_WITH_IC", "STARTS_WITH_IC", "STRING_CONTAINS_IC" ->
                     "lower(" + left + ") like " + right;
-            case "STARTS_WITH", "STRING_CONTAINS", "LIKE", "ENDS_WITH" ->
-                    left + " like " + right;
-            case "LIKE_ESCAPE", "LIKE_ESCAPE_IC" ->
-                    left + " like " + right + " escape '!'";
-            case "IN"      -> left + " in " + right;
-            case "NOT_IN"  -> left + " not in " + right;
-            case "CONCAT"  -> "concat(" + left + ", " + right + ")";
+            case "STARTS_WITH", "STRING_CONTAINS", "LIKE", "ENDS_WITH" -> left + " like " + right;
+            case "LIKE_ESCAPE", "LIKE_ESCAPE_IC" -> left + " like " + right + " escape '!'";
+            case "IN" -> left + " in " + right;
+            case "NOT_IN" -> left + " not in " + right;
+            case "CONCAT" -> "concat(" + left + ", " + right + ")";
             case "SUBSTR_1ARG" -> "substring(" + left + ", " + right + ")";
-            case "LOCATE"  -> "locate(" + left + ", " + right + ")";
-            case "MOD"     -> "mod(" + left + ", " + right + ")";
-            case "COALESCE"-> "coalesce(" + left + ", " + right + ")";
-            case "NULLIF"  -> "nullif(" + left + ", " + right + ")";
-            case "CAST"    -> "cast(" + left + " as " + right + ")";
-            case "TREAT"   -> "/* treat() is JPQL-only */ " + left;
-            case "LIST"    -> "(" + left + ", " + right + ")";
+            case "LOCATE" -> "locate(" + left + ", " + right + ")";
+            case "MOD" -> "mod(" + left + ", " + right + ")";
+            case "COALESCE" -> "coalesce(" + left + ", " + right + ")";
+            case "NULLIF" -> "nullif(" + left + ", " + right + ")";
+            case "CAST" -> "cast(" + left + " as " + right + ")";
+            case "TREAT" -> "/* treat() is JPQL-only */ " + left;
+            case "LIST" -> "(" + left + ", " + right + ")";
             default -> left + " " + operator.toLowerCase().replaceAll("_", " ") + " " + right;
         };
     }
@@ -320,7 +319,8 @@ public class JoinerSQLSerializer extends SerializerStrategy {
 
         if (join.getPath() instanceof EntityPath<?> entityPath) {
             return entityPath.getType();
-        } if (join.getPath() instanceof CollectionPathBase<?, ?, ?> entityPath) {
+        }
+        if (join.getPath() instanceof CollectionPathBase<?, ?, ?> entityPath) {
             return entityPath.getElementType();
         }
 
@@ -375,7 +375,7 @@ public class JoinerSQLSerializer extends SerializerStrategy {
         } else {
             JoinColumn jc = associationField.getAnnotation(JoinColumn.class);
             if (jc != null) {
-                joinColumns = new JoinColumn[]{ jc };
+                joinColumns = new JoinColumn[]{jc};
             }
         }
 
