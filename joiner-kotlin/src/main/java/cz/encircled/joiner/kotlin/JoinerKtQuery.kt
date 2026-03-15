@@ -21,12 +21,7 @@ class ExpressionJoinerKtQuery<FROM_C, PROJ, FROM : EntityPath<FROM_C>>(
         (isCount) -> Q.count(entityPath) as JoinerQuery<FROM_C, PROJ>
         else -> Q.select(projection).from(entityPath)
     }
-) : JoinerKtQuery<FROM_C, PROJ, FROM>(entityPath, delegate) {
-    override fun toString(): String {
-        return delegate.toString()
-    }
-
-}
+) : JoinerKtQuery<FROM_C, PROJ, FROM>(entityPath, delegate)
 
 class TupleJoinerKtQuery<FROM_C, FROM : EntityPath<FROM_C>>(
     private val entityPath: FROM,
@@ -56,14 +51,10 @@ open class JoinerKtJoinOrQuery<FROM_C, PROJ, FROM : EntityPath<FROM_C>>(
 
 }
 
-interface KtQueryOps<FROM_C, PROJ, FROM : EntityPath<FROM_C>> {
-    infix fun where(where: (e: FROM) -> Predicate): JoinerKtQuery<FROM_C, PROJ, FROM>
-}
-
 open class JoinerKtQuery<FROM_C, PROJ, FROM : EntityPath<FROM_C>>(
     private val entityPath: FROM,
     val delegate: JoinerQuery<FROM_C, PROJ>
-) : JoinerQuery<FROM_C, PROJ> by delegate, JoinOps, KtQueryOps<FROM_C, PROJ, FROM> {
+) : JoinerQuery<FROM_C, PROJ> by delegate, JoinOps {
 
     /**
      * @see [JoinerQuery.nativeQuery]
@@ -73,7 +64,7 @@ open class JoinerKtQuery<FROM_C, PROJ, FROM : EntityPath<FROM_C>>(
         return this
     }
 
-    override infix fun where(where: (e: FROM) -> Predicate): JoinerKtQuery<FROM_C, PROJ, FROM> {
+    infix fun where(where: (e: FROM) -> Predicate): JoinerKtQuery<FROM_C, PROJ, FROM> {
         delegate.where(where.invoke(entityPath))
         return this
     }

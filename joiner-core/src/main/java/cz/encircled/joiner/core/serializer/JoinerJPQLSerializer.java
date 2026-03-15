@@ -221,7 +221,7 @@ public class JoinerJPQLSerializer extends SerializerStrategy {
         }
 
         if (expression instanceof AdhocJoinPath path) {
-            return getEntityName(path.target.getType());
+            return getEntityName(path.getType());
         }
 
         // For paths, we return the path name
