@@ -6,6 +6,7 @@ import com.querydsl.core.types.dsl.BooleanPath;
 import com.querydsl.core.types.dsl.CollectionPathBase;
 import com.querydsl.core.types.dsl.EntityPathBase;
 import cz.encircled.joiner.exception.JoinerException;
+import cz.encircled.joiner.query.AdhocJoinPath;
 import cz.encircled.joiner.query.join.J;
 import cz.encircled.joiner.query.join.JoinDescription;
 import cz.encircled.joiner.util.ReflectionUtils;
@@ -43,7 +44,13 @@ public class DefaultAliasResolver implements AliasResolver {
         Path<?> parent = join.getParent() != null ? join.getParent().getAlias() : root;
         Path<?> fieldOnParent = findPathOnParent(parent, join.getAlias().getType(), join);
 
-        if (fieldOnParent instanceof CollectionPathBase) {
+        if (join.isUnmapped()) {
+            if (join.getOn() == null) {
+                throw new JoinerException("Unmapped join must have 'on' predicate defined: " + join);
+            }
+            join.fetch(false);
+            join.singularPath(new AdhocJoinPath(join.getOriginalAlias()));
+        } else if (fieldOnParent instanceof CollectionPathBase) {
             join.collectionPath((CollectionPathBase<?, ?, ?>) fieldOnParent);
         } else if (fieldOnParent instanceof EntityPath) {
             join.singularPath((EntityPath<?>) fieldOnParent);

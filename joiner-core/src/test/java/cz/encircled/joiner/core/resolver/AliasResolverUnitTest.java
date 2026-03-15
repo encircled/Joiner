@@ -8,13 +8,14 @@ import cz.encircled.joiner.model.QAddress;
 import cz.encircled.joiner.model.QContact;
 import cz.encircled.joiner.model.QGroup;
 import cz.encircled.joiner.model.QNormalUser;
-import cz.encircled.joiner.model.QPassword;
 import cz.encircled.joiner.model.QSuperUser;
 import cz.encircled.joiner.model.QUser;
+import cz.encircled.joiner.query.AdhocJoinPath;
 import cz.encircled.joiner.query.join.J;
 import cz.encircled.joiner.query.join.JoinDescription;
 import org.junit.jupiter.api.Test;
 
+import static cz.encircled.joiner.model.QPassword.password;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
@@ -25,7 +26,7 @@ public class AliasResolverUnitTest extends AbstractTest {
     @Test
     public void testCollectionAssociationFoundOnParent() {
         AliasResolver resolver = new DefaultAliasResolver(entityManager);
-        JoinDescription left = J.left(QPassword.password);
+        JoinDescription left = J.left(password);
         J.left(QUser.user1).nested(left);
 
         resolver.resolveFieldPathForJoinAlias(left, QUser.user1);
@@ -57,7 +58,32 @@ public class AliasResolverUnitTest extends AbstractTest {
     public void testFieldNotFound() {
         AliasResolver resolver = new DefaultAliasResolver(entityManager);
 
-        assertThrows(JoinerException.class, () -> resolver.resolveFieldPathForJoinAlias(J.left(QPassword.password), QGroup.group));
+        assertThrows(JoinerException.class, () -> resolver.resolveFieldPathForJoinAlias(J.left(password), QGroup.group));
+    }
+
+    @Test
+    public void testFieldNotFoundWithOnPredicate() {
+        AliasResolver resolver = new DefaultAliasResolver(entityManager);
+
+        assertThrows(JoinerException.class, () -> resolver.resolveFieldPathForJoinAlias(J.left(password).on(password.name.isEmpty()), QGroup.group));
+    }
+
+    @Test
+    public void testUnmappedAssociationAllowed() {
+        AliasResolver resolver = new DefaultAliasResolver(entityManager);
+
+        JoinDescription join = J.left(password).unmapped(true).on(password.name.isEmpty());
+        resolver.resolveFieldPathForJoinAlias(join, QGroup.group);
+
+        assertTrue(join.getSingularPath() instanceof AdhocJoinPath);
+    }
+
+    @Test
+    public void testUnmappedAssociationMissingPredicate() {
+        AliasResolver resolver = new DefaultAliasResolver(entityManager);
+
+        JoinDescription join = J.left(password).unmapped(true);
+        assertThrows(JoinerException.class, () -> resolver.resolveFieldPathForJoinAlias(join, QGroup.group));
     }
 
     @Test

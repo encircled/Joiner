@@ -38,6 +38,12 @@ public class JoinDescription implements JoinRoot {
 
     private JoinDescription parent;
 
+    /**
+     * Indicates that the join is unmapped (i.e. it does not have corresponding path in the entity model).
+     * It is used for ad-hoc joins created from paths without parent (e.g. from root or from another ad-hoc join).
+     */
+    private boolean isUnmapped = false;
+
     private Map<String, JoinDescription> children = new LinkedHashMap<>(4);
 
     public JoinDescription(EntityPath<?> alias) {
@@ -83,6 +89,31 @@ public class JoinDescription implements JoinRoot {
         return this;
     }
 
+    public boolean isUnmapped() {
+        return isUnmapped;
+    }
+
+    /**
+     * Set join as unmapped.
+     * Unmapped join is not based on any path in the entity model, and it is used for ad-hoc joins created from paths without parent
+     */
+    public JoinDescription unmapped() {
+        isUnmapped = true;
+        return this;
+    }
+
+    /**
+     * Set join as unmapped.
+     * Unmapped join is not based on any path in the entity model, and it is used for ad-hoc joins created from paths without parent
+     */
+    public JoinDescription unmapped(boolean unmapped) {
+        isUnmapped = unmapped;
+        return this;
+    }
+
+    /**
+     * Adds additional join 'on' predicate
+     */
     public JoinDescription on(Predicate on) {
         this.on = on;
         return this;
