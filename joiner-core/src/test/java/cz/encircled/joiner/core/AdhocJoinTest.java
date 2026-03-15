@@ -25,6 +25,7 @@ public abstract class AdhocJoinTest extends AbstractTest {
                                 .on(QWithSelfReference.withSelfReference.name.eq("refWithParent")))
         );
 
+        assertFalse(result.isEmpty());
         for (Tuple tuple : result) {
             assertEquals("refWithParent", tuple.get(QWithSelfReference.withSelfReference.name));
         }
@@ -41,6 +42,7 @@ public abstract class AdhocJoinTest extends AbstractTest {
                                 .on(QWithSelfReference.withSelfReference.name.eq("refWithParent")))
         );
 
+        assertFalse(result.isEmpty());
         for (UserGroupDto tuple : result) {
             assertEquals("refWithParent", tuple.groupName);
         }
@@ -69,13 +71,6 @@ public abstract class AdhocJoinTest extends AbstractTest {
             this.groupName = groupName;
         }
 
-        public String getUserName() {
-            return userName;
-        }
-
-        public String getGroupName() {
-            return groupName;
-        }
     }
 
 }
