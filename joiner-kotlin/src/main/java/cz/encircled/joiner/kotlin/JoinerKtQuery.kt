@@ -21,7 +21,12 @@ class ExpressionJoinerKtQuery<FROM_C, PROJ, FROM : EntityPath<FROM_C>>(
         (isCount) -> Q.count(entityPath) as JoinerQuery<FROM_C, PROJ>
         else -> Q.select(projection).from(entityPath)
     }
-) : JoinerKtQuery<FROM_C, PROJ, FROM>(entityPath, delegate)
+) : JoinerKtQuery<FROM_C, PROJ, FROM>(entityPath, delegate) {
+    override fun toString(): String {
+        return delegate.toString()
+    }
+
+}
 
 class TupleJoinerKtQuery<FROM_C, FROM : EntityPath<FROM_C>>(
     private val entityPath: FROM,
@@ -30,10 +35,10 @@ class TupleJoinerKtQuery<FROM_C, FROM : EntityPath<FROM_C>>(
 ) : JoinerKtQuery<FROM_C, Tuple, FROM>(entityPath, delegate)
 
 open class JoinerKtJoinOrQuery<FROM_C, PROJ, FROM : EntityPath<FROM_C>>(
+    entityPath: FROM,
     val join: JoinDescription,
-    val delegate: JoinerKtQuery<FROM_C, PROJ, FROM>
-) : JoinerQuery<FROM_C, PROJ> by delegate, KtQueryOps<FROM_C, PROJ, FROM> by delegate {
-
+    delegate: JoinerQuery<FROM_C, PROJ>
+) : JoinerKtQuery<FROM_C, PROJ, FROM>(entityPath, delegate) {
     infix fun on(predicate: Predicate): JoinerKtJoinOrQuery<FROM_C, PROJ, FROM> {
         join.on(predicate)
         return this
@@ -49,39 +54,6 @@ open class JoinerKtJoinOrQuery<FROM_C, PROJ, FROM : EntityPath<FROM_C>>(
         return this
     }
 
-    infix fun leftJoin(p: EntityPath<*>): JoinerKtJoinOrQuery<FROM_C, PROJ, FROM> {
-        val join = J.left(p)
-        delegate.joins(join)
-        return JoinerKtJoinOrQuery(join, delegate)
-    }
-
-    infix fun leftJoin(p: CollectionPathBase<*, *, *>): JoinerKtJoinOrQuery<FROM_C, PROJ, FROM> {
-        val join = J.left(p)
-        delegate.joins(join)
-        return JoinerKtJoinOrQuery(join, delegate)
-    }
-
-    infix fun leftJoin(join: JoinDescription): JoinerKtJoinOrQuery<FROM_C, PROJ, FROM> {
-        delegate.joins(join)
-        return JoinerKtJoinOrQuery(join, delegate)
-    }
-
-    infix fun innerJoin(p: EntityPath<*>): JoinerKtJoinOrQuery<FROM_C, PROJ, FROM> {
-        val join = J.inner(p)
-        delegate.joins(join)
-        return JoinerKtJoinOrQuery(join, delegate)
-    }
-
-    infix fun innerJoin(p: CollectionPathBase<*, *, *>): JoinerKtJoinOrQuery<FROM_C, PROJ, FROM> {
-        val join = J.inner(p)
-        delegate.joins(join)
-        return JoinerKtJoinOrQuery(join, delegate)
-    }
-
-    infix fun innerJoin(join: JoinDescription): JoinerKtJoinOrQuery<FROM_C, PROJ, FROM> {
-        delegate.joins(join)
-        return JoinerKtJoinOrQuery(join, delegate)
-    }
 }
 
 interface KtQueryOps<FROM_C, PROJ, FROM : EntityPath<FROM_C>> {
@@ -90,7 +62,7 @@ interface KtQueryOps<FROM_C, PROJ, FROM : EntityPath<FROM_C>> {
 
 open class JoinerKtQuery<FROM_C, PROJ, FROM : EntityPath<FROM_C>>(
     private val entityPath: FROM,
-    internal val delegate: JoinerQuery<FROM_C, PROJ>
+    val delegate: JoinerQuery<FROM_C, PROJ>
 ) : JoinerQuery<FROM_C, PROJ> by delegate, JoinOps, KtQueryOps<FROM_C, PROJ, FROM> {
 
     /**
@@ -209,35 +181,36 @@ open class JoinerKtQuery<FROM_C, PROJ, FROM : EntityPath<FROM_C>>(
     infix fun leftJoin(p: EntityPath<*>): JoinerKtJoinOrQuery<FROM_C, PROJ, FROM> {
         val join = J.left(p)
         delegate.joins(join)
-        return JoinerKtJoinOrQuery(join, this)
+        return JoinerKtJoinOrQuery(entityPath, join, delegate)
     }
 
     infix fun leftJoin(p: CollectionPathBase<*, *, *>): JoinerKtJoinOrQuery<FROM_C, PROJ, FROM> {
         val join = J.left(p)
         delegate.joins(join)
-        return JoinerKtJoinOrQuery(join, this)
+        return JoinerKtJoinOrQuery(entityPath, join, delegate)
     }
 
     infix fun leftJoin(join: JoinDescription): JoinerKtJoinOrQuery<FROM_C, PROJ, FROM> {
         delegate.joins(join)
-        return JoinerKtJoinOrQuery(join, this)
+        return JoinerKtJoinOrQuery(entityPath, join, delegate)
     }
 
     infix fun innerJoin(p: EntityPath<*>): JoinerKtJoinOrQuery<FROM_C, PROJ, FROM> {
         val join = J.inner(p)
         delegate.joins(join)
-        return JoinerKtJoinOrQuery(join, this)
+        return JoinerKtJoinOrQuery(entityPath, join, delegate)
     }
 
     infix fun innerJoin(p: CollectionPathBase<*, *, *>): JoinerKtJoinOrQuery<FROM_C, PROJ, FROM> {
         val join = J.inner(p)
         delegate.joins(join)
-        return JoinerKtJoinOrQuery(join, this)
+        return JoinerKtJoinOrQuery(entityPath, join, delegate)
     }
 
     infix fun innerJoin(join: JoinDescription): JoinerKtJoinOrQuery<FROM_C, PROJ, FROM> {
+        join.inner()
         delegate.joins(join)
-        return JoinerKtJoinOrQuery(join, this)
+        return JoinerKtJoinOrQuery(entityPath, join, delegate)
     }
 
     infix fun joinGraph(graph: String): JoinerKtQuery<FROM_C, PROJ, FROM> {
