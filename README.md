@@ -186,8 +186,8 @@ joiner.findOne(group.all() leftJoin group.users)
 
 Joining an unmapped association
 ```java
-joiner.findOne(Q.from(QGroup.group)
-                  .joins(QUser.user).on(QUser.user.myBusinessKey.eq(QGroup.group.key)).unmapped());
+joiner.findOne(Q.from(group)
+                  .joins(user).on(user.myBusinessKey.eq(group.key)).unmapped());
 ```
 
 ## Customizing a join
