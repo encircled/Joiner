@@ -79,6 +79,14 @@ public class AliasResolverUnitTest extends AbstractTest {
     }
 
     @Test
+    public void testUnmappedAssociationMissingPredicate() {
+        AliasResolver resolver = new DefaultAliasResolver(entityManager);
+
+        JoinDescription join = J.left(password).unmapped(true);
+        assertThrows(JoinerException.class, () -> resolver.resolveFieldPathForJoinAlias(join, QGroup.group));
+    }
+
+    @Test
     public void testAmbiguousAliasExceptionMessage() {
         AliasResolver resolver = new DefaultAliasResolver(entityManager);
 
