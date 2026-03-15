@@ -184,6 +184,12 @@ in Kotlin
 joiner.findOne(group.all() leftJoin group.users)
 ```
 
+Joining an unmapped association
+```java
+joiner.findOne(Q.from(QGroup.group)
+                  .joins(QUser.user).on(QUser.user.myBusinessKey.eq(QGroup.group.key)).unmapped());
+```
+
 ## Customizing a join
 
 To perform an inner join or create a non-fetch join (which will not be part of the result set):
