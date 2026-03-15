@@ -22,9 +22,7 @@ class PredicateContinuation<T>(
     val chain: ((SimpleExpression<T>) -> BooleanExpression) -> BooleanExpression
 )
 
-object JoinerKtOps : ConditionOps, JoinOps {
-    override var lastJoin: JoinDescription? = null
-}
+object JoinerKtOps : ConditionOps, JoinOps
 
 /**
  * @author Vlad on 05-Jun-18.

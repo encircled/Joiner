@@ -4,9 +4,9 @@ import com.querydsl.core.support.Context;
 import com.querydsl.core.types.*;
 import cz.encircled.joiner.core.converter.JPACollectionAnyVisitor;
 import cz.encircled.joiner.exception.JoinerException;
+import cz.encircled.joiner.query.AdhocJoinPath;
 import cz.encircled.joiner.query.CollectionJoinerQuery;
 import cz.encircled.joiner.query.JoinerQuery;
-import cz.encircled.joiner.query.QueryOrder;
 import cz.encircled.joiner.query.join.J;
 import cz.encircled.joiner.query.join.JoinDescription;
 import jakarta.persistence.Entity;
@@ -218,6 +218,10 @@ public class JoinerJPQLSerializer extends SerializerStrategy {
                 default -> constants.add(constant);
             }
             return "?" + constants.size();
+        }
+
+        if (expression instanceof AdhocJoinPath path) {
+            return getEntityName(path.target.getType());
         }
 
         // For paths, we return the path name

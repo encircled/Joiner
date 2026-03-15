@@ -3,12 +3,9 @@ package cz.encircled.joiner.kotlin
 import cz.encircled.joiner.exception.JoinerException
 import cz.encircled.joiner.kotlin.JoinerKtOps.eq
 import cz.encircled.joiner.kotlin.JoinerKtOps.gt
-import cz.encircled.joiner.kotlin.JoinerKtOps.innerJoin
 import cz.encircled.joiner.kotlin.JoinerKtOps.isIn
-import cz.encircled.joiner.kotlin.JoinerKtOps.leftJoin
 import cz.encircled.joiner.kotlin.JoinerKtOps.ne
 import cz.encircled.joiner.kotlin.JoinerKtOps.notIn
-import cz.encircled.joiner.kotlin.JoinerKtOps.on
 import cz.encircled.joiner.kotlin.JoinerKtOps.or
 import cz.encircled.joiner.kotlin.JoinerKtQueryBuilder.all
 import cz.encircled.joiner.kotlin.JoinerKtQueryBuilder.countOf
@@ -19,7 +16,13 @@ import cz.encircled.joiner.model.QStatus
 import cz.encircled.joiner.model.QUser.user1
 import org.junit.jupiter.api.TestInfo
 import org.junit.jupiter.api.assertThrows
-import kotlin.test.*
+import kotlin.test.BeforeTest
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertFalse
+import kotlin.test.assertNotNull
+import kotlin.test.assertNull
+import kotlin.test.assertTrue
 
 class JoinerKtTest : AbstractTest() {
 
@@ -68,9 +71,17 @@ class JoinerKtTest : AbstractTest() {
 
     @Test
     fun `inner join on`() {
-        val actual = (QGroup.group.all()
-                innerJoin QGroup.group.users on user1.name.eq("user1")).delegate.getJoin(user1).on
-        assertEquals(user1.name.eq("user1"), actual)
+        val actual = (
+                QGroup.group.all()
+                        innerJoin QGroup.group.users
+                        on user1.name.eq("user1")
+                        fetch false
+                        unmapped true
+                )
+            .delegate.getJoin(user1)
+        assertEquals(user1.name.eq("user1"), actual.on)
+        assertFalse(actual.isFetch)
+        assertTrue(actual.isUnmapped)
     }
 
     @Test
@@ -100,8 +111,12 @@ class JoinerKtTest : AbstractTest() {
 
     @Test
     fun ktAppendWhere() {
-        assertEquals(user1.id.gt(1).or(user1.id.isNull), (user1.all() orWhere { user1.id.isNull } orWhere(user1.id gt 1)).where)
-        assertEquals(user1.id.gt(1).and(user1.id.isNull), (user1.all() andWhere { user1.id.isNull } andWhere(user1.id gt 1)).where)
+        assertEquals(
+            user1.id.gt(1).or(user1.id.isNull),
+            (user1.all() orWhere { user1.id.isNull } orWhere (user1.id gt 1)).where)
+        assertEquals(
+            user1.id.gt(1).and(user1.id.isNull),
+            (user1.all() andWhere { user1.id.isNull } andWhere (user1.id gt 1)).where)
     }
 
     @Test

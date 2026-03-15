@@ -99,7 +99,7 @@ class JoinerKtQueryBuilderTest {
         val delegate = (user1.name from user1
                 leftJoin QContact.contact
                 innerJoin QStatus.status
-                ).delegate
+                ).delegate.delegate
 
         assertEquals(
             Q.select(user1.name).from(user1)
@@ -116,7 +116,7 @@ class JoinerKtQueryBuilderTest {
                 leftJoin (QGroup.group innerJoin QStatus.status)
                 innerJoin user1.statuses
                 innerJoin (QAddress.address innerJoin QStatus.status)
-                ).delegate
+                ).delegate.delegate
 
         assertEquals(
             Q.select(user1.name).from(user1)
@@ -183,7 +183,7 @@ class JoinerKtQueryBuilderTest {
                 J.left(QGroup.group)
                     .nested(J.left(QStatus.status).nested(userTree))
             )
-        assertEquals(expected, query.delegate)
+        assertEquals(expected, query.delegate.delegate)
         assertEquals(J.unrollChildrenJoins(expected.joins), J.unrollChildrenJoins(query.joins))
     }
 
