@@ -23,14 +23,20 @@ import java.util.Objects;
 public class JoinerSQLSerializer extends SerializerStrategy {
 
     private final SqlNamingStrategy namingStrategy;
+    private final PaginationSyntax paginationSyntax;
 
     public JoinerSQLSerializer(SqlNamingStrategy namingStrategy) {
-        this(namingStrategy, new ArrayList<>());
+        this(namingStrategy, PaginationSyntax.OFFSET_FETCH, new ArrayList<>());
     }
 
-    public JoinerSQLSerializer(SqlNamingStrategy namingStrategy, List<Object> constants) {
+    public JoinerSQLSerializer(SqlNamingStrategy namingStrategy, PaginationSyntax paginationSyntax) {
+        this(namingStrategy, paginationSyntax, new ArrayList<>());
+    }
+
+    public JoinerSQLSerializer(SqlNamingStrategy namingStrategy, PaginationSyntax paginationSyntax, List<Object> constants) {
         super(constants);
         this.namingStrategy = Objects.requireNonNull(namingStrategy, "namingStrategy");
+        this.paginationSyntax = Objects.requireNonNull(paginationSyntax, "paginationSyntax");
     }
 
     @Override
@@ -149,6 +155,38 @@ public class JoinerSQLSerializer extends SerializerStrategy {
         }
     }
 
+    @Override
+    protected void appendOffsetLimit(JoinerQuery<?, ?> joinerQuery) {
+        Integer offset = joinerQuery.getOffset();
+        Integer limit = joinerQuery.getLimit();
+
+        if (offset == null && limit == null) {
+            return;
+        }
+
+        switch (paginationSyntax) {
+            case LIMIT_OFFSET -> {
+                if (limit != null) {
+                    constants.add(limit);
+                    query.append(" limit ?").append(constants.size());
+                }
+                if (offset != null) {
+                    constants.add(offset);
+                    query.append(" offset ?").append(constants.size());
+                }
+            }
+            case OFFSET_FETCH -> {
+                // SQL:2008 standard: OFFSET is required before FETCH
+                constants.add(offset != null ? offset : 0);
+                query.append(" offset ?").append(constants.size()).append(" rows");
+                if (limit != null) {
+                    constants.add(limit);
+                    query.append(" fetch first ?").append(constants.size()).append(" rows only");
+                }
+            }
+        }
+    }
+
     private String serializeExpression(Expression<?> expression) {
         return serializeExpression(expression, null);
     }
@@ -181,7 +219,7 @@ public class JoinerSQLSerializer extends SerializerStrategy {
         }
 
         if (expression instanceof JoinerQuery<?, ?> subQuery) {
-            return "(" + new JoinerSQLSerializer(namingStrategy, constants).serializeSubQuery(subQuery) + ")";
+            return "(" + new JoinerSQLSerializer(namingStrategy, paginationSyntax, constants).serializeSubQuery(subQuery) + ")";
         }
 
         if (expression instanceof Operation<?> operation) {

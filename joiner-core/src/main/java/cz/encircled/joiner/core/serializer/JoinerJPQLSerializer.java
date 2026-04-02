@@ -336,4 +336,9 @@ public class JoinerJPQLSerializer extends SerializerStrategy {
         return null;
     }
 
+    @Override
+    void appendOffsetLimit(JoinerQuery<?, ?> joinerQuery) {
+        // No-op: applied via JPA API (setFirstResult/setMaxResults)
+    }
+
 }

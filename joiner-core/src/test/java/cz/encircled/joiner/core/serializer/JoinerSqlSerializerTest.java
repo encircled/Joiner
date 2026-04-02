@@ -814,6 +814,108 @@ public class JoinerSqlSerializerTest extends AbstractTest {
 
     }
 
+
+    @Nested
+    class Pagination {
+
+        @Nested
+        class LimitOffsetSyntax {
+            private JoinerSQLSerializer limitOffsetSerializer;
+
+            @BeforeEach
+            void setUp() {
+                Metamodel metamodel = entityManager.getMetamodel();
+                SqlNamingStrategy namingStrategy = new JpaSqlNamingStrategy(metamodel);
+                limitOffsetSerializer = new JoinerSQLSerializer(namingStrategy, PaginationSyntax.LIMIT_OFFSET);
+            }
+
+            @Test
+            public void limitOnly() {
+                JoinerQuery<?, ?> query = Q.from(user).limit(10);
+                String sql = limitOffsetSerializer.serialize(query);
+                assertEquals(selectUser + " from test_user user1 limit ?1", sql);
+                assertConstants(limitOffsetSerializer, 10);
+            }
+
+            @Test
+            public void offsetOnly() {
+                JoinerQuery<?, ?> query = Q.from(user).offset(5);
+                String sql = limitOffsetSerializer.serialize(query);
+                assertEquals(selectUser + " from test_user user1 offset ?1", sql);
+                assertConstants(limitOffsetSerializer, 5);
+            }
+
+            @Test
+            public void limitAndOffset() {
+                JoinerQuery<?, ?> query = Q.from(user).limit(10).offset(20);
+                String sql = limitOffsetSerializer.serialize(query);
+                assertEquals(selectUser + " from test_user user1 limit ?1 offset ?2", sql);
+                assertConstants(limitOffsetSerializer, 10, 20);
+            }
+
+            @Test
+            public void noPagination() {
+                JoinerQuery<?, ?> query = Q.from(user);
+                String sql = limitOffsetSerializer.serialize(query);
+                assertEquals(selectUser + " from test_user user1", sql);
+                assertConstants(limitOffsetSerializer);
+            }
+        }
+
+        @Nested
+        class OffsetFetchSyntax {
+            private JoinerSQLSerializer offsetFetchSerializer;
+
+            @BeforeEach
+            void setUp() {
+                Metamodel metamodel = entityManager.getMetamodel();
+                SqlNamingStrategy namingStrategy = new JpaSqlNamingStrategy(metamodel);
+                offsetFetchSerializer = new JoinerSQLSerializer(namingStrategy, PaginationSyntax.OFFSET_FETCH);
+            }
+
+            @Test
+            public void limitOnly() {
+                JoinerQuery<?, ?> query = Q.from(user).limit(10);
+                String sql = offsetFetchSerializer.serialize(query);
+                assertEquals(selectUser + " from test_user user1 offset ?1 rows fetch first ?2 rows only", sql);
+                assertConstants(offsetFetchSerializer, 0, 10);
+            }
+
+            @Test
+            public void offsetOnly() {
+                JoinerQuery<?, ?> query = Q.from(user).offset(5);
+                String sql = offsetFetchSerializer.serialize(query);
+                assertEquals(selectUser + " from test_user user1 offset ?1 rows", sql);
+                assertConstants(offsetFetchSerializer, 5);
+            }
+
+            @Test
+            public void limitAndOffset() {
+                JoinerQuery<?, ?> query = Q.from(user).limit(10).offset(20);
+                String sql = offsetFetchSerializer.serialize(query);
+                assertEquals(selectUser + " from test_user user1 offset ?1 rows fetch first ?2 rows only", sql);
+                assertConstants(offsetFetchSerializer, 20, 10);
+            }
+
+            @Test
+            public void noPagination() {
+                JoinerQuery<?, ?> query = Q.from(user);
+                String sql = offsetFetchSerializer.serialize(query);
+                assertEquals(selectUser + " from test_user user1", sql);
+                assertConstants(offsetFetchSerializer);
+            }
+        }
+
+        @Test
+        public void defaultSyntaxIsOffsetFetch() {
+            // Default constructor should use OFFSET_FETCH as fallback
+            JoinerQuery<?, ?> query = Q.from(user).limit(10);
+            String sql = serializer.serialize(query);
+            assertEquals(selectUser + " from test_user user1 offset ?1 rows fetch first ?2 rows only", sql);
+            assertConstants(serializer, 0, 10);
+        }
+    }
+
     void assertConstants(JoinerSQLSerializer serializer, Object... expected) {
         assertEquals(expected.length, serializer.getConstants().size());
         for (int i = 0; i < expected.length; i++) {

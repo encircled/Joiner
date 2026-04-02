@@ -6,6 +6,7 @@ import cz.encircled.joiner.core.JoinerProperties;
 import cz.encircled.joiner.core.serializer.JoinerSQLSerializer;
 import cz.encircled.joiner.core.serializer.JoinerSerializer;
 import cz.encircled.joiner.core.serializer.JpaSqlNamingStrategy;
+import cz.encircled.joiner.core.serializer.PaginationSyntax;
 import cz.encircled.joiner.query.JoinerQuery;
 import jakarta.persistence.EntityManager;
 import org.hibernate.*;
@@ -28,10 +29,12 @@ public class HibernateRepository extends VendorRepository {
 
     private static final Logger log = LoggerFactory.getLogger(HibernateRepository.class);
 
+    private volatile PaginationSyntax paginationSyntax;
+
     @Override
     public JoinerJpaQuery createQuery(JoinerQuery<?, ?> request, JoinerProperties joinerProperties, EntityManager entityManager) {
         JoinerSerializer serializer = request.isNativeQuery()
-                ? new JoinerSQLSerializer(new JpaSqlNamingStrategy(entityManager.getMetamodel()))
+                ? new JoinerSQLSerializer(new JpaSqlNamingStrategy(entityManager.getMetamodel()), getPaginationSyntax(entityManager))
                 : new JoinerJPQLSerializer();
         String queryString = serializer.serialize(request);
 
@@ -105,5 +108,31 @@ public class HibernateRepository extends VendorRepository {
         );
 
         return StreamSupport.stream(spliterator, false).onClose(results::close);
+    }
+
+    private PaginationSyntax getPaginationSyntax(EntityManager entityManager) {
+        PaginationSyntax result = paginationSyntax;
+        if (result == null) {
+            result = resolvePaginationSyntax(entityManager);
+            paginationSyntax = result;
+        }
+        return result;
+    }
+
+    @SuppressWarnings("resource") // unwrap returns an existing managed instance, not a new resource
+    private static PaginationSyntax resolvePaginationSyntax(EntityManager entityManager) {
+        try {
+            Session session = entityManager.unwrap(Session.class);
+            String dialectName = session.getSessionFactory()
+                    .unwrap(org.hibernate.engine.spi.SessionFactoryImplementor.class)
+                    .getJdbcServices()
+                    .getDialect()
+                    .getClass()
+                    .getName();
+            return PaginationSyntax.fromDialectName(dialectName);
+        } catch (Exception e) {
+            log.debug("Could not detect Hibernate dialect, falling back to OFFSET/FETCH", e);
+            return PaginationSyntax.OFFSET_FETCH;
+        }
     }
 }

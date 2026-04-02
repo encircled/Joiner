@@ -39,11 +39,13 @@ public abstract class VendorRepository {
             }
         }
 
-        if (request.getLimit() != null) {
-            query.setMaxResults(request.getLimit());
-        }
-        if (request.getOffset() != null) {
-            query.setFirstResult(request.getOffset());
+        if (!request.isNativeQuery()) {
+            if (request.getLimit() != null) {
+                query.setMaxResults(request.getLimit());
+            }
+            if (request.getOffset() != null) {
+                query.setFirstResult(request.getOffset());
+            }
         }
 
         if (request.getFlushMode() != null) {
