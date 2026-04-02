@@ -68,6 +68,7 @@ abstract class SerializerStrategy implements JoinerSerializer {
         appendGroupBy(joinerQuery);
         appendHaving(joinerQuery);
         appendOrderBy(joinerQuery);
+        appendOffsetLimit(joinerQuery);
     }
 
     protected void appendJoins(JoinerQuery<?, ?> joinerQuery) {
@@ -121,6 +122,7 @@ abstract class SerializerStrategy implements JoinerSerializer {
     abstract void appendJoin(JoinerQuery<?, ?> joinerQuery, JoinDescription join);
     abstract void appendWhere(JoinerQuery<?, ?> joinerQuery);
     abstract void appendHaving(JoinerQuery<?, ?> joinerQuery);
+    abstract void appendOffsetLimit(JoinerQuery<?, ?> joinerQuery);
 
     abstract String serializeExpression(Expression<?> expression, String parentOpOperator);
 
