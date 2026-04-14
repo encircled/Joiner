@@ -25,9 +25,13 @@ class ExpressionJoinerKtQuery<FROM_C, PROJ, FROM : EntityPath<FROM_C>>(
 
 class TupleJoinerKtQuery<FROM_C, FROM : EntityPath<FROM_C>>(
     private val entityPath: FROM,
-    projection: Array<Expression<*>>,
+    val projection: Array<Expression<*>>,
     delegate: JoinerQuery<FROM_C, Tuple> = Q.select(*projection).from(entityPath)
-) : JoinerKtQuery<FROM_C, Tuple, FROM>(entityPath, delegate)
+) : JoinerKtQuery<FROM_C, Tuple, FROM>(entityPath, delegate) {
+    override fun copy(): JoinerKtQuery<FROM_C, Tuple, FROM> {
+        return TupleJoinerKtQuery(entityPath, projection, delegate.copy())
+    }
+}
 
 open class JoinerKtJoinOrQuery<FROM_C, PROJ, FROM : EntityPath<FROM_C>>(
     entityPath: FROM,
@@ -217,6 +221,14 @@ open class JoinerKtQuery<FROM_C, PROJ, FROM : EntityPath<FROM_C>>(
     infix fun joinGraph(graph: Collection<*>): JoinerKtQuery<FROM_C, PROJ, FROM> {
         delegate.joinGraphs(graph)
         return this
+    }
+
+    override fun toString(): String {
+        return delegate.toString()
+    }
+
+    override fun copy(): JoinerKtQuery<FROM_C, PROJ, FROM> {
+        return JoinerKtQuery(entityPath, delegate.copy())
     }
 
 }

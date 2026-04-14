@@ -17,6 +17,7 @@ import cz.encircled.joiner.query.QueryFeature
 import cz.encircled.joiner.query.join.J
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertNotSame
 import kotlin.test.assertTrue
 
 /**
@@ -185,6 +186,66 @@ class JoinerKtQueryBuilderTest {
             )
         assertEquals(expected, query.delegate)
         assertEquals(J.unrollChildrenJoins(expected.joins), J.unrollChildrenJoins(query.joins))
+    }
+
+    @Test
+    fun `copy query with joins`() {
+        val original = user1 from user1 where { it.name eq "Test" } leftJoin QStatus.status innerJoin QAddress.address
+        val copy = original.copy()
+
+        assertEquals(original.delegate, copy.delegate)
+        assertNotSame(original, copy)
+        assertNotSame(original.delegate, copy.delegate)
+    }
+
+    @Test
+    fun `copy query with ordering and features`() {
+        val testFeature = TestQueryFeature()
+        val original = user1 from user1 asc { it.id } desc { it.name } feature testFeature hint ("key" to "value")
+        val copy = original.copy()
+
+        assertEquals(original.delegate, copy.delegate)
+        assertNotSame(original, copy)
+        assertNotSame(original.delegate, copy.delegate)
+    }
+
+    @Test
+    fun `copy is independent from original`() {
+        val original = user1.all() where { it.name eq "Test" }
+        val copy = original.copy()
+
+        // Modify the original after copying
+        original.where { it.name eq "Modified" }
+        original.limit(99)
+
+        // Copy should remain unchanged
+        assertEquals(Q.from(user1).where(user1.name.eq("Test")), copy.delegate)
+    }
+
+    @Test
+    fun `copy tuple query`() {
+        val original = listOf(user1.id, user1.name) from user1 where { it.name eq "Test" } limit 5
+        val copy = original.copy()
+
+        assertEquals(original.delegate, copy.delegate)
+        assertNotSame(original, copy)
+        assertNotSame(original.delegate, copy.delegate)
+        assertTrue(copy is TupleJoinerKtQuery)
+    }
+
+    @Test
+    fun `copy tuple query is independent from original`() {
+        val original = listOf(user1.id, user1.name) from user1 where { it.name eq "Test" }
+        val copy = original.copy()
+
+        // Modify the original after copying
+        original.limit(99)
+
+        // Copy should remain unchanged
+        assertEquals(
+            Q.select(user1.id, user1.name).from(user1).where(user1.name.eq("Test")),
+            copy.delegate
+        )
     }
 
     class TestQueryFeature : QueryFeature {
