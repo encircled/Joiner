@@ -139,6 +139,15 @@ class JoinerKtQueryBuilderTest {
             Q.select(user1).from(user1).desc(user1.id),
             (user1 from user1 desc { it.id }).delegate
         )
+
+        assertEquals(
+            Q.select(user1).from(user1).asc(user1.id),
+            ((user1 from user1).sort(user1.id, false)).delegate
+        )
+        assertEquals(
+            Q.select(user1).from(user1).desc(user1.id),
+            ((user1 from user1).sort(user1.id, true)).delegate
+        )
     }
 
     @Test

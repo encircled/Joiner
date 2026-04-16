@@ -118,6 +118,12 @@ open class JoinerKtQuery<FROM_C, PROJ, FROM : EntityPath<FROM_C>>(
         return this
     }
 
+    fun sort(sortBy: Expression<*>, isDescending: Boolean): JoinerKtQuery<FROM_C, PROJ, FROM>{
+        if (isDescending) delegate.desc(sortBy)
+        else delegate.asc(sortBy)
+        return this
+    }
+
     infix fun asc(asc: (e: FROM) -> Expression<*>): JoinerKtQuery<FROM_C, PROJ, FROM> {
         delegate.asc(asc.invoke(entityPath))
         return this
